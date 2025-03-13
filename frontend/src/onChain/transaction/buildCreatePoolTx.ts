@@ -2,7 +2,7 @@ import {calculateSharesCreatePool} from '@/amm/createPool'
 import {isCollateralUtxo} from '@/onChain/collateral'
 import {poolDatumToMesh} from '@/onChain/datums'
 import {calculateTtl} from '@/onChain/transaction/ttl'
-import type {IWallet, RefTxIn} from '@meshsdk/common'
+import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/common'
 import {
   type Asset,
   MeshTxBuilder,
@@ -26,6 +26,7 @@ import {getTxFee} from './fee'
 
 type BuildCreatePoolTxArgs = {
   wallet: IWallet
+  fetcher?: IFetcher
   assetA: Asset
   assetB: Asset
   seed: RefTxIn
@@ -41,6 +42,7 @@ export type BuildCreatePoolTxResult = {
 
 export const buildCreatePoolTx = async ({
   wallet,
+  fetcher,
   assetA,
   assetB,
   seed,
@@ -59,9 +61,12 @@ export const buildCreatePoolTx = async ({
 
   const {pubKeyHash: authorityKeyHex} = deserializeAddress(changeAddress)
 
-  const fetcher = new OfflineFetcher()
-  fetcher.addUTxOs(utxos)
-  fetcher.addUTxOs([poolRefScriptUtxoByNetwork[network]])
+  if (fetcher == null) {
+    const offlineFetcher = new OfflineFetcher()
+    offlineFetcher.addUTxOs(utxos)
+    offlineFetcher.addUTxOs([poolRefScriptUtxoByNetwork[network]])
+    fetcher = offlineFetcher
+  }
   const coreCsl = await import('@meshsdk/core-csl')
   const evaluator = new coreCsl.OfflineEvaluator(fetcher, network)
 
