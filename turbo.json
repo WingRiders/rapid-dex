@@ -1,0 +1,22 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist", ".next"],
+      "env": ["NODE_ENV"]
+    },
+    "check": {
+      "dependsOn": ["^build"]
+    },
+    "fix": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "clean": {
+      "dependsOn": ["^clean"]
+    }
+  }
+}

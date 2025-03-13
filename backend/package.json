@@ -1,0 +1,21 @@
+{
+  "name": "rapid-dex-backend",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun run src/index.ts",
+    "check": "bun biome check . && tsc --noEmit",
+    "fix": "bun run check --write"
+  },
+  "dependencies": {
+    "@trpc/server": "^10.45.2",
+    "pino": "^9.6.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "^1.2.2",
+    "pino-pretty": "^13.0.0",
+    "typescript": "^5.7.3"
+  }
+}
