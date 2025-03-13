@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test'
-import {computeReturnedTokens} from '@/amm/withdrawLiquidity'
+import {computeReturnedTokens} from '@/amm/withdraw-liquidity'
 import {maxShareTokens} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 

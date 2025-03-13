@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test'
-import {computeSharesCreatePool} from '@/amm/createPool'
+import {computeSharesCreatePool} from '@/amm/create-pool'
 import BigNumber from 'bignumber.js'
 
 describe('computeSharesCreatePool', () => {

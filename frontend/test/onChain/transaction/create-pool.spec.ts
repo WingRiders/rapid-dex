@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test'
-import {buildCreatePoolTx} from '@/onChain/transaction/buildCreatePoolTx'
+import {buildCreatePoolTx} from '@/onChain/transaction/create-pool'
 import {BigNumber} from 'bignumber.js'
 import {
   assetA,

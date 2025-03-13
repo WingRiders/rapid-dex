@@ -1,8 +1,8 @@
 import type {IFetcher, IWallet} from '@meshsdk/common'
 import type {AddLiquidityRedeemer} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
-import {buildSpentPoolOutputTx} from './buildSpentPoolOutputTx'
-import {type PoolState, getNewPoolAmount} from './poolState'
+import {type PoolState, getNewPoolAmount} from './pool-state'
+import {buildSpentPoolOutputTx} from './spent-pool-output'
 
 type BuildAddLiquidityTxArgs = {
   wallet: IWallet

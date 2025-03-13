@@ -1,5 +1,5 @@
 import {poolDatumToMesh} from '@/onChain/datums'
-import {initTxBuilder} from '@/onChain/transaction/initTxBuilder'
+import {initTxBuilder} from '@/onChain/transaction/init'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/common'
 import {type Asset, parseAssetUnit} from '@meshsdk/core'
 import {

@@ -9,8 +9,8 @@ import {
 import type BigNumber from 'bignumber.js'
 import {poolRedeemerToMesh} from '../redeemers'
 import {getTxFee} from './fee'
-import {initTxBuilder} from './initTxBuilder'
-import {type PoolState, poolStateToUtxo} from './poolState'
+import {initTxBuilder} from './init'
+import {type PoolState, poolStateToUtxo} from './pool-state'
 
 type BuildSpentPoolOutputTxArgs = {
   wallet: IWallet

@@ -1,5 +1,5 @@
 import {mock} from 'bun:test'
-import type {PoolState} from '@/onChain/transaction/poolState'
+import type {PoolState} from '@/onChain/transaction/pool-state'
 import type {IWallet, UTxO} from '@meshsdk/common'
 import {
   NetworkId,

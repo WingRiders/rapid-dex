@@ -1,8 +1,11 @@
-import {type PoolState, getNewPoolAmount} from '@/onChain/transaction/poolState'
+import {
+  type PoolState,
+  getNewPoolAmount,
+} from '@/onChain/transaction/pool-state'
 import type {IFetcher, IWallet} from '@meshsdk/common'
 import type {WithdrawLiquidityRedeemer} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
-import {buildSpentPoolOutputTx} from './buildSpentPoolOutputTx'
+import {buildSpentPoolOutputTx} from './spent-pool-output'
 
 type BuildWithdrawLiquidityTxArgs = {
   wallet: IWallet
