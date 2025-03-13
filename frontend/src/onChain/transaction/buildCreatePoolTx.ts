@@ -5,7 +5,6 @@ import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/common'
 import {type Asset, parseAssetUnit} from '@meshsdk/core'
 import {
   type PoolDatum,
-  type SupportedNetwork,
   getShareAssetName,
   poolOil,
   poolRefScriptSizeByNetwork,
@@ -13,12 +12,12 @@ import {
   poolScriptAddressByNetwork,
   poolValidatorHash,
   poolValidityAssetNameHex,
+  walletNetworkIdToNetwork,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
 import {getTxFee} from './fee'
 
 type BuildCreatePoolTxArgs = {
-  network: SupportedNetwork
   wallet: IWallet
   fetcher?: IFetcher
   assetA: Asset
@@ -35,7 +34,6 @@ export type BuildCreatePoolTxResult = {
 }
 
 export const buildCreatePoolTx = async ({
-  network,
   wallet,
   fetcher,
   assetA,
@@ -45,8 +43,8 @@ export const buildCreatePoolTx = async ({
   swapFeePoints,
   now = new Date(),
 }: BuildCreatePoolTxArgs): Promise<BuildCreatePoolTxResult> => {
+  const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
   const {txBuilder} = await initTxBuilder({
-    network,
     wallet,
     additionalUtxos: [poolRefScriptUtxoByNetwork[network]],
     doNotSpendUtxos: [seed],

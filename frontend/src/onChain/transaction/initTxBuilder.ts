@@ -7,10 +7,9 @@ import {
   type UTxO,
   deserializeAddress,
 } from '@meshsdk/core'
-import {type SupportedNetwork, matchUtxo} from '@wingriders/rapid-dex-common'
+import {matchUtxo, walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
 
 type InitTxBuilderArgs = {
-  network: SupportedNetwork
   wallet: IWallet
   additionalUtxos?: UTxO[]
   doNotSpendUtxos?: RefTxIn[]
@@ -19,13 +18,13 @@ type InitTxBuilderArgs = {
 }
 
 export const initTxBuilder = async ({
-  network,
   wallet,
   additionalUtxos,
   doNotSpendUtxos,
   fetcher,
   now = new Date(),
 }: InitTxBuilderArgs) => {
+  const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
   const walletUtxos = await wallet.getUtxos()
   const collateralUtxo = walletUtxos.find(isCollateralUtxo)
   if (!collateralUtxo) {

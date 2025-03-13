@@ -5,18 +5,17 @@ import type {IFetcher, IWallet} from '@meshsdk/common'
 import type {UTxO} from '@meshsdk/core'
 import {
   type PoolDatum,
-  type SupportedNetwork,
   type SwapRedeemer,
   poolDatumFromPoolUtxo,
   poolRefScriptSizeByNetwork,
   poolRefScriptUtxoByNetwork,
+  walletNetworkIdToNetwork,
 } from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {getTxFee} from './fee'
 import {initTxBuilder} from './initTxBuilder'
 
 type BuildSwapTxArgs = {
-  network: SupportedNetwork
   wallet: IWallet
   fetcher?: IFetcher
   poolUtxo: UTxO
@@ -31,7 +30,6 @@ type BuildSwapTxResult = {
 }
 
 export const buildSwapTx = async ({
-  network,
   wallet,
   fetcher,
   poolUtxo,
@@ -39,8 +37,8 @@ export const buildSwapTx = async ({
   lockX,
   now = new Date(),
 }: BuildSwapTxArgs): Promise<BuildSwapTxResult> => {
+  const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
   const {txBuilder} = await initTxBuilder({
-    network,
     wallet,
     additionalUtxos: [poolRefScriptUtxoByNetwork[network], poolUtxo],
     fetcher,
