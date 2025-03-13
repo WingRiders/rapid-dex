@@ -9,7 +9,7 @@ import {
   serializePlutusScript,
 } from '@meshsdk/core'
 
-const lovelaceOnRefScriptUtxo = 20_000_000
+const lovelaceOnRefScriptUtxo = 40_000_000
 
 // Wrap to a CBOR array together with script version
 const scriptCborToScriptRef = (scriptCbor: string) => `8203${scriptCbor}`
