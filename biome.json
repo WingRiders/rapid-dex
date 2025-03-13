@@ -43,6 +43,12 @@
         "noForEach": {
           "level": "off"
         }
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "error",
+          "options": {}
+        }
       }
     }
   },
