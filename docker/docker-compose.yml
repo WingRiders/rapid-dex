@@ -1,0 +1,52 @@
+services:
+  cardano-node:
+    image: ghcr.io/intersectmbo/cardano-node:10.1.4
+    restart: unless-stopped
+    command: [
+      "run",
+      "--config", "/config/config.json",
+      "--database-path", "/data/db",
+      "--socket-path", "/ipc/node.socket",
+      "--topology", "/config/topology.json"
+    ]
+    volumes:
+      - ./server/config/network/${NETWORK:-mainnet}/cardano-node:/config
+      - ./server/config/network/${NETWORK:-mainnet}/genesis:/genesis
+      - node-db:/data
+      - node-ipc:/ipc
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "400k"
+        max-file: "20"
+
+  ogmios:
+    image: cardanosolutions/ogmios:6.11.2
+    restart: unless-stopped
+    command: [
+      "--host", "0.0.0.0",
+      "--node-socket", "/ipc/node.socket",
+      "--node-config", "/config/cardano-node/config.json"
+    ]
+    volumes:
+      - ./server/config/network/${NETWORK:-mainnet}:/config
+      - node-ipc:/ipc
+    ports:
+      - ${OGMIOS_PORT:-1337}:1337
+
+  postgresql:
+    image: postgres:16.2-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rapid-dex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+      POSTGRES_DB: ${POSTGRES_DB:-rapid-dex}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+
+volumes:
+  postgres:
+  node-db:
+  node-ipc:

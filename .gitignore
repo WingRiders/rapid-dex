@@ -9,3 +9,8 @@ tsconfig.tsbuildinfo
 
 # turbo
 .turbo
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+
