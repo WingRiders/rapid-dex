@@ -37,37 +37,6 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## CLI
+## Deployment
 
-This repository contains CLI scripts for interacting with the Cardano blockchain.
-
-### Create reference script UTxO
-
-This script initializes a Cardano wallet, fetches UTxOs, submits a transaction using a Plutus script to deploy a reference script on-chain and writes the transaction hash to refScriptUtxos/<network>.ts.
-
-#### Requirements
-- [Bun](https://bun.sh/) installed
-- A valid [Blockfrost](https://blockfrost.io/) API key
-- A Cardano wallet mnemonic
-
-#### Usage
-
-Run the following command, replacing placeholders with your actual values:
-
-```sh
-cd common
-bun cli create-reference-script-utxo \
-  --blockfrostProjectId <your_blockfrost_project_id> \
-  --networkId <0 or 1> \
-  --mnemonic "<your_mnemonic_phrase>"
-```
-
-#### Parameters:
-- `--blockfrostProjectId` – Your Blockfrost project ID.
-- `--networkId` – Network ID (0 for Preprod, 1 for Mainnet).
-- `--mnemonic` – Your wallet's mnemonic phrase.
-
-#### Notes
-- Ensure your wallet has enough funds to cover transaction fees.
-- The script will deploy a reference script on-chain.
-- After running the script, commit the changed refScriptUtxos/<network>.ts to the repository.
+For instructions on deploying smart contracts and interacting with the Cardano blockchain, see the [Deployment Guide](docs/deployment.md).
