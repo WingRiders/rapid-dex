@@ -43,12 +43,14 @@ type CreateReferenceScriptUtxoParams = {
   blockfrostProjectId: string
   networkId: NetworkId
   mnemonic: string
+  stakeKeyHash: string
 }
 
 export const createReferenceScriptUtxo = async ({
   blockfrostProjectId,
   networkId,
   mnemonic,
+  stakeKeyHash,
 }: CreateReferenceScriptUtxoParams) => {
   const blockchainProvider = new BlockfrostProvider(blockfrostProjectId)
   console.info('Init wallet')
@@ -107,10 +109,14 @@ export const createReferenceScriptUtxo = async ({
   const txHash = await wallet.submitTx(signedTx)
   console.info('Transaction submitted with hash:', txHash)
 
-  const scriptAddr = serializePlutusScript({
-    code: scriptCbor,
-    version: 'V3',
-  }).address
+  const scriptAddr = serializePlutusScript(
+    {
+      code: scriptCbor,
+      version: 'V3',
+    },
+    stakeKeyHash,
+    networkId,
+  ).address
   console.info('Computed script address:', scriptAddr)
 
   const file = `src/refScriptUtxos/${network}.ts`

@@ -5,7 +5,7 @@ import {Command} from 'commander'
 const program = new Command()
 
 program
-  .name('rapi-dex CLI')
+  .name('rapid-dex CLI')
   .description('A CLI tool for working with rapid-dex')
 
 program
@@ -28,6 +28,7 @@ program
     NetworkId.TESTNET,
   )
   .requiredOption('--mnemonic <string>', 'Wallet mnemonic phrase')
+  .option('--stakeKeyHash <string>', 'Staking part for pool address')
   .action(createReferenceScriptUtxo)
 
 if (process.argv.length <= 2) {

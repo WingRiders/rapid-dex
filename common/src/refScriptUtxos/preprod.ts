@@ -3,7 +3,7 @@ import type {UTxO} from '@meshsdk/core'
 
 export const preprodPoolRefScriptUtxo: UTxO = {
   input: {
-    txHash: 'dc1d4f7486fb6b0272034f054a5c1c589bc0e3c2f2b2e2f1e3dac820bdf33ada',
+    txHash: 'f74ec90931a407cc641191d2aee2bea64f8168860f99ab6ce6a507636c64160f',
     outputIndex: 0,
   },
   output: {
@@ -19,4 +19,4 @@ export const preprodPoolRefScriptUtxo: UTxO = {
 export const preprodPoolRefScriptSize = 7272
 
 export const preprodPoolScriptAddress =
-  'addr_test1wz4j9xfsdpmzdrp67ax50dcz7jmxj7arzsfl5uv2ggh8qlgw2qdwe'
+  'addr_test1zz4j9xfsdpmzdrp67ax50dcz7jmxj7arzsfl5uv2ggh8qld77lc5ehj74wck56vw3w83tc6xkfs2z7m07fh9wtqx5kmsvgvv6m'
