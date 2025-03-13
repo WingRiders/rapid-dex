@@ -1,0 +1,13 @@
+name: Mirror commits on main branch
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror-main:
+    uses: ./.github/workflows/mirror.yml
+    with:
+      branch: main

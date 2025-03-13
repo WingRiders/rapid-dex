@@ -1,9 +1,12 @@
 name: Mirror commits
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      branch:
+        description: Branch to mirror commits from. Same branch must exist on the public repo.
+        type: string
+        required: true
 
 env:
   PUBLIC_REPO: 'WingRiders/rapid-dex'  # Define public repo here
@@ -36,7 +39,7 @@ jobs:
         shell: bash
         run: |
           git remote add public git@github.com:$PUBLIC_REPO.git
-          git fetch public main || echo "No remote public repo branch to fetch"
+          git fetch public ${{ inputs.branch }} || echo "No remote public repo branch to fetch"
 
       - name: Set TechRiderWR as the author
         shell: bash
@@ -44,10 +47,10 @@ jobs:
           git config --local user.name "TechRiderWR"
           git config --local user.email "techrider@wingriders.com"
 
-      - name: Initialize with empty initial commit if no public main branch
+      - name: Initialize with empty initial commit if no public ${{ inputs.branch }} branch
         shell: bash
         run: |
-          if ! git ls-remote --exit-code public main; then
+          if ! git ls-remote --exit-code public ${{ inputs.branch }}; then
             # Save the branch name
             ORIGINAL_BRANCH_NAME=`git rev-parse --abbrev-ref HEAD`
             echo "Original branch name was $ORIGINAL_BRANCH_NAME"
@@ -61,8 +64,8 @@ jobs:
             # Create an empty commit to initialize the branch
             git commit --allow-empty -m "Initial empty commit"
             
-            # Push the empty commit to the remote `public/main` branch
-            git push public temp:main
+            # Push the empty commit to the remote `public/${{ inputs.branch }}` branch
+            git push public temp:${{ inputs.branch }}
           
             # Checkout original branch back
             git checkout $ORIGINAL_BRANCH_NAME
@@ -72,10 +75,10 @@ jobs:
         shell: bash
         run: |
           # Rebase all private commits on the public ones
-          git rebase public/main --exec "git commit --amend --no-edit --reset-author --allow-empty"
+          git rebase public/${{ inputs.branch }} --exec "git commit --amend --no-edit --reset-author --allow-empty"
           
           # Identify the first divergent commit (the first commit on the private branch not in public)
-          firstDivergentCommit=$(git log --pretty="format:%h" | tail -n $(($(git rev-list --count public/main)+1)) | head -1)
+          firstDivergentCommit=$(git log --pretty="format:%h" | tail -n $(($(git rev-list --count public/${{ inputs.branch }})+1)) | head -1)
           
           # Filter out the Co-authored-by lines and continue with the history cleaning
           FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --msg-filter "sed -n '/Co-authored-by/Iq;p'" "$firstDivergentCommit~1..HEAD"
@@ -86,4 +89,4 @@ jobs:
       - name: Push to public repo
         shell: bash
         run: |
-          git push public HEAD:main # HEAD for case the job is not run on the main branch
+          git push public HEAD:${{ inputs.branch }} # HEAD for case the job is not run on the ${{ inputs.branch }} branch
