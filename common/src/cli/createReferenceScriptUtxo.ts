@@ -5,7 +5,7 @@ import {
   MeshTxBuilder,
   MeshWallet,
   type Network,
-  applyParamsToScript,
+  applyCborEncoding,
 } from '@meshsdk/core'
 
 // the content doesn't need to be formatted, biome will be run on the file
@@ -61,7 +61,7 @@ export const createReferenceScriptUtxo = async ({
   console.info(`Found ${utxos.length} UTxOs`)
 
   console.info(`Building transaction with output on ${changeAddress}`)
-  const scriptCbor = applyParamsToScript(poolValidatorCompiledCode, [])
+  const scriptCbor = applyCborEncoding(poolValidatorCompiledCode)
   const txBuilder = new MeshTxBuilder({
     fetcher: blockchainProvider,
     verbose: false,
