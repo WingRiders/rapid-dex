@@ -1,31 +1,24 @@
 import {calculateSharesCreatePool} from '@/amm/createPool'
-import {isCollateralUtxo} from '@/onChain/collateral'
 import {poolDatumToMesh} from '@/onChain/datums'
-import {calculateTtl} from '@/onChain/transaction/ttl'
+import {initTxBuilder} from '@/onChain/transaction/initTxBuilder'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/common'
-import {
-  type Asset,
-  MeshTxBuilder,
-  OfflineFetcher,
-  deserializeAddress,
-  parseAssetUnit,
-} from '@meshsdk/core'
+import {type Asset, parseAssetUnit} from '@meshsdk/core'
 import {
   type PoolDatum,
+  type SupportedNetwork,
   getShareAssetName,
-  matchUtxo,
   poolOil,
   poolRefScriptSizeByNetwork,
   poolRefScriptUtxoByNetwork,
   poolScriptAddressByNetwork,
   poolValidatorHash,
   poolValidityAssetNameHex,
-  walletNetworkIdToNetwork,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
 import {getTxFee} from './fee'
 
 type BuildCreatePoolTxArgs = {
+  network: SupportedNetwork
   wallet: IWallet
   fetcher?: IFetcher
   assetA: Asset
@@ -42,6 +35,7 @@ export type BuildCreatePoolTxResult = {
 }
 
 export const buildCreatePoolTx = async ({
+  network,
   wallet,
   fetcher,
   assetA,
@@ -51,36 +45,13 @@ export const buildCreatePoolTx = async ({
   swapFeePoints,
   now = new Date(),
 }: BuildCreatePoolTxArgs): Promise<BuildCreatePoolTxResult> => {
-  const utxos = await wallet.getUtxos()
-  const collateralUtxo = utxos.find(isCollateralUtxo)
-  if (!collateralUtxo) {
-    throw new Error('No collateral UTxO found')
-  }
-  const isCollateral = matchUtxo(collateralUtxo.input)
-  const isSeed = matchUtxo({txHash: seed.txHash, outputIndex: seed.txIndex})
-  const availableUtxos = utxos.filter(
-    (utxo) => !isCollateral(utxo.input) && !isSeed(utxo.input),
-  )
-
-  const changeAddress = await wallet.getChangeAddress()
-  const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
-
-  const {pubKeyHash: authorityKeyHex} = deserializeAddress(changeAddress)
-
-  if (fetcher == null) {
-    const offlineFetcher = new OfflineFetcher()
-    offlineFetcher.addUTxOs(utxos)
-    offlineFetcher.addUTxOs([poolRefScriptUtxoByNetwork[network]])
-    fetcher = offlineFetcher
-  }
-  const coreCsl = await import('@meshsdk/core-csl')
-  const evaluator = new coreCsl.OfflineEvaluator(fetcher, network)
-
-  const txBuilder = new MeshTxBuilder({
-    evaluator: {
-      evaluateTx: (tx) => evaluator.evaluateTx(tx, [], []),
-    },
+  const {txBuilder} = await initTxBuilder({
+    network,
+    wallet,
+    additionalUtxos: [poolRefScriptUtxoByNetwork[network]],
+    doNotSpendUtxos: [seed],
     fetcher,
+    now,
   })
 
   const poolValidityUnit = `${poolValidatorHash}${poolValidityAssetNameHex}`
@@ -107,18 +78,7 @@ export const buildCreatePoolTx = async ({
   }
 
   txBuilder
-    .setNetwork(network)
-    .selectUtxosFrom(availableUtxos)
-    .changeAddress(changeAddress)
-    .requiredSignerHash(authorityKeyHex)
-    .invalidHereafter(calculateTtl(now, network))
     .txIn(seed.txHash, seed.txIndex)
-    .txInCollateral(
-      collateralUtxo.input.txHash,
-      collateralUtxo.input.outputIndex,
-      collateralUtxo.output.amount,
-      collateralUtxo.output.address,
-    )
     .mintPlutusScriptV3()
     .mint('1', poolValidatorHash, poolValidityAssetNameHex)
     .mintTxInReference(

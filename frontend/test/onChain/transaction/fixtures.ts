@@ -1,5 +1,10 @@
 import {mock} from 'bun:test'
-import type {IWallet} from '@meshsdk/common'
+import type {IWallet, UTxO} from '@meshsdk/common'
+import {
+  NetworkId,
+  burnedShareTokens,
+  maxShareTokens,
+} from '@wingriders/rapid-dex-common'
 
 export const mockWallet: IWallet = {
   getAssets: mock(),
@@ -7,7 +12,7 @@ export const mockWallet: IWallet = {
   getExtensions: mock(),
   getUsedAddresses: mock(),
   getLovelace: mock(),
-  getNetworkId: mock(),
+  getNetworkId: mock(() => Promise.resolve(NetworkId.TESTNET)),
   getRewardAddresses: mock(),
   getDRep: mock(),
   getUnusedAddresses: mock(),
@@ -15,13 +20,17 @@ export const mockWallet: IWallet = {
   getPolicyIds: mock(),
   getRegisteredPubStakeKeys: mock(),
   getUnregisteredPubStakeKeys: mock(),
-  getChangeAddress: mock(),
+  getChangeAddress: mock(() => Promise.resolve(address)),
   getCollateral: mock(),
   getUtxos: mock(),
   signData: mock(),
   signTx: mock(),
   signTxs: mock(),
   submitTx: mock(),
+}
+
+export const mockWalletUtxos = (utxos: UTxO[]) => {
+  mockWallet.getUtxos = mock(() => Promise.resolve(utxos))
 }
 
 export const address =
@@ -56,5 +65,46 @@ export const seedUtxo = {
   output: {
     amount: [{unit: 'lovelace', quantity: '8000000'}, assetA, assetB],
     address,
+  },
+}
+
+export const userAdaOnlyUtxo = {
+  input: {
+    txHash: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe',
+    outputIndex: 1,
+  },
+  output: {
+    amount: [{unit: 'lovelace', quantity: '20000000'}],
+    address,
+  },
+}
+
+export const poolUtxo = {
+  input: {
+    txHash: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe',
+    outputIndex: 2,
+  },
+  output: {
+    address: 'addr_test1wz4j9xfsdpmzdrp67ax50dcz7jmxj7arzsfl5uv2ggh8qlgw2qdwe',
+    amount: [
+      {unit: 'lovelace', quantity: '20000000'},
+      {
+        unit: '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
+        quantity: '20000000',
+      },
+      {
+        unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
+        quantity: maxShareTokens
+          .minus(burnedShareTokens)
+          .minus(20_000_000)
+          .toString(),
+      },
+      {
+        unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d50',
+        quantity: '1',
+      },
+    ],
+    plutusData:
+      'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572730a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
   },
 }
