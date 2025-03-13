@@ -14,8 +14,8 @@
     "fix": "turbo fix"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.2",
+    "@types/bun": "^1.2.3",
     "turbo": "^2.4.1"
   },
-  "packageManager": "bun@1.2.2"
+  "packageManager": "bun@1.2.3"
 }

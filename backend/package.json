@@ -23,7 +23,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@cardano-ogmios/schema": "^6.11.2",
-    "@types/bun": "^1.2.2",
+    "@types/bun": "^1.2.3",
     "pino-pretty": "^13.0.0",
     "typescript": "^5.7.3"
   }
