@@ -1,4 +1,4 @@
-import type {Asset, IFetcher, IWallet} from '@meshsdk/common'
+import type {Asset, IFetcher, IWallet} from '@meshsdk/core'
 import {
   type PoolRedeemer,
   poolRefScriptSizeByNetwork,

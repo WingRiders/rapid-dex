@@ -1,4 +1,4 @@
-import {MeshValue} from '@meshsdk/common'
+import {MeshValue} from '@meshsdk/core'
 import type {Asset, UTxO} from '@meshsdk/core'
 import {
   type SupportedNetwork,

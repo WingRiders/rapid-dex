@@ -1,6 +1,6 @@
 import {isCollateralUtxo} from '@/onChain/collateral'
 import {calculateTtl} from '@/onChain/transaction/ttl'
-import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/common'
+import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import {
   MeshTxBuilder,
   OfflineFetcher,

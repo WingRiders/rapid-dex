@@ -1,6 +1,6 @@
 import {poolDatumToMesh} from '@/onChain/datums'
 import {initTxBuilder} from '@/onChain/transaction/init'
-import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/common'
+import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import {type Asset, parseAssetUnit} from '@meshsdk/core'
 import {
   type PoolDatum,

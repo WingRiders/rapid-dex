@@ -1,4 +1,4 @@
-import type {IFetcher, IWallet} from '@meshsdk/common'
+import type {IFetcher, IWallet} from '@meshsdk/core'
 import type {AddLiquidityRedeemer} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {type PoolState, getNewPoolAmount} from './pool-state'

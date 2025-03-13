@@ -1,5 +1,5 @@
 import {mock} from 'bun:test'
-import type {IWallet} from '@meshsdk/common'
+import type {IWallet} from '@meshsdk/core'
 
 export const mockWallet: IWallet = {
   getAssets: mock(),

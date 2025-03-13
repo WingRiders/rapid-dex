@@ -2,7 +2,7 @@ import {
   type PoolState,
   getNewPoolAmount,
 } from '@/onChain/transaction/pool-state'
-import type {IFetcher, IWallet} from '@meshsdk/common'
+import type {IFetcher, IWallet} from '@meshsdk/core'
 import type {SwapRedeemer} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {buildSpentPoolOutputTx} from './spent-pool-output'
