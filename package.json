@@ -11,11 +11,15 @@
     "build": "turbo build",
     "start": "turbo start",
     "check": "turbo check",
-    "fix": "turbo fix"
+    "fix": "turbo fix",
+    "test": "turbo test"
   },
   "devDependencies": {
     "@types/bun": "^1.2.3",
-    "turbo": "^2.4.1"
+    "turbo": "^2.4.4"
   },
-  "packageManager": "bun@1.2.3"
+  "packageManager": "bun@1.2.3",
+  "patchedDependencies": {
+    "@meshsdk/core-cst@1.9.0-beta.4": "patches/@meshsdk%2Fcore-cst@1.9.0-beta.4.patch"
+  }
 }

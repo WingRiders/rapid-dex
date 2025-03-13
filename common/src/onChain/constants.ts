@@ -2,6 +2,10 @@ import BigNumber from 'bignumber.js'
 
 export const poolValidityAssetName = 'P'
 
+export const poolValidityAssetNameHex = poolValidityAssetName
+  .charCodeAt(0)
+  .toString(16)
+
 export const poolOil = new BigNumber(2_000_000)
 
 export const maxShareTokens = new BigNumber('9223372036854775807')

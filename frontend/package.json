@@ -6,9 +6,16 @@
     "build": "next build",
     "start": "next start",
     "check": "bun biome check .",
-    "fix": "bun run check --write"
+    "fix": "bun run check --write",
+    "test": "bun test"
   },
   "dependencies": {
+    "@meshsdk/common": "^1.9.0-beta.7",
+    "@meshsdk/core-csl": "^1.9.0-beta.7",
+    "@wingriders/rapid-dex-common": "workspace:^0.1.0",
+    "bignumber.js": "^9.1.2",
+    "blakejs": "^1.2.1",
+    "date-fns": "^4.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "next": "^15.1.7"
