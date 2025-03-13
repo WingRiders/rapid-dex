@@ -44,9 +44,7 @@ export const getPool = async (shareAssetName: string) => {
     issuedShares: maxShareTokens.minus(bigintToBigNumber(pool.lpts)),
     qtyA: bigintToBigNumber(pool.qtyA),
     qtyB: bigintToBigNumber(pool.qtyB),
-    assets: assetsSchema
-      .parse(pool.assets)
-      .map(({unit, quantity}) => ({unit, quantity: new BigNumber(quantity)})),
+    assets: assetsSchema.parse(pool.assets),
     coins: bigintToBigNumber(pool.coins),
   }
 }
