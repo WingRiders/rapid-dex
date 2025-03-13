@@ -12,4 +12,45 @@ model Block {
   slot   Int    @id
   height Int
   hash   String @db.VarChar(64)
+
+  poolOutputs      PoolOutput[]
+  spentPoolOutputs PoolOutput[] @relation("SpendBlock")
+}
+
+enum ScriptVersion {
+  V1
+  V2
+  V3
+}
+
+model PoolOutput {
+  utxoId             String         @id
+  spendUtxoId        String?        @unique
+
+  slot               Int
+  spendSlot          Int?
+
+  shareAssetName     String
+  assetAPolicy       String
+  assetAName         String
+  assetBPolicy       String
+  assetBName         String
+  lpts               BigInt
+  qtyA               BigInt
+  qtyB               BigInt
+
+  assets             Json
+  coins              BigInt
+  datumCBOR          String
+  txMetadata         Json?
+  scriptCBOR         String?
+  scriptVersion      ScriptVersion?
+
+  block              Block          @relation(fields: [slot], references: [slot], onDelete: Cascade)
+  spendBlock         Block?         @relation("SpendBlock", fields: [spendSlot], references: [slot], onDelete: SetNull)
+  nextPoolOutput     PoolOutput?    @relation("SpendPoolOutput", fields: [spendUtxoId], references: [utxoId], onDelete: SetNull)
+  previousPoolOutput PoolOutput?    @relation("SpendPoolOutput")
+
+  @@index([slot])
+  @@index([spendSlot]) // to optimize querying unspent requests
 }

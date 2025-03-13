@@ -1,9 +1,28 @@
-import {type Block, prisma} from '@/db/prismaClient'
+import {
+  type Block,
+  type PoolOutput,
+  type Prisma,
+  prisma,
+} from '@/db/prismaClient'
 import {originPoint} from '@/helpers'
 import {logger} from '@/logger'
 import {createChainSynchronizationClient} from '@cardano-ogmios/client'
 import type {BlockPraos, Point} from '@cardano-ogmios/schema'
+import BigNumber from 'bignumber.js'
+import {poolDatumFromCbor, utxoId} from '../../../common/src/helpers'
+import {poolOil, poolValidatorHash} from '../../../common/src/onChain'
+import {isPoolOutput} from './helpers'
 import {getOgmiosContext} from './ogmios'
+import {ogmiosMetadataToJson} from './ogmiosMetadataToJson'
+import {ogmiosValueToMeshAssets} from './ogmiosValueToMeshAssets'
+import {parseOgmiosScript} from './parseOgmiosScript'
+import {
+  addPoolOutputToCache,
+  getShareAssetNameByPoolUtxoId,
+  initPoolOutputCache,
+  poolOutputExists,
+  removePoolOutputFromCache,
+} from './poolOutputCache'
 
 // Buffering is suitable when doing the initial sync
 const BUFFER_SIZE = 10_000
@@ -15,6 +34,83 @@ const processBlock = async (block: BlockPraos) => {
     hash: block.id,
     height: block.height,
   })
+
+  // For each transaction in the block
+  // - Check for any inputs spending tracked PoolOutputs
+  // - Handle pool outputs
+  block.transactions?.forEach((tx) => {
+    tx.outputs.forEach((output, outputIndex) => {
+      // Handle pool output
+      if (isPoolOutput(output)) {
+        // since it's a valid pool output it must have datum
+        const datum = output.datum!
+        const poolDatum = poolDatumFromCbor(datum)
+        const isAdaPool = poolDatum.aAssetName === ''
+
+        const poolUtxoId = utxoId({txHash: tx.id, outputIndex})
+        addPoolOutputToCache(poolUtxoId, poolDatum.sharesAssetName)
+        const script = parseOgmiosScript(output.script)
+
+        const poolOutput: PoolOutput = {
+          utxoId: poolUtxoId,
+          spendUtxoId: null,
+          slot: block.slot,
+          spendSlot: null,
+          shareAssetName: poolDatum.sharesAssetName,
+          assetAPolicy: poolDatum.aPolicyId,
+          assetAName: poolDatum.aAssetName,
+          assetBPolicy: poolDatum.bPolicyId,
+          assetBName: poolDatum.bAssetName,
+          lpts: output.value[poolValidatorHash][poolDatum.sharesAssetName]!,
+          qtyA: isAdaPool
+            ? BigInt(
+                new BigNumber(output.value.ada.lovelace.toString())
+                  .minus(poolOil)
+                  .toString(),
+              )
+            : output.value[poolDatum.aPolicyId][poolDatum.aAssetName]!,
+          qtyB: output.value[poolDatum.bPolicyId][poolDatum.bAssetName]!,
+          assets: ogmiosValueToMeshAssets(output.value),
+          coins: output.value.ada.lovelace,
+          datumCBOR: datum,
+          txMetadata: ogmiosMetadataToJson(tx) ?? null,
+          scriptVersion: script?.version ?? null,
+          scriptCBOR: script?.cbor ?? null,
+        }
+        poolOutputBuffer.push(poolOutput)
+      }
+    })
+
+    // Mark spent pool outputs
+    tx.inputs
+      .map((input) =>
+        utxoId({txHash: input.transaction.id, outputIndex: input.index}),
+      )
+      .filter(poolOutputExists)
+      .forEach((utxoId) => {
+        const shareAssetName = getShareAssetNameByPoolUtxoId(utxoId)
+        // findLast because the last aggregate pool output is the one that was spent
+        const spendUtxoId = poolOutputBuffer.findLast(
+          (poolOutput) => poolOutput.shareAssetName === shareAssetName,
+        )?.utxoId
+        if (spendUtxoId == null) {
+          // should never happen because if the pool output was spent
+          // a new pool output must be aggregated in the same tx
+          const msg = `Spend UTxO not found: utxoId = ${utxoId}, shareAssetName = ${shareAssetName} `
+          logger.error({utxoId, shareAssetName}, msg)
+          throw new Error(msg)
+        }
+
+        removePoolOutputFromCache(utxoId)
+        spentPoolOutputBuffer.push({
+          utxoId,
+          // transaction can have only one pool input and one pool output,
+          // so we can safely assume that spendUtxoId in the last element in the poolOutputBuffer
+          spendUtxoId,
+          spendSlot: block.slot,
+        })
+      })
+  })
 }
 
 const processRollback = async (point: 'origin' | Point) => {
@@ -23,10 +119,19 @@ const processRollback = async (point: 'origin' | Point) => {
   await prisma.$transaction((prismaTx) =>
     prismaTx.block.deleteMany({where: {slot: {gt: rollbackSlot}}}),
   )
+
+  // (Re-)Initialize the cache
+  await initPoolOutputCache()
 }
 
 // Aggregation framework below
 let blockBuffer: Block[] = []
+let poolOutputBuffer: PoolOutput[] = []
+let spentPoolOutputBuffer: {
+  utxoId: string
+  spendUtxoId: string
+  spendSlot: number
+}[] = []
 
 // Write buffers into DB
 const writeBuffersIfNecessary = async ({
@@ -46,6 +151,8 @@ const writeBuffersIfNecessary = async ({
     const latestSlot = latestBlock?.slot
     const statsBeforeDbWrite = {
       blocks: blockBuffer.length,
+      poolOutputs: poolOutputBuffer.length,
+      spentPoolOutputs: spentPoolOutputBuffer.length,
       latestSlot,
       ...(latestLedgerHeight
         ? {progress: (latestBlock?.height || 1) / latestLedgerHeight}
@@ -74,11 +181,30 @@ const writeBuffersIfNecessary = async ({
                                    ${blockBuffer.map(({hash}) => hash)},
                                    ${blockBuffer.map(({height}) => height)}::integer[])`
         : prisma.$executeRaw`SELECT WHERE false`,
+
+      prisma.poolOutput.createMany({
+        data: poolOutputBuffer as Prisma.PoolOutputCreateManyInput[],
+      }),
+
+      spentPoolOutputBuffer.length > 0
+        ? prisma.$executeRaw`UPDATE "PoolOutput"
+                           SET "spendSlot" = new.spendSlot,
+                               "spendUtxoId" = new.spendUtxoId
+                           FROM (SELECT *
+                                 FROM unnest(
+                                         ${spentPoolOutputBuffer.map(({utxoId}) => utxoId)},
+                                         ${spentPoolOutputBuffer.map(({spendUtxoId}) => spendUtxoId)},
+                                         ${spentPoolOutputBuffer.map(({spendSlot}) => spendSlot)}::integer[]
+                                      )) AS new(utxoId, spendUtxoId, spendSlot)
+                           WHERE "PoolOutput"."utxoId" = new.utxoId`
+        : prisma.$executeRaw`SELECT WHERE false`,
     ])
 
     logger.info(stats, 'Wrote buffers to DB')
 
     blockBuffer = []
+    poolOutputBuffer = []
+    spentPoolOutputBuffer = []
   }
 }
 
@@ -100,6 +226,9 @@ export const startChainSyncClient = async () => {
   blockBuffer = []
 
   const context = await getOgmiosContext()
+
+  // Initialize the cache
+  await initPoolOutputCache()
 
   const chainSyncClient = await createChainSynchronizationClient(context, {
     async rollForward(response, nextBlock) {
