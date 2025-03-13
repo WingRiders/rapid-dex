@@ -13,6 +13,7 @@ import {
 import {
   type PoolDatum,
   getShareAssetName,
+  matchUtxo,
   poolOil,
   poolRefScriptSizeByNetwork,
   poolRefScriptUtxoByNetwork,
@@ -55,6 +56,11 @@ export const buildCreatePoolTx = async ({
   if (!collateralUtxo) {
     throw new Error('No collateral UTxO found')
   }
+  const isCollateral = matchUtxo(collateralUtxo.input)
+  const isSeed = matchUtxo({txHash: seed.txHash, outputIndex: seed.txIndex})
+  const availableUtxos = utxos.filter(
+    (utxo) => !isCollateral(utxo.input) && !isSeed(utxo.input),
+  )
 
   const changeAddress = await wallet.getChangeAddress()
   const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
@@ -102,7 +108,7 @@ export const buildCreatePoolTx = async ({
 
   txBuilder
     .setNetwork(network)
-    .selectUtxosFrom(utxos)
+    .selectUtxosFrom(availableUtxos)
     .changeAddress(changeAddress)
     .requiredSignerHash(authorityKeyHex)
     .invalidHereafter(calculateTtl(now, network))
