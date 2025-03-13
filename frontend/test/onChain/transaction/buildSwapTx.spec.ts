@@ -1,7 +1,12 @@
 import {describe, expect, it} from 'bun:test'
 import {calculatePoolAmountAfterSwap} from '@/amm/swap'
 import {buildSwapTx} from '@/onChain/transaction/buildSwapTx'
-import {type PoolDatum, poolOil} from '@wingriders/rapid-dex-common'
+import {
+  type PoolDatum,
+  maxShareTokens,
+  poolOil,
+  poolValidatorHash,
+} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {
   collateralUtxo,
@@ -23,20 +28,28 @@ describe('calculatePoolAmountAfterSwap', () => {
       sharesAssetName: 'cafe',
     }
     const poolAmount = [
-      {unit: 'lovelace', quantity: poolOil.plus(20).toString()},
-      {unit: 'deadbeef', quantity: '20'},
+      {unit: 'lovelace', quantity: poolOil.plus(2_000).toString()},
+      {unit: 'deadbeef', quantity: '2000'},
+      {
+        unit: `${poolValidatorHash}cafe`,
+        quantity: maxShareTokens.minus(2_000).toString(),
+      },
     ]
     const {newPoolAmount, outY} = calculatePoolAmountAfterSwap(
       poolDatum,
       poolAmount,
       true,
-      new BigNumber(20),
+      new BigNumber(1_000),
     )
     expect(newPoolAmount).toEqual([
-      {unit: 'lovelace', quantity: poolOil.plus(40).toString()},
-      {unit: 'deadbeef', quantity: '11'},
+      {unit: 'lovelace', quantity: poolOil.plus(3_000).toString()},
+      {unit: 'deadbeef', quantity: '1380'}, // ceil(2_000 *  2_000 / (2_000 + (1_000 - 10%))) = 1380
+      {
+        unit: `${poolValidatorHash}cafe`,
+        quantity: maxShareTokens.minus(2_000).toString(),
+      },
     ])
-    expect(outY.toString()).toEqual('9')
+    expect(outY.toString()).toEqual('620')
   })
 })
 

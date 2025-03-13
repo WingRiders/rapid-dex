@@ -1,47 +1,43 @@
-import {calculatePoolAmountAfterSwap} from '@/amm/swap'
+import {calculatePoolAmountAfterWithdrawLiquidity} from '@/amm/withdrawLiquidity'
 import type {IFetcher, IWallet} from '@meshsdk/common'
 import type {UTxO} from '@meshsdk/core'
 import {
   type PoolDatum,
-  type SwapRedeemer,
+  type WithdrawLiquidityRedeemer,
   poolDatumFromPoolUtxo,
 } from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {buildSpentPoolOutputTx} from './buildSpentPoolOutputTx'
 
-type BuildSwapTxArgs = {
+type BuildWithdrawLiquidityTxArgs = {
   wallet: IWallet
   fetcher?: IFetcher
   poolUtxo: UTxO
-  aToB: boolean
-  lockX: BigNumber
+  lockShares: BigNumber
   now?: Date // if not provided, the current date will be used
 }
 
-type BuildSwapTxResult = {
+type BuildWithdrawLiquidityTxResult = {
   builtTx: string
   txFee: BigNumber
 }
 
-export const buildSwapTx = async ({
+export const buildWithdrawLiquidityTx = async ({
   wallet,
   fetcher,
   poolUtxo,
-  aToB,
-  lockX,
+  lockShares,
   now = new Date(),
-}: BuildSwapTxArgs): Promise<BuildSwapTxResult> => {
+}: BuildWithdrawLiquidityTxArgs): Promise<BuildWithdrawLiquidityTxResult> => {
   const poolDatum: PoolDatum = poolDatumFromPoolUtxo(poolUtxo)
   const poolAmount = poolUtxo.output.amount
-  const {newPoolAmount} = calculatePoolAmountAfterSwap(
+  const {newPoolAmount} = calculatePoolAmountAfterWithdrawLiquidity(
     poolDatum,
     poolAmount,
-    aToB,
-    lockX,
+    lockShares,
   )
-  const swapRedeemer: SwapRedeemer = {
-    swapAToB: aToB,
-    provided: lockX.toNumber(),
+  const withdrawLiquidityRedeemer: WithdrawLiquidityRedeemer = {
+    sharesAdd: lockShares.toNumber(),
   }
 
   return buildSpentPoolOutputTx({
@@ -49,7 +45,7 @@ export const buildSwapTx = async ({
     fetcher,
     poolUtxo,
     poolDatum,
-    poolRedeemer: swapRedeemer,
+    poolRedeemer: withdrawLiquidityRedeemer,
     newPoolAmount,
     now,
   })

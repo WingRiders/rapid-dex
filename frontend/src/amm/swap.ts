@@ -1,6 +1,7 @@
 import {type Asset, MeshValue} from '@meshsdk/common'
-import {type PoolDatum, poolOil} from '@wingriders/rapid-dex-common'
+import type {PoolDatum} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
+import {getPoolAssetsAndShares, getPoolUnits} from './helpers'
 
 type ComputeNewReservesParams = {
   oldX: BigNumber
@@ -36,24 +37,13 @@ export const calculatePoolAmountAfterSwap = (
   aToB: boolean,
   lockX: BigNumber,
 ) => {
-  const isAdaPool = poolDatum.aPolicyId === '' && poolDatum.aAssetName === ''
-
-  // MeshValue claims to handle '' / 'lovelace' conversion, but with '' it is not able to find the asset
-  const aUnit = isAdaPool
-    ? 'lovelace'
-    : `${poolDatum.aPolicyId}${poolDatum.aAssetName}`
-  const bUnit = `${poolDatum.bPolicyId}${poolDatum.bAssetName}`
+  const poolUnits = getPoolUnits(poolDatum)
   const meshValue = MeshValue.fromAssets(poolAmount)
-  const poolAssetA = meshValue.get(aUnit)
-  if (!poolAssetA)
-    throw new Error(`Pool asset A '${aUnit}' not found in the pool output`)
-  const poolAssetB = meshValue.get(bUnit)
-  if (!poolAssetB)
-    throw new Error(`Pool asset B '${bUnit}' not found in the pool output`)
-  const oldA = new BigNumber(poolAssetA.toString()).minus(
-    isAdaPool ? poolOil : 0,
+  const {assetA: oldA, assetB: oldB} = getPoolAssetsAndShares(
+    poolUnits,
+    meshValue,
   )
-  const oldB = new BigNumber(poolAssetB.toString())
+
   const {newX, newY, outY} = computeNewReserves({
     oldX: aToB ? oldA : oldB,
     oldY: aToB ? oldB : oldA,
@@ -64,7 +54,9 @@ export const calculatePoolAmountAfterSwap = (
 
   const [newA, newB] = aToB ? [newX, newY] : [newY, newX]
 
-  meshValue.addAsset({unit: aUnit, quantity: newA.minus(oldA).toString()})
-  meshValue.addAsset({unit: bUnit, quantity: newB.minus(oldB).toString()})
+  meshValue.addAssets([
+    {unit: poolUnits.aTokenUnit, quantity: newA.minus(oldA).toString()},
+    {unit: poolUnits.bTokenUnit, quantity: newB.minus(oldB).toString()},
+  ])
   return {newPoolAmount: meshValue.toAssets(), outY}
 }
