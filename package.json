@@ -15,10 +15,10 @@
     "test": "turbo test"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.3",
+    "@types/bun": "^1.2.5",
     "turbo": "^2.4.4"
   },
-  "packageManager": "bun@1.2.3",
+  "packageManager": "bun@1.2.5",
   "patchedDependencies": {
     "@meshsdk/transaction@1.9.0-beta.18": "patches/@meshsdk%2Ftransaction@1.9.0-beta.18.patch"
   }
