@@ -1,11 +1,12 @@
 import {createHTTPServer} from '@trpc/server/adapters/standalone'
-import {appRouter} from './appRouter'
+import {aggregatorAppRouter, serverAppRouter} from './appRouter'
 import {config} from './config'
 import {logger} from './logger'
 
 export const startServer = () => {
   createHTTPServer({
-    router: appRouter,
+    router:
+      config.MODE === 'aggregator' ? aggregatorAppRouter : serverAppRouter,
   }).listen(config.SERVER_PORT)
   logger.info(`Running server on port ${config.SERVER_PORT}`)
 }

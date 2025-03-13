@@ -1,4 +1,5 @@
 export * from './utxo'
 export * from './datums'
+export * from './numbers'
 export * from './shareAsset'
 export * from './wallet'
