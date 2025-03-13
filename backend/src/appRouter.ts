@@ -5,6 +5,7 @@ import {initTRPC} from '@trpc/server'
 import BigNumber from 'bignumber.js'
 import superjson from 'superjson'
 import {z} from 'zod'
+import {getTokenMetadata} from './endpoints/tokenMetadata'
 
 // Register BigNumber serialization with SuperJSON
 superjson.registerCustom<BigNumber, string>(
@@ -29,6 +30,9 @@ export const serverAppRouter = t.router({
   pool: publicProcedure
     .input(z.object({shareAssetName: z.string()}))
     .query(({input}) => getPool(input.shareAssetName)),
+  tokenMetadata: publicProcedure
+    .input(z.array(z.string()))
+    .query(({input}) => getTokenMetadata(input)),
 })
 
 // export type definition of API

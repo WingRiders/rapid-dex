@@ -2,6 +2,7 @@ import {config} from '@/config'
 import {logger} from '@/logger'
 import {startChainSyncClient} from '@/ogmios/chainSync'
 import {getOgmiosContext} from '@/ogmios/ogmios'
+import {tokensMetadataLoop} from '@/tokenRegistry'
 import {ensureDBMigrated} from './db/migrateDb'
 import {startServer} from './server'
 
@@ -15,6 +16,10 @@ if (['aggregator', 'both'].includes(config.MODE)) {
 
   // Start the Ogmios chain synchronization client
   startChainSyncClient()
+}
+
+if (['server', 'both'].includes(config.MODE)) {
+  tokensMetadataLoop()
 }
 
 startServer()
