@@ -1,5 +1,6 @@
 import {type NetworkId, walletNetworkIdToNetwork} from '@/helpers/wallet'
 import {poolValidatorCompiledCode, poolValidatorHash} from '@/onChain'
+import {Serialization} from '@cardano-sdk/core'
 import {
   BlockfrostProvider,
   MeshTxBuilder,
@@ -9,8 +10,6 @@ import {
   serializePlutusScript,
 } from '@meshsdk/core'
 
-const lovelaceOnRefScriptUtxo = 40_000_000
-
 // Wrap to a CBOR array together with script version
 const scriptCborToScriptRef = (scriptCbor: string) => `8203${scriptCbor}`
 
@@ -19,6 +18,7 @@ const scriptCborToScriptRef = (scriptCbor: string) => `8203${scriptCbor}`
 const createResultFileContent = (
   network: Network,
   txHash: string,
+  lovelaceOnRefScriptUtxo: string,
   address: string,
   scriptCbor: string,
   scriptHash: string,
@@ -83,13 +83,23 @@ export const createReferenceScriptUtxo = async ({
   const network = walletNetworkIdToNetwork(networkId)
   const unsignedTx = await txBuilder
     .setNetwork(network)
-    .txOut(changeAddress, [
-      {unit: 'lovelace', quantity: lovelaceOnRefScriptUtxo.toString()},
-    ])
+    .txOut(changeAddress, [])
     .txOutReferenceScript(scriptCbor, 'V3')
     .changeAddress(changeAddress)
     .selectUtxosFrom(utxos)
     .complete()
+
+  const lovelaceOnRefScriptUtxo = Serialization.Transaction.fromCbor(
+    Serialization.TxCBOR(unsignedTx),
+  )
+    .body()
+    .outputs()[0]!
+    .amount()
+    .coin()
+    .toString()
+  console.info(
+    `Reference script is on UTxO with ${lovelaceOnRefScriptUtxo} lovelace`,
+  )
 
   console.info({unsignedTx}, 'Signing transaction')
   const signedTx = await wallet.signTx(unsignedTx)
@@ -108,6 +118,7 @@ export const createReferenceScriptUtxo = async ({
   const content = createResultFileContent(
     network,
     txHash,
+    lovelaceOnRefScriptUtxo,
     changeAddress,
     scriptCbor,
     poolValidatorHash,
