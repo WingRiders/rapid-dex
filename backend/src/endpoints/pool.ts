@@ -18,6 +18,8 @@ export const getPool = async (shareAssetName: string) => {
       lpts: true,
       qtyA: true,
       qtyB: true,
+      swapFeePoints: true,
+      feeBasis: true,
       assets: true,
       coins: true,
       datumCBOR: true,

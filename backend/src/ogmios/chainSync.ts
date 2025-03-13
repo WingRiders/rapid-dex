@@ -70,6 +70,8 @@ const processBlock = async (block: BlockPraos) => {
               )
             : output.value[poolDatum.aPolicyId][poolDatum.aAssetName]!,
           qtyB: output.value[poolDatum.bPolicyId][poolDatum.bAssetName]!,
+          swapFeePoints: poolDatum.swapFeePoints,
+          feeBasis: poolDatum.feeBasis,
           assets: ogmiosValueToMeshAssets(output.value),
           coins: output.value.ada.lovelace,
           datumCBOR: datum,

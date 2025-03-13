@@ -38,6 +38,8 @@ model PoolOutput {
   lpts           BigInt
   qtyA           BigInt
   qtyB           BigInt
+  swapFeePoints  Int
+  feeBasis       Int
 
   assets        Json
   coins         BigInt
