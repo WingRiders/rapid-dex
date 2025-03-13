@@ -24,7 +24,7 @@ const createPoolTxParams = {
 }
 
 describe('buildCreatePoolTx', () => {
-  it('throws error when no collateral UTxO is found', () => {
+  it('throws readable error when no collateral UTxO is found', () => {
     mockWallet.getUtxos = mock(() => Promise.resolve([]))
 
     expect(buildCreatePoolTx(createPoolTxParams)).rejects.toThrow(
@@ -32,7 +32,7 @@ describe('buildCreatePoolTx', () => {
     )
   })
 
-  it('throws error when seed UTxO is missing in the wallet', () => {
+  it('throws readable error when seed UTxO is missing in the wallet', () => {
     mockWallet.getUtxos = mock(() => Promise.resolve([collateralUtxo]))
     mockWallet.getChangeAddress = mock(() => Promise.resolve(address))
     mockWallet.getNetworkId = mock(() => Promise.resolve(NetworkId.TESTNET))
@@ -42,7 +42,7 @@ describe('buildCreatePoolTx', () => {
     )
   })
 
-  it('throws error when assetA and assetB are the same', () => {
+  it('throws readable error when assetA and assetB are the same', () => {
     mockWallet.getUtxos = mock(() =>
       Promise.resolve([collateralUtxo, seedUtxo]),
     )
@@ -50,7 +50,9 @@ describe('buildCreatePoolTx', () => {
     mockWallet.getNetworkId = mock(() => Promise.resolve(NetworkId.TESTNET))
     expect(() =>
       buildCreatePoolTx({...createPoolTxParams, assetB: assetA}),
-    ).toThrow(/^Tx evaluation failed: {} \n For txHex: [0-9a-fA-F]+$/)
+    ).toThrow(
+      /^Tx evaluation failed: .*bytearray.compare\(pool_output_datum.a_asset_name, pool_output_datum.b_asset_name\) == Less \? False.* \n For txHex: [0-9a-fA-F]+$/,
+    )
   })
 
   it('returns built transaction and fee', async () => {
