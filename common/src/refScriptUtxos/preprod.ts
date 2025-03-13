@@ -2,7 +2,7 @@
 import type {RefTxIn} from '@meshsdk/core'
 
 export const preprodPoolRefScriptUtxo: RefTxIn = {
-  txHash: 'c5e6edd72adee1748b95f9adfcc0f66a5d680bda088fa26c59623b63b7631eaa',
+  txHash: '5265d2dc1e8cde106e7ab7e55db5ef271a54d473d577a7c2d9388053e8b82aff',
   txIndex: 0,
-  scriptSize: 3172,
+  scriptSize: 3174,
 }
