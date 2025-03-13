@@ -15,6 +15,7 @@ const createPoolTxArgs = {
   wallet: mockWallet,
   assetA: assetA,
   assetB: assetB,
+  outShares: new BigNumber(9_000),
   seed: {
     txHash: seedUtxo.input.txHash,
     txIndex: seedUtxo.input.outputIndex,

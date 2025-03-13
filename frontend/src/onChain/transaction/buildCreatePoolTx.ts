@@ -1,11 +1,12 @@
-import {calculateSharesCreatePool} from '@/amm/createPool'
 import {poolDatumToMesh} from '@/onChain/datums'
 import {initTxBuilder} from '@/onChain/transaction/initTxBuilder'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/common'
 import {type Asset, parseAssetUnit} from '@meshsdk/core'
 import {
   type PoolDatum,
+  burnedShareTokens,
   getShareAssetName,
+  maxShareTokens,
   poolOil,
   poolRefScriptSizeByNetwork,
   poolRefScriptUtxoByNetwork,
@@ -22,6 +23,7 @@ type BuildCreatePoolTxArgs = {
   fetcher?: IFetcher
   assetA: Asset
   assetB: Asset
+  outShares: BigNumber
   seed: RefTxIn
   feeBasis: number
   swapFeePoints: number
@@ -38,6 +40,7 @@ export const buildCreatePoolTx = async ({
   fetcher,
   assetA,
   assetB,
+  outShares,
   seed,
   feeBasis,
   swapFeePoints,
@@ -55,8 +58,6 @@ export const buildCreatePoolTx = async ({
   const poolValidityUnit = `${poolValidatorHash}${poolValidityAssetNameHex}`
   const sharesAssetName = getShareAssetName(seed)
   const poolShareUnit = `${poolValidatorHash}${sharesAssetName}`
-  const {minted: mintedSharesQuantity, pool: poolSharesQuantity} =
-    calculateSharesCreatePool(assetA.quantity, assetB.quantity)
 
   const {policyId: aPolicyId, assetName: aAssetName} = parseAssetUnit(
     assetA.unit === 'lovelace' ? '' : assetA.unit,
@@ -74,6 +75,9 @@ export const buildCreatePoolTx = async ({
     sharesAssetName,
     swapFeePoints,
   }
+
+  const mintedSharesQuantity = maxShareTokens.minus(burnedShareTokens)
+  const poolSharesQuantity = mintedSharesQuantity.minus(outShares)
 
   txBuilder
     .txIn(seed.txHash, seed.txIndex)

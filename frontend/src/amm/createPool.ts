@@ -1,16 +1,18 @@
-import {burnedShareTokens, maxShareTokens} from '@wingriders/rapid-dex-common'
+import {burnedShareTokens} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 
-export const calculateSharesCreatePool = (
-  aQuantity: BigNumber.Value,
-  bQuantity: BigNumber.Value,
-) => {
-  const earned = new BigNumber(aQuantity)
-    .multipliedBy(bQuantity)
+type ComputeSharesCreatePoolParams = {
+  lockA: BigNumber
+  lockB: BigNumber
+}
+
+export const computeSharesCreatePool = ({
+  lockA,
+  lockB,
+}: ComputeSharesCreatePoolParams) => {
+  return lockA
+    .multipliedBy(lockB)
     .sqrt()
     .integerValue(BigNumber.ROUND_FLOOR)
     .minus(burnedShareTokens)
-  const minted = maxShareTokens.minus(burnedShareTokens)
-  const pool = minted.minus(earned)
-  return {earned, minted, pool}
 }

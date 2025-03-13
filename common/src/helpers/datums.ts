@@ -24,14 +24,17 @@ const poolDatumSchema = z
     sharesAssetName: fields[6].bytes,
   }))
 
-export const poolDatumFromPoolUtxo = (poolUtxo: UTxO) => {
+export const poolDatumCborFromPoolUtxo = (poolUtxo: UTxO): string => {
   if (!poolUtxo.output.plutusData) {
     throw new Error(
       `No inline datum in pool UTxO ${poolUtxo.input.txHash}#${poolUtxo.input.outputIndex}`,
     )
   }
-  return poolDatumFromCbor(poolUtxo.output.plutusData)
+  return poolUtxo.output.plutusData
 }
+
+export const poolDatumFromPoolUtxo = (poolUtxo: UTxO) =>
+  poolDatumFromCbor(poolDatumCborFromPoolUtxo(poolUtxo))
 
 export const poolDatumFromCbor = (plutusData: string): PoolDatum => {
   const datum = deserializeDatum(plutusData)

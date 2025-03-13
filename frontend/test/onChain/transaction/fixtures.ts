@@ -1,10 +1,12 @@
 import {mock} from 'bun:test'
+import type {PoolState} from '@/onChain/transaction/poolState'
 import type {IWallet, UTxO} from '@meshsdk/common'
 import {
   NetworkId,
   burnedShareTokens,
   maxShareTokens,
 } from '@wingriders/rapid-dex-common'
+import {BigNumber} from 'bignumber.js'
 
 export const mockWallet: IWallet = {
   getAssets: mock(),
@@ -113,32 +115,39 @@ export const userSharesUtxo = {
   },
 }
 
-export const poolUtxo = {
-  input: {
-    txHash: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe',
-    outputIndex: 2,
+export const poolState: PoolState = {
+  utxoId: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe#2',
+  poolUnits: {
+    aTokenUnit: 'lovelace',
+    bTokenUnit:
+      '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
+    shareUnit:
+      'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
   },
-  output: {
-    address: 'addr_test1wz4j9xfsdpmzdrp67ax50dcz7jmxj7arzsfl5uv2ggh8qlgw2qdwe',
-    amount: [
-      {unit: 'lovelace', quantity: '20000000'},
-      {
-        unit: '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
-        quantity: '20000000',
-      },
-      {
-        unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
-        quantity: maxShareTokens
-          .minus(burnedShareTokens)
-          .minus(20_000_000)
-          .toString(),
-      },
-      {
-        unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d50',
-        quantity: '1',
-      },
-    ],
-    plutusData:
-      'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572730a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
-  },
+  assets: [
+    {unit: 'lovelace', quantity: '20000000'},
+    {
+      unit: '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
+      quantity: '20000000',
+    },
+    {
+      unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
+      quantity: maxShareTokens
+        .minus(burnedShareTokens)
+        .minus(20_000_000)
+        .toString(),
+    },
+    {
+      unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d50',
+      quantity: '1',
+    },
+  ],
+  qtyA: new BigNumber(18_000_000),
+  qtyB: new BigNumber(20_000_000),
+  qtyShares: maxShareTokens.minus(burnedShareTokens).minus(20_000_000),
+  coins: new BigNumber(20_000_000),
+  datumCbor:
+    'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572730a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
+  swapFeePoints: 10,
+  feeBasis: 10_000,
 }
