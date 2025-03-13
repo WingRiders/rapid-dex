@@ -24,33 +24,34 @@ enum ScriptVersion {
 }
 
 model PoolOutput {
-  utxoId             String         @id
-  spendUtxoId        String?        @unique
+  utxoId      String  @id
+  spendUtxoId String? @unique
 
-  slot               Int
-  spendSlot          Int?
+  slot      Int
+  spendSlot Int?
 
-  shareAssetName     String
-  assetAPolicy       String
-  assetAName         String
-  assetBPolicy       String
-  assetBName         String
-  lpts               BigInt
-  qtyA               BigInt
-  qtyB               BigInt
+  shareAssetName String
+  assetAPolicy   String
+  assetAName     String
+  assetBPolicy   String
+  assetBName     String
+  lpts           BigInt
+  qtyA           BigInt
+  qtyB           BigInt
 
-  assets             Json
-  coins              BigInt
-  datumCBOR          String
-  txMetadata         Json?
-  scriptCBOR         String?
-  scriptVersion      ScriptVersion?
+  assets        Json
+  coins         BigInt
+  datumCBOR     String
+  txMetadata    Json?
+  scriptCBOR    String?
+  scriptVersion ScriptVersion?
 
-  block              Block          @relation(fields: [slot], references: [slot], onDelete: Cascade)
-  spendBlock         Block?         @relation("SpendBlock", fields: [spendSlot], references: [slot], onDelete: SetNull)
-  nextPoolOutput     PoolOutput?    @relation("SpendPoolOutput", fields: [spendUtxoId], references: [utxoId], onDelete: SetNull)
-  previousPoolOutput PoolOutput?    @relation("SpendPoolOutput")
+  block              Block       @relation(fields: [slot], references: [slot], onDelete: Cascade)
+  spendBlock         Block?      @relation("SpendBlock", fields: [spendSlot], references: [slot], onDelete: SetNull)
+  nextPoolOutput     PoolOutput? @relation("SpendPoolOutput", fields: [spendUtxoId], references: [utxoId], onDelete: SetNull)
+  previousPoolOutput PoolOutput? @relation("SpendPoolOutput")
 
   @@index([slot])
   @@index([spendSlot]) // to optimize querying unspent requests
+  @@index([shareAssetName]) // to optimize querying detailed data for a pool
 }
