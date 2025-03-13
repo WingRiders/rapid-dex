@@ -11,3 +11,6 @@ jobs:
     uses: ./.github/workflows/mirror.yml
     with:
       branch: main
+    secrets:
+      TECHRIDER_SSH_PUBLIC_KEY: ${{ secrets.TECHRIDER_SSH_PUBLIC_KEY }}
+      TECHRIDER_SSH_PRIVATE_KEY: ${{ secrets.TECHRIDER_SSH_PRIVATE_KEY }}

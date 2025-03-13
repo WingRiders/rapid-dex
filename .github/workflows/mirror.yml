@@ -7,6 +7,13 @@ on:
         description: Branch to mirror commits from. Same branch must exist on the public repo.
         type: string
         required: true
+    secrets:
+      TECHRIDER_SSH_PUBLIC_KEY:
+        description: TechRider SSH public key
+        required: true
+      TECHRIDER_SSH_PRIVATE_KEY:
+        description: TechRider SSH private key
+        required: true
 
 env:
   PUBLIC_REPO: 'WingRiders/rapid-dex'  # Define public repo here
