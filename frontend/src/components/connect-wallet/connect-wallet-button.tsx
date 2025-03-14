@@ -1,6 +1,7 @@
 'use client'
 
 import {useState} from 'react'
+import {toast} from 'sonner'
 import {useShallow} from 'zustand/shallow'
 import {shortLabel} from '../../helpers/short-label'
 import {useConnectedWalletStore} from '../../store/connected-wallet'
@@ -36,9 +37,17 @@ export const ConnectWalletButton = () => {
     else setIsConnectWalletDialogOpen(true)
   }
 
-  const handleConnect = (walletType: SupportedWalletType) => {
-    connectWallet(walletType)
-    setIsConnectWalletDialogOpen(false)
+  const handleConnect = async (walletType: SupportedWalletType) => {
+    try {
+      await connectWallet(walletType)
+      toast.success('Wallet connected successfully!')
+      setIsConnectWalletDialogOpen(false)
+    } catch (error) {
+      toast.error('Failed to connect wallet!', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      })
+      console.error(error)
+    }
   }
 
   return (

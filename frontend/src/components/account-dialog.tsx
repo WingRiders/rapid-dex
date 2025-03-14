@@ -1,5 +1,6 @@
 import {CheckIcon, CopyIcon} from 'lucide-react'
 import Image from 'next/image'
+import {toast} from 'sonner'
 import {useShallow} from 'zustand/shallow'
 import {CardanoscanLinks} from '../helpers/explorer-links'
 import {shortLabel} from '../helpers/short-label'
@@ -48,6 +49,7 @@ const AccountDialogContent = ({onOpenChange}: AccountDialogContentProps) => {
 
   const handleDisconnect = () => {
     disconnectWallet()
+    toast('Wallet disconnected.')
     onOpenChange?.(false)
   }
 
