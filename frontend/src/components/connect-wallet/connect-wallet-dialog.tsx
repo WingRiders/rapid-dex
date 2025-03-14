@@ -14,17 +14,22 @@ import {WalletItem} from './wallet-item'
 
 type ConnectWalletDialogProps = Pick<DialogProps, 'open' | 'onOpenChange'> & {
   onConnect: (walletType: SupportedWalletType) => void
+  isWalletConnecting: boolean
 }
 
 export const ConnectWalletDialog = ({
   open,
   onOpenChange,
   onConnect,
+  isWalletConnecting,
 }: ConnectWalletDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <ConnectWalletDialogContent onConnect={onConnect} />
+        <ConnectWalletDialogContent
+          onConnect={onConnect}
+          isWalletConnecting={isWalletConnecting}
+        />
       </DialogContent>
     </Dialog>
   )
@@ -32,10 +37,12 @@ export const ConnectWalletDialog = ({
 
 type ConnectWalletDialogContentProps = {
   onConnect: (walletType: SupportedWalletType) => void
+  isWalletConnecting: boolean
 }
 
 const ConnectWalletDialogContent = ({
   onConnect,
+  isWalletConnecting,
 }: ConnectWalletDialogContentProps) => {
   const {data: installedWalletsIds} = useInstalledWalletsIdsQuery()
 
@@ -51,6 +58,7 @@ const ConnectWalletDialogContent = ({
               walletInfo={{id, name, icon}}
               onClick={() => onConnect(walletType as SupportedWalletType)}
               isInstalled={!!installedWalletsIds?.has(id)}
+              isWalletConnecting={isWalletConnecting}
             />
           ),
         )}

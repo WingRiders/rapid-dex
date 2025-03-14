@@ -67,6 +67,7 @@ export const ConnectWalletButton = () => {
         open={isConnectWalletDialogOpen}
         onOpenChange={setIsConnectWalletDialogOpen}
         onConnect={handleConnect}
+        isWalletConnecting={isWalletConnecting}
       />
 
       <AccountDialog
