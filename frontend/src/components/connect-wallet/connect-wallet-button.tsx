@@ -5,11 +5,12 @@ import {useShallow} from 'zustand/shallow'
 import {shortLabel} from '../../helpers/short-label'
 import {useConnectedWalletStore} from '../../store/connected-wallet'
 import type {SupportedWalletType} from '../../wallet/supported-wallets'
+import {AccountDialog} from '../account-dialog'
 import {Button} from '../ui/button'
 import {ConnectWalletDialog} from './connect-wallet-dialog'
 
 export const ConnectWalletButton = () => {
-  const {connectedWallet, isWalletConnecting, connectWallet, disconnectWallet} =
+  const {connectedWallet, isWalletConnecting, connectWallet} =
     useConnectedWalletStore(
       useShallow(
         ({
@@ -28,9 +29,10 @@ export const ConnectWalletButton = () => {
 
   const [isConnectWalletDialogOpen, setIsConnectWalletDialogOpen] =
     useState(false)
+  const [isAccountDialogOpen, setIsAccountDialogOpen] = useState(false)
 
   const handleClick = () => {
-    if (connectedWallet) disconnectWallet()
+    if (connectedWallet) setIsAccountDialogOpen(true)
     else setIsConnectWalletDialogOpen(true)
   }
 
@@ -56,6 +58,11 @@ export const ConnectWalletButton = () => {
         open={isConnectWalletDialogOpen}
         onOpenChange={setIsConnectWalletDialogOpen}
         onConnect={handleConnect}
+      />
+
+      <AccountDialog
+        open={isAccountDialogOpen}
+        onOpenChange={setIsAccountDialogOpen}
       />
     </>
   )
