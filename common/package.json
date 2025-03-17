@@ -6,7 +6,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "tsc",
     "check": "bun biome check .",
     "fix": "bun run check --write",
     "cli": "bun src/cli.ts"

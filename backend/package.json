@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",
-    "dev": "bun run src/index.ts",
+    "dev": "bun --watch src/index.ts",
     "check": "bun biome check . && tsc --noEmit",
     "fix": "bun biome check . --write",
     "prisma:generate": "prisma generate",

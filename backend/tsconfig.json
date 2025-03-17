@@ -3,7 +3,9 @@
     "target": "ES2020",
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -12,8 +14,14 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "composite": true
   },
-  "include": ["**/*.ts"],
+  "references": [
+    {
+      "path": "../common"
+    }
+  ],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", ".turbo"]
 }
