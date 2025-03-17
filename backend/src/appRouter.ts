@@ -5,7 +5,7 @@ import {z} from 'zod'
 import {healthcheck} from './endpoints/healthcheck'
 import {getPool} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
-import {getTokenMetadata} from './endpoints/tokenMetadata'
+import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
 
 // Register BigNumber serialization with SuperJSON
 superjson.registerCustom<BigNumber, string>(
@@ -30,8 +30,12 @@ export const serverAppRouter = t.router({
   pool: publicProcedure
     .input(z.object({shareAssetName: z.string()}))
     .query(({input}) => getPool(input.shareAssetName)),
-  tokenMetadata: publicProcedure
+  // using mutation instead of query because the input can be too large for a GET request
+  tokensMetadata: publicProcedure
     .input(z.array(z.string()))
+    .mutation(({input}) => getTokensMetadata(input)),
+  tokenMetadata: publicProcedure
+    .input(z.string())
     .query(({input}) => getTokenMetadata(input)),
 })
 

@@ -6,8 +6,10 @@ import {config} from './config'
 import {logger} from './logger'
 
 let tokenMetadataCache: {[subject: string]: TokenMetadata} = {}
-export const getTokenMetadataCache = (subjects: string[]) =>
+export const getTokensMetadataFromCache = (subjects: string[]) =>
   subjects.map((subject) => tokenMetadataCache[subject])
+export const getTokenMetadataFromCache = (subject: string) =>
+  tokenMetadataCache[subject]
 export const getTokenLogo = (subject: string) =>
   tokenMetadataCache[subject]?.logo
 
