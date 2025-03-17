@@ -1,8 +1,8 @@
-import {prisma} from '@/db/prismaClient'
-import {originPoint} from '@/helpers'
-import {getLedgerTip, getNetworkTip} from '@/ogmios/ledgerStateQuery'
 import type {Point} from '@cardano-ogmios/schema'
 import {TRPCError} from '@trpc/server'
+import {prisma} from '../db/prismaClient'
+import {originPoint} from '../helpers'
+import {getLedgerTip, getNetworkTip} from '../ogmios/ledgerStateQuery'
 
 export const healthcheck = async () => {
   const tipToSlot = (tip: Point | 'origin') =>

@@ -1,8 +1,8 @@
-import {handleTokenImageRequest} from '@/endpoints/tokenImage'
 import type {BunRequest} from 'bun'
 import {createBunHttpHandler} from 'trpc-bun-adapter'
 import {aggregatorAppRouter, serverAppRouter} from './appRouter'
 import {config} from './config'
+import {handleTokenImageRequest} from './endpoints/tokenImage'
 import {logger} from './logger'
 
 export const startServer = () => {

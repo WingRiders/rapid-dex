@@ -1,8 +1,8 @@
-import {logger} from '@/logger'
 import {minutesToMilliseconds} from 'date-fns'
 import {chunk, keyBy} from 'lodash'
 import {type ZodSchema, z} from 'zod'
 import {config} from './config'
+import {logger} from './logger'
 
 type TokenMetadata = {
   subject: string

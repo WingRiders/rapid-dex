@@ -1,10 +1,10 @@
-import {healthcheck} from '@/endpoints/healthcheck'
-import {getPool} from '@/endpoints/pool'
-import {getPools} from '@/endpoints/pools'
 import {initTRPC} from '@trpc/server'
 import BigNumber from 'bignumber.js'
 import superjson from 'superjson'
 import {z} from 'zod'
+import {healthcheck} from './endpoints/healthcheck'
+import {getPool} from './endpoints/pool'
+import {getPools} from './endpoints/pools'
 import {getTokenMetadata} from './endpoints/tokenMetadata'
 
 // Register BigNumber serialization with SuperJSON

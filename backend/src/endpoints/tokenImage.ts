@@ -1,4 +1,4 @@
-import {getTokenLogo} from '@/tokenRegistry'
+import {getTokenLogo} from '../tokenRegistry'
 
 // Handle the /token-image/[subject] route
 export const handleTokenImageRequest = (subject: string): Response => {

@@ -1,5 +1,5 @@
-import {prisma} from '@/db/prismaClient'
 import {bigintToBigNumber, maxShareTokens} from '@wingriders/rapid-dex-common'
+import {prisma} from '../db/prismaClient'
 
 export const getPools = async () => {
   const pools = await prisma.poolOutput.findMany({

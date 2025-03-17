@@ -1,6 +1,6 @@
-import {config} from '@/config'
-import {logger} from '@/logger'
 import {secondsToMilliseconds} from 'date-fns'
+import {config} from '../config'
+import {logger} from '../logger'
 
 // creates new database if absent and applies all migrations to the existing database.
 export const migrateDb = async () => {

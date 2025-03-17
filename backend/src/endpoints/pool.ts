@@ -1,7 +1,7 @@
-import {prisma} from '@/db/prismaClient'
 import {bigintToBigNumber, maxShareTokens} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {z} from 'zod'
+import {prisma} from '../db/prismaClient'
 
 export const getPool = async (shareAssetName: string) => {
   const pool = await prisma.poolOutput.findFirstOrThrow({
