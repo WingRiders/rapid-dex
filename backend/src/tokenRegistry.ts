@@ -1,19 +1,9 @@
+import type {TokenMetadata} from '@wingriders/rapid-dex-common'
 import {minutesToMilliseconds} from 'date-fns'
 import {chunk, keyBy} from 'lodash'
 import {type ZodSchema, z} from 'zod'
 import {config} from './config'
 import {logger} from './logger'
-
-type TokenMetadata = {
-  subject: string
-  description: string
-  name: string
-  ticker?: string
-  symbol?: string
-  url?: string
-  logo?: string
-  decimals?: number
-}
 
 let tokenMetadataCache: {[subject: string]: TokenMetadata} = {}
 export const getTokenMetadataCache = (subjects: string[]) =>
