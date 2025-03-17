@@ -5,6 +5,12 @@ import {config} from './config'
 import {handleTokenImageRequest} from './endpoints/tokenImage'
 import {logger} from './logger'
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'OPTIONS, POST',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
 export const startServer = () => {
   const trpcHandler = createBunHttpHandler({
     endpoint: '',
@@ -19,11 +25,17 @@ export const startServer = () => {
       '/token-image/:unit': (req: BunRequest<'/token-image/:unit'>) =>
         handleTokenImageRequest(req.params.unit),
     },
-    fetch(request, response) {
-      return (
-        trpcHandler(request, response) ??
-        new Response('Not found', {status: 404})
-      )
+    async fetch(request, response) {
+      if (request.method === 'OPTIONS')
+        return new Response('Departed', {headers: CORS_HEADERS})
+
+      const trpcResponse = await trpcHandler(request, response)
+      if (!trpcResponse) return new Response('Not found', {status: 404})
+
+      Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+        trpcResponse.headers.set(key, value)
+      })
+      return trpcResponse
     },
   })
 
