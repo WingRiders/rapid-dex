@@ -5,6 +5,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "composite": true,
     "rootDir": "./src",
     "outDir": "./dist",

@@ -61,15 +61,15 @@ const processBlock = async (block: BlockPraos) => {
           assetAName: poolDatum.aAssetName,
           assetBPolicy: poolDatum.bPolicyId,
           assetBName: poolDatum.bAssetName,
-          lpts: output.value[poolValidatorHash][poolDatum.sharesAssetName]!,
+          lpts: output.value[poolValidatorHash]![poolDatum.sharesAssetName]!,
           qtyA: isAdaPool
             ? BigInt(
                 new BigNumber(output.value.ada.lovelace.toString())
                   .minus(poolOil)
                   .toString(),
               )
-            : output.value[poolDatum.aPolicyId][poolDatum.aAssetName]!,
-          qtyB: output.value[poolDatum.bPolicyId][poolDatum.bAssetName]!,
+            : output.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!,
+          qtyB: output.value[poolDatum.bPolicyId]![poolDatum.bAssetName]!,
           swapFeePoints: poolDatum.swapFeePoints,
           feeBasis: poolDatum.feeBasis,
           assets: ogmiosValueToMeshAssets(output.value),

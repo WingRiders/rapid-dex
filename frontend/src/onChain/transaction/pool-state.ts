@@ -32,6 +32,10 @@ export const poolStateToUtxo = (
   poolState: PoolState,
 ): UTxO => {
   const [txHash, outputIndex] = poolState.utxoId.split('#')
+  if (!txHash || !outputIndex) {
+    throw new Error(`Invalid utxoId: ${poolState.utxoId}`)
+  }
+
   return {
     input: {txHash, outputIndex: Number(outputIndex)},
     output: {

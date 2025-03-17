@@ -45,6 +45,10 @@ export const buildSpentPoolOutputTx = async ({
 
   const [txHash, outputIndex] = poolState.utxoId.split('#')
 
+  if (!txHash || !outputIndex) {
+    throw new Error(`Invalid utxoId: ${poolState.utxoId}`)
+  }
+
   txBuilder
     .spendingPlutusScriptV3()
     .txIn(

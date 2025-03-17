@@ -89,7 +89,7 @@ const getLastCommitTree = async (): Promise<string> => {
   logger.info('Fetching lastCommitTree')
   const response = await fetch(`${githubTokenRegistry}/commits`)
   const json = await response.json()
-  return githubCommitsResponseSchema.parse(json)[0].commit.tree.sha
+  return githubCommitsResponseSchema.parse(json)[0]!.commit.tree.sha
 }
 
 const githubTreeResponseSchema = z.object({
@@ -127,7 +127,7 @@ const getSubjects = async (registryTree: string): Promise<string[]> => {
     .filter((path: string) => path.endsWith('.json'))
   // format is subject.json
   // example: 00000002df633853f6a47465c9496721d2d5b1291b8398016c0e87ae6e7574636f696e.json
-  return subjectFiles.map((path: string) => path.split('.')[0])
+  return subjectFiles.map((path: string) => path.split('.')[0]!)
 }
 
 const fetchMetadataForSubjects = async (
@@ -163,7 +163,7 @@ async function chunkedSubjectsFetcher(
     `Requesting metadata for ${subjects.length} subjects, with max ${chunkSize} subjects in 1 request (${subjectsChunks.length} requests total)`,
   )
   for (let i = 0; i < subjectsChunks.length; i++) {
-    const subjectsChunk = subjectsChunks[i]
+    const subjectsChunk = subjectsChunks[i]!
     const chunkNumber = i + 1
 
     logger.info(
