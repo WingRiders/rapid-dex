@@ -29,6 +29,10 @@ program
   )
   .requiredOption('--mnemonic <string>', 'Wallet mnemonic phrase')
   .option('--stakeKeyHash <string>', 'Staking part for pool address')
+  .requiredOption(
+    '--refScriptHolderAddress <string>',
+    'Address holding the reference script',
+  )
   .action(createReferenceScriptUtxo)
 
 if (process.argv.length <= 2) {

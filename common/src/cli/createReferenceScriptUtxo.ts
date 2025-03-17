@@ -19,7 +19,7 @@ const createResultFileContent = (
   network: Network,
   txHash: string,
   lovelaceOnRefScriptUtxo: string,
-  address: string,
+  refScriptHolderAddress: string,
   scriptCbor: string,
   scriptHash: string,
   scriptAddr: string,
@@ -31,7 +31,7 @@ const createResultFileContent = (
     '',
     `export const ${network}PoolRefScriptUtxo: UTxO = {`,
     `  input: {txHash: '${txHash}', outputIndex: 0},`,
-    `  output: {address: '${address}', amount: [{unit: 'lovelace', quantity: '${lovelaceOnRefScriptUtxo}'}], scriptRef: '${scriptCborToScriptRef(scriptCbor)}', scriptHash: '${scriptHash}'},`,
+    `  output: {address: '${refScriptHolderAddress}', amount: [{unit: 'lovelace', quantity: '${lovelaceOnRefScriptUtxo}'}], scriptRef: '${scriptCborToScriptRef(scriptCbor)}', scriptHash: '${scriptHash}'},`,
     '}',
     '',
     `export const ${network}PoolRefScriptSize = ${scriptSize}`,
@@ -44,6 +44,7 @@ type CreateReferenceScriptUtxoParams = {
   networkId: NetworkId
   mnemonic: string
   stakeKeyHash: string
+  refScriptHolderAddress: string
 }
 
 export const createReferenceScriptUtxo = async ({
@@ -51,6 +52,7 @@ export const createReferenceScriptUtxo = async ({
   networkId,
   mnemonic,
   stakeKeyHash,
+  refScriptHolderAddress,
 }: CreateReferenceScriptUtxoParams) => {
   const blockchainProvider = new BlockfrostProvider(blockfrostProjectId)
   console.info('Init wallet')
@@ -76,7 +78,7 @@ export const createReferenceScriptUtxo = async ({
   }
   console.info(`Found ${utxos.length} UTxOs`)
 
-  console.info(`Building transaction with output on ${changeAddress}`)
+  console.info(`Building transaction with output on ${refScriptHolderAddress}`)
   const scriptCbor = applyCborEncoding(poolValidatorCompiledCode)
   const txBuilder = new MeshTxBuilder({
     fetcher: blockchainProvider,
@@ -85,7 +87,7 @@ export const createReferenceScriptUtxo = async ({
   const network = walletNetworkIdToNetwork(networkId)
   const unsignedTx = await txBuilder
     .setNetwork(network)
-    .txOut(changeAddress, [])
+    .txOut(refScriptHolderAddress, [])
     .txOutReferenceScript(scriptCbor, 'V3')
     .changeAddress(changeAddress)
     .selectUtxosFrom(utxos)
@@ -103,11 +105,18 @@ export const createReferenceScriptUtxo = async ({
     `Reference script is on UTxO with ${lovelaceOnRefScriptUtxo} lovelace`,
   )
 
-  console.info({unsignedTx}, 'Signing transaction')
+  console.info('Signing transaction')
   const signedTx = await wallet.signTx(unsignedTx)
-  console.info({signedTx}, 'Submitting transaction')
-  const txHash = await wallet.submitTx(signedTx)
-  console.info('Transaction submitted with hash:', txHash)
+  console.info({txSize: signedTx.length / 2}, 'Submitting transaction')
+  let txHash: string | null = null
+  try {
+    txHash = await wallet.submitTx(signedTx)
+    console.info('Transaction submitted with hash:', txHash)
+  } catch (e: unknown) {
+    console.info({signedTx}, 'Error when submitting transaction')
+    console.error(e instanceof Error ? e.message : JSON.stringify(e))
+    process.exit(1)
+  }
 
   const scriptAddr = serializePlutusScript(
     {
@@ -125,7 +134,7 @@ export const createReferenceScriptUtxo = async ({
     network,
     txHash,
     lovelaceOnRefScriptUtxo,
-    changeAddress,
+    refScriptHolderAddress,
     scriptCbor,
     poolValidatorHash,
     scriptAddr,
