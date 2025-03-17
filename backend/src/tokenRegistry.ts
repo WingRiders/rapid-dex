@@ -200,11 +200,7 @@ const getNewTokenMetadata = async (): Promise<TokenMetadata[]> => {
   const subjects = await getSubjects(registryTree)
 
   const tokenMetadata: TokenMetadata[] = []
-  await chunkedSubjectsFetcher(
-    subjects.slice(0, 200),
-    MAX_SUBJECTS_TO_FETCH,
-    tokenMetadata,
-  )
+  await chunkedSubjectsFetcher(subjects, MAX_SUBJECTS_TO_FETCH, tokenMetadata)
   logger.info(
     {subjectCount: subjects.length, metadataCount: tokenMetadata.length},
     'Successfully fetched new metadata',
