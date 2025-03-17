@@ -1,8 +1,10 @@
 import {poolDatumToMesh} from '@/onChain/datums'
+import {mintRedeemerToMesh} from '@/onChain/redeemers'
 import {initTxBuilder} from '@/onChain/transaction/init'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import {type Asset, parseAssetUnit} from '@meshsdk/core'
 import {
+  type MintRedeemer,
   type PoolDatum,
   burnedShareTokens,
   getShareAssetName,
@@ -79,6 +81,8 @@ export const buildCreatePoolTx = async ({
   const mintedSharesQuantity = maxShareTokens.minus(burnedShareTokens)
   const poolSharesQuantity = mintedSharesQuantity.minus(outShares)
 
+  const mintRedeemer: MintRedeemer = {seedRef: seed}
+
   txBuilder
     .txIn(seed.txHash, seed.txIndex)
     .mintPlutusScriptV3()
@@ -89,7 +93,7 @@ export const buildCreatePoolTx = async ({
       poolRefScriptSizeByNetwork[network].toString(),
       poolValidatorHash,
     )
-    .mintRedeemerValue([])
+    .mintRedeemerValue(mintRedeemerToMesh(mintRedeemer), 'Mesh')
     .mintPlutusScriptV3()
     .mint(mintedSharesQuantity.toString(), poolValidatorHash, sharesAssetName)
     .mintTxInReference(
@@ -98,7 +102,7 @@ export const buildCreatePoolTx = async ({
       poolRefScriptSizeByNetwork[network].toString(),
       poolValidatorHash,
     )
-    .mintRedeemerValue([])
+    .mintRedeemerValue(mintRedeemerToMesh(mintRedeemer), 'Mesh')
     .txOut(poolScriptAddressByNetwork[network], [
       ...(assetA.unit === 'lovelace'
         ? []

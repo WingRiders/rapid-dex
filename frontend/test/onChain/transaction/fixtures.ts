@@ -5,6 +5,8 @@ import {
   NetworkId,
   burnedShareTokens,
   maxShareTokens,
+  poolValidatorHash,
+  poolValidityAssetNameHex,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
 
@@ -107,7 +109,7 @@ export const userSharesUtxo = {
     amount: [
       {unit: 'lovelace', quantity: '20000000'},
       {
-        unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
+        unit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
         quantity: '20000000',
       },
     ],
@@ -121,8 +123,7 @@ export const poolState: PoolState = {
     aTokenUnit: 'lovelace',
     bTokenUnit:
       '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
-    shareUnit:
-      'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
+    shareUnit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
   },
   assets: [
     {unit: 'lovelace', quantity: '20000000'},
@@ -131,14 +132,14 @@ export const poolState: PoolState = {
       quantity: '20000000',
     },
     {
-      unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
+      unit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
       quantity: maxShareTokens
         .minus(burnedShareTokens)
         .minus(20_000_000)
         .toString(),
     },
     {
-      unit: 'ab2299306876268c3af74d47b702f4b6697ba31413fa718a422e707d50',
+      unit: `${poolValidatorHash}${poolValidityAssetNameHex}`,
       quantity: '1',
     },
   ],

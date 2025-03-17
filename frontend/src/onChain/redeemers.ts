@@ -6,7 +6,7 @@ import {
   mConStr2,
   mConStr3,
 } from '@meshsdk/core'
-import type {PoolRedeemer} from '@wingriders/rapid-dex-common'
+import type {MintRedeemer, PoolRedeemer} from '@wingriders/rapid-dex-common'
 
 export const poolRedeemerToMesh = (redeemer: PoolRedeemer): Data => {
   if ('swapAToB' in redeemer) {
@@ -20,3 +20,6 @@ export const poolRedeemerToMesh = (redeemer: PoolRedeemer): Data => {
   }
   return mConStr3([])
 }
+
+export const mintRedeemerToMesh = (redeemer: MintRedeemer) =>
+  mConStr0([mConStr0([redeemer.seedRef.txHash, redeemer.seedRef.txIndex])])

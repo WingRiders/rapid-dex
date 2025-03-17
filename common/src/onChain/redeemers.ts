@@ -1,3 +1,5 @@
+import type {RefTxIn} from '@meshsdk/core'
+
 export type SwapRedeemer = {
   swapAToB: boolean
   provided: number
@@ -19,3 +21,7 @@ export type PoolRedeemer =
   | AddLiquidityRedeemer
   | WithdrawLiquidityRedeemer
   | DonateRedeemer
+
+export type MintRedeemer = {
+  seedRef: RefTxIn
+}
