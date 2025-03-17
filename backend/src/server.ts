@@ -16,8 +16,8 @@ export const startServer = () => {
   Bun.serve({
     port: config.SERVER_PORT,
     routes: {
-      '/token-image/:subject': (req: BunRequest<'/token-image/:subject'>) =>
-        handleTokenImageRequest(req.params.subject),
+      '/token-image/:unit': (req: BunRequest<'/token-image/:unit'>) =>
+        handleTokenImageRequest(req.params.unit),
     },
     fetch(request, response) {
       return (
