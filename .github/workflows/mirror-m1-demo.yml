@@ -1,0 +1,16 @@
+name: Mirror commits on m1-demo branch
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - m1-demo
+
+jobs:
+  mirror-main:
+    uses: ./.github/workflows/mirror.yml
+    with:
+      branch: m1-demo
+    secrets:
+      TECHRIDER_SSH_PUBLIC_KEY: ${{ secrets.TECHRIDER_SSH_PUBLIC_KEY }}
+      TECHRIDER_SSH_PRIVATE_KEY: ${{ secrets.TECHRIDER_SSH_PRIVATE_KEY }}
