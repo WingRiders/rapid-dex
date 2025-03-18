@@ -10,17 +10,17 @@ Before running the CLI commands, ensure you have the following:
 - A **Blockfrost Project ID** for the Cardano preprod testnet
 - A **mnemonic phrase** for a funded preprod wallet
 - **Bun** installed on your system ([installation guide](https://bun.sh/))
-- Clone the Rapid DEX repository and install dependencies:
+- Clone the Rapid DEX repository with m1-demo branch, and install dependencies:
 
   ```sh
-  git clone https://github.com/WingRiders/rapid-dex.git
+  git clone -b m1-demo https://github.com/WingRiders/rapid-dex.git
   cd rapid-dex
   bun install
   ```
 
 ## CLI commands
 
-The CLI tool is located in the `frontend/cli` directory. You can execute commands using:
+The CLI tool for testing the smart contracts is located in the `frontend/cli` directory. You can execute commands using:
 
 ```sh
 $ bun cli <command> [options]
@@ -31,11 +31,15 @@ $ bun cli <command> [options]
 This command creates a new liquidity pool on the preprod testnet.
 
 ```sh
-$ bun cli create-pool --blockfrostProjectId <project_id> \
+$ bun cli create-pool \
+    --blockfrostProjectId <project_id> \
     --mnemonic "<mnemonic_phrase>" \
-    --unitA lovelace --quantityA 1000000 \
-    --unitB <asset_unit> --quantityB 1000000 \
-    --swapFeePoints 4 --feeBasis 100
+    --unitA lovelace \
+    --quantityA 1000000 \
+    --unitB <asset_unit> \
+    --quantityB 1000000 \
+    --swapFeePoints 1 \
+    --feeBasis 100
 ```
 
 #### Example output:
@@ -59,7 +63,8 @@ Save the `shareAssetName` from the output, as it will be needed for subsequent c
 ### 2. Swap
 
 ```sh
-$ bun cli swap --blockfrostProjectId <project_id> \
+$ bun cli swap \
+    --blockfrostProjectId <project_id> \
     --mnemonic "<mnemonic_phrase>" \
     --shareAssetName <generated_asset_name> \
     --quantityX 1000
@@ -84,10 +89,12 @@ Transaction submitted with hash: <transaction_hash>
 ### 3. Add liquidity
 
 ```sh
-$ bun cli add-liquidity --blockfrostProjectId <project_id> \
+$ bun cli add-liquidity \
+    --blockfrostProjectId <project_id> \
     --mnemonic "<mnemonic_phrase>" \
     --shareAssetName <generated_asset_name> \
-    --quantityA 1000 --quantityB 1000
+    --quantityA 1000 \
+    --quantityB 1000
 ```
 
 #### Example output:
@@ -109,7 +116,8 @@ Transaction submitted with hash: <transaction_hash>
 ### 4. Withdraw liquidity
 
 ```sh
-$ bun cli withdraw-liquidity --blockfrostProjectId <project_id> \
+$ bun cli withdraw-liquidity \
+    --blockfrostProjectId <project_id> \
     --mnemonic "<mnemonic_phrase>" \
     --shareAssetName <generated_asset_name> \
     --quantityShares 1000
@@ -134,5 +142,5 @@ Transaction submitted with hash: <transaction_hash>
 ## Notes
 
 - Ensure that you replace `<project_id>`, `<mnemonic_phrase>`, `<asset_unit>`, and `<generated_asset_name>` with the appropriate values.
-- Transactions may take some time to be confirmed on-chain. You can monitor transaction status using [Cardanoscan](https://preprod.cardanoscan.io/) or [Cexplorer](https://cexplorer.io/).
+- Transactions may take some time to be confirmed on-chain. You can monitor transaction status using [Cardanoscan](https://preprod.cardanoscan.io/) or [Cexplorer](https://preprod.cexplorer.io/).
 - If a transaction fails, check that your wallet has sufficient funds and that the provided parameters are correct.
