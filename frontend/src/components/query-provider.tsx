@@ -1,12 +1,19 @@
 'use client'
 
 import {QueryClient, QueryClientProvider, isServer} from '@tanstack/react-query'
+import {createTRPCClient, httpBatchLink} from '@trpc/client'
+import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
+import {useState} from 'react'
+import SuperJSON from 'superjson'
+import {config} from '../config'
+import {TRPCProvider} from '../trpc'
 
 const makeQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
+        retry: false,
       },
     },
   })
@@ -26,7 +33,22 @@ const getQueryClient = () => {
 export const QueryProvider = ({children}: {children: React.ReactNode}) => {
   const queryClient = getQueryClient()
 
+  const [trpcClient] = useState(() =>
+    createTRPCClient<ServerAppRouter>({
+      links: [
+        httpBatchLink({
+          url: config.NEXT_PUBLIC_SERVER_URL,
+          transformer: SuperJSON,
+        }),
+      ],
+    }),
+  )
+
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+        {children}
+      </TRPCProvider>
+    </QueryClientProvider>
   )
 }
