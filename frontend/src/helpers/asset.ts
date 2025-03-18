@@ -29,6 +29,12 @@ export const decodeUnit = (
   return [policyId, assetName]
 }
 
+export const createUnit = (policyId: string, assetName: string): Unit => {
+  if (policyId === '' && assetName === '') return LOVELACE_UNIT
+
+  return `${policyId}${assetName}`
+}
+
 export const compareUnits = (a: Unit, b: Unit) => {
   const [policyIdA, assetNameA] = decodeUnit(a)
   const [policyIdB, assetNameB] = decodeUnit(b)
