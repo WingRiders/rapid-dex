@@ -2,7 +2,11 @@ import {MeshValue} from '@meshsdk/core'
 import type {Asset, UTxO} from '@meshsdk/core'
 import {
   type SupportedNetwork,
+  bigintToBigNumber,
+  poolDatumFromCbor,
+  poolOil,
   poolScriptAddressByNetwork,
+  poolValidatorHash,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
 
@@ -43,6 +47,38 @@ export const poolStateToUtxo = (
       amount: poolState.assets,
       plutusData: poolState.datumCbor,
     },
+  }
+}
+
+export const utxoToPoolState = (utxo: UTxO): PoolState => {
+  const datumCbor = utxo.output.plutusData!
+  const poolDatum = poolDatumFromCbor(datumCbor)
+  const aTokenUnit =
+    `${poolDatum.aPolicyId}${poolDatum.aAssetName}` || 'lovelace'
+  const bTokenUnit = `${poolDatum.bPolicyId}${poolDatum.bAssetName}`
+  const shareUnit = `${poolValidatorHash}${poolDatum.sharesAssetName}`
+  const assets = utxo.output.amount
+  const poolValue = MeshValue.fromAssets(assets)
+  const qtyA = bigintToBigNumber(poolValue.get(aTokenUnit)).minus(
+    aTokenUnit === 'lovelace' ? poolOil : 0,
+  )
+  const qtyB = bigintToBigNumber(poolValue.get(bTokenUnit))
+  const qtyShares = bigintToBigNumber(poolValue.get(shareUnit))
+  return {
+    utxoId: `${utxo.input.txHash}#${utxo.input.outputIndex}`,
+    poolUnits: {
+      aTokenUnit,
+      bTokenUnit,
+      shareUnit,
+    },
+    assets,
+    qtyA,
+    qtyB,
+    qtyShares,
+    coins: bigintToBigNumber(poolValue.get('lovelace')),
+    datumCbor,
+    swapFeePoints: poolDatum.swapFeePoints,
+    feeBasis: poolDatum.feeBasis,
   }
 }
 
