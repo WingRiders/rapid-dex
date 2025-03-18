@@ -61,7 +61,7 @@
   },
   "overrides": [
     {
-      "include": ["cli/createReferenceScriptUtxo.ts"],
+      "include": ["cli/*.ts"],
       "linter": {
         "rules": {
           "suspicious": {
