@@ -18,13 +18,14 @@ import {
   walletNetworkIdToNetwork,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
+import {sortAssets} from '../../helpers/asset'
 import {getTxFee} from './fee'
 
-type BuildCreatePoolTxArgs = {
+export type BuildCreatePoolTxArgs = {
   wallet: IWallet
   fetcher?: IFetcher
-  assetA: Asset
-  assetB: Asset
+  assetX: Asset
+  assetY: Asset
   outShares: BigNumber
   seed: RefTxIn
   feeBasis: number
@@ -40,8 +41,8 @@ export type BuildCreatePoolTxResult = {
 export const buildCreatePoolTx = async ({
   wallet,
   fetcher,
-  assetA,
-  assetB,
+  assetX,
+  assetY,
   outShares,
   seed,
   feeBasis,
@@ -60,6 +61,7 @@ export const buildCreatePoolTx = async ({
   const poolValidityUnit = `${poolValidatorHash}${poolValidityAssetNameHex}`
   const sharesAssetName = getShareAssetName(seed)
   const poolShareUnit = `${poolValidatorHash}${sharesAssetName}`
+  const [assetA, assetB] = sortAssets(assetX, assetY)
 
   const {policyId: aPolicyId, assetName: aAssetName} = parseAssetUnit(
     assetA.unit === 'lovelace' ? '' : assetA.unit,

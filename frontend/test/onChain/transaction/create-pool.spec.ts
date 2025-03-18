@@ -1,5 +1,8 @@
 import {describe, expect, it} from 'bun:test'
-import {buildCreatePoolTx} from '@/onChain/transaction/create-pool'
+import {
+  type BuildCreatePoolTxArgs,
+  buildCreatePoolTx,
+} from '@/onChain/transaction/create-pool'
 import {BigNumber} from 'bignumber.js'
 import {
   assetA,
@@ -10,11 +13,10 @@ import {
   seedUtxo,
 } from './fixtures'
 
-const createPoolTxArgs = {
-  network: 'preprod' as const,
+const createPoolTxArgs: BuildCreatePoolTxArgs = {
   wallet: mockWallet,
-  assetA: assetA,
-  assetB: assetB,
+  assetX: assetA,
+  assetY: assetB,
   outShares: new BigNumber(9_000),
   seed: {
     txHash: seedUtxo.input.txHash,
@@ -39,10 +41,10 @@ describe('buildCreatePoolTx', () => {
     )
   })
 
-  it('throws readable error when assetA and assetB are the same', () => {
+  it('throws readable error when assetX and assetY are the same', () => {
     mockWalletUtxos([collateralUtxo, seedUtxo])
     expect(() =>
-      buildCreatePoolTx({...createPoolTxArgs, assetB: assetA}),
+      buildCreatePoolTx({...createPoolTxArgs, assetY: assetA}),
     ).toThrow(
       /^Tx evaluation failed: .*bytearray.compare\(pool_output_datum.a_asset_name, pool_output_datum.b_asset_name\) == Less \? False.* \n For txHex: [0-9a-fA-F]+$/,
     )
