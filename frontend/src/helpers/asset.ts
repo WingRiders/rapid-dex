@@ -5,6 +5,14 @@ export const POLICY_ID_SIZE = 28 // bytes
 
 export const isAda = (unit: Unit) => unit === LOVELACE_UNIT
 
+export const isHumanReadable = (value: string): boolean =>
+  !!value && /^[a-zA-Z0-9!"#$%&'()*+,./:;<=>?@[\] ^_`{|}~-]*$/.test(value)
+
+export const decodeAssetName = (assetName: string): string => {
+  const decodedAssetName = Buffer.from(assetName, 'hex').toString()
+  return isHumanReadable(decodedAssetName) ? decodedAssetName : assetName
+}
+
 export const decodeUnit = (
   unit: Unit,
 ): [policyId: string, assetName: string] => {
