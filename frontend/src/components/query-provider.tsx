@@ -1,22 +1,17 @@
 'use client'
 
-import {QueryClient, QueryClientProvider, isServer} from '@tanstack/react-query'
+import {
+  type QueryClient,
+  QueryClientProvider,
+  isServer,
+} from '@tanstack/react-query'
 import {createTRPCClient, httpBatchLink} from '@trpc/client'
 import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
 import {useState} from 'react'
 import SuperJSON from 'superjson'
 import {config} from '../config'
-import {TRPCProvider} from '../trpc'
-
-const makeQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000,
-        retry: false,
-      },
-    },
-  })
+import {TRPCProvider} from '../trpc/client'
+import {makeQueryClient} from '../trpc/query-client'
 
 let browserQueryClient: QueryClient | undefined = undefined
 

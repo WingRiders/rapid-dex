@@ -1,5 +1,5 @@
 import {initTRPC} from '@trpc/server'
-import BigNumber from 'bignumber.js'
+import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
 import superjson from 'superjson'
 import {z} from 'zod'
 import {healthcheck} from './endpoints/healthcheck'
@@ -7,15 +7,7 @@ import {getPool} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
 
-// Register BigNumber serialization with SuperJSON
-superjson.registerCustom<BigNumber, string>(
-  {
-    isApplicable: (v) => BigNumber.isBigNumber(v),
-    serialize: (v) => v.toString(),
-    deserialize: (v) => new BigNumber(v),
-  },
-  'BigNumber',
-)
+augmentSuperJSON()
 
 export const t = initTRPC.create({transformer: superjson})
 export const publicProcedure = t.procedure

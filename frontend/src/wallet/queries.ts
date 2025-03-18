@@ -9,7 +9,7 @@ import BigNumber from 'bignumber.js'
 import {useShallow} from 'zustand/shallow'
 import {prefetchTokensMetadata} from '../metadata/queries'
 import {useConnectedWalletStore} from '../store/connected-wallet'
-import {useTRPC} from '../trpc'
+import {useTRPC} from '../trpc/client'
 
 export const useInstalledWalletsIdsQuery = () =>
   useQuery({

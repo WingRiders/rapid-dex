@@ -2,7 +2,7 @@ import type {Unit} from '@meshsdk/core'
 import {type QueryClient, skipToken, useQuery} from '@tanstack/react-query'
 import type {TokenMetadata} from '@wingriders/rapid-dex-common'
 import {decodeAssetName, decodeUnit, isAda} from '../helpers/asset'
-import {type TRPC, useTRPC} from '../trpc'
+import {type TRPC, useTRPC} from '../trpc/client'
 import {ADA_METADATA} from './constants'
 
 const getDefaultMetadata = (subject: Unit): TokenMetadata => {
