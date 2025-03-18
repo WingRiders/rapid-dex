@@ -33,7 +33,7 @@ export const createPool = async ({
     networkId,
     mnemonic,
   })
-  const seedUtxo = utxos[0]
+  const seedUtxo = utxos[0]!
   const outShares = computeSharesCreatePool({
     lockA: new BigNumber(quantityA),
     lockB: new BigNumber(quantityB),
@@ -49,8 +49,8 @@ export const createPool = async ({
   const {builtTx, txFee} = await buildCreatePoolTx({
     wallet,
     fetcher: blockchainProvider,
-    assetA: {unit: unitA, quantity: String(quantityA)},
-    assetB: {unit: unitB, quantity: String(quantityB)},
+    assetX: {unit: unitA, quantity: String(quantityA)},
+    assetY: {unit: unitB, quantity: String(quantityB)},
     outShares,
     seed,
     feeBasis,
