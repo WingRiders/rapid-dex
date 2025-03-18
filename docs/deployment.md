@@ -12,7 +12,8 @@ Before running the deployment script, ensure you have the following:
 
 ## Deploying the reference script UTxO
 
-The following command initializes a Cardano wallet, fetches UTxOs, submits a transaction using a Plutus script to deploy a reference script on-chain, and writes the transaction hash to `refScriptUtxos/<network>.ts`.
+The following command initializes a Cardano wallet, fetches UTxOs, submits a transaction to deploy a reference script on-chain,
+and writes the deployment information to `refScriptUtxos/<network>.ts`.
 
 ### Usage
 
@@ -24,7 +25,8 @@ bun cli create-reference-script-utxo \
   --blockfrostProjectId <your_blockfrost_project_id> \
   --networkId <0 or 1> \
   --mnemonic "<your_mnemonic_phrase>" \
-  --stakeKeyHash <your_stake_key_hash>
+  --stakeKeyHash <your_stake_key_hash> \
+  --refScriptHolderAddress <bech32_address>
 ```
 
 ### Parameters
@@ -32,6 +34,7 @@ bun cli create-reference-script-utxo \
 - `--networkId` – Network ID (0 for Preprod, 1 for Mainnet).
 - `--mnemonic` – Your wallet's mnemonic phrase.
 - `--stakeKeyHash` – (Optional) Stake key hash used for the staking part of the pool address.
+- `--refScriptHolderAddress` – CIP-19 Address used for holding the UTxO with pool validator script.
 
 ### Notes
 - Ensure your wallet has enough funds to cover transaction fees.
@@ -40,10 +43,10 @@ bun cli create-reference-script-utxo \
 
 ## Verifying the deployment
 
-After deploying, you can verify the transaction on the Cardano testnet using [Cexplorer](https://preprod.cexplorer.io/):
+After deploying, you can verify the transaction on the Cardano testnet using [Cardanoscan](https://preprod.cardanoscan.io/) or [Cexplorer](https://preprod.cexplorer.io/):
 
 1. Copy the transaction hash from the script output.
-2. Open [Cexplorer](https://preprod.cexplorer.io/).
+2. Open [Cardanoscan](https://preprod.cardanoscan.io/) or [Cexplorer](https://preprod.cexplorer.io/).
 3. Paste the transaction hash into the search bar and verify the deployed script.
 
 For additional troubleshooting, check the logs or ensure your wallet has enough ADA to cover transaction fees.
