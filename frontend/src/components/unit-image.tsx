@@ -1,8 +1,7 @@
 import type {Unit} from '@meshsdk/core'
-import type {TokenMetadata} from '@wingriders/rapid-dex-common'
+import {type TokenMetadata, isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import {CircleHelpIcon} from 'lucide-react'
 import {config} from '../config'
-import {isAda} from '../helpers/asset'
 import {cn} from '../lib/utils'
 
 type UnitImageProps = {
@@ -20,7 +19,7 @@ export const UnitImage = ({
   size = 32,
   className,
 }: UnitImageProps) => {
-  const hasImage = hasRemoteMetadata || isAda(unit)
+  const hasImage = hasRemoteMetadata || isLovelaceUnit(unit)
 
   if (!hasImage)
     return (

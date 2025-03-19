@@ -16,7 +16,11 @@ import {
   useWalletBalanceQuery,
   useWalletUtxosQuery,
 } from '@/wallet/queries'
-import {poolOil} from '@wingriders/rapid-dex-common'
+import {
+  LOVELACE_UNIT,
+  isLovelaceUnit,
+  poolOil,
+} from '@wingriders/rapid-dex-common'
 import {useEffect, useMemo} from 'react'
 import {Controller, useForm} from 'react-hook-form'
 import {computeSharesCreatePool} from '../../../amm/create-pool'
@@ -28,8 +32,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '../../../components/ui/tooltip'
-import {LOVELACE_UNIT} from '../../../constants'
-import {isAda} from '../../../helpers/asset'
 import {formatBigNumber} from '../../../helpers/format-number'
 import {useValidateCreatePoolForm} from './helpers'
 import type {CreatePoolFormInputs} from './types'
@@ -120,8 +122,8 @@ const CreatePoolPage = () => {
               balance,
             }))
             .sort((a, b) => {
-              const isAdaA = isAda(a.unit)
-              const isAdaB = isAda(b.unit)
+              const isAdaA = isLovelaceUnit(a.unit)
+              const isAdaB = isLovelaceUnit(b.unit)
 
               if (isAdaA && !isAdaB) return -1
               if (!isAdaA && isAdaB) return 1

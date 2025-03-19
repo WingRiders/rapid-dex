@@ -1,12 +1,16 @@
 import type {Unit} from '@meshsdk/core'
 import {type QueryClient, skipToken, useQuery} from '@tanstack/react-query'
-import type {TokenMetadata} from '@wingriders/rapid-dex-common'
-import {decodeAssetName, decodeUnit, isAda} from '../helpers/asset'
+import {
+  type TokenMetadata,
+  isLovelaceUnit,
+  parseUnit,
+} from '@wingriders/rapid-dex-common'
+import {decodeAssetName} from '../helpers/asset'
 import {type TRPC, useTRPC} from '../trpc/client'
 import {ADA_METADATA} from './constants'
 
-const getDefaultMetadata = (subject: Unit): TokenMetadata => {
-  const [policyId, assetName] = decodeUnit(subject)
+const getDefaultMetadata = (unit: Unit): TokenMetadata => {
+  const [policyId, assetName] = parseUnit(unit)
   const decodedAssetName = decodeAssetName(assetName)
 
   return {
@@ -22,7 +26,7 @@ export const fetchTokenMetadata = async (
   queryClient: QueryClient,
   trpc: TRPC,
 ) => {
-  if (isAda(unit)) return ADA_METADATA
+  if (isLovelaceUnit(unit)) return ADA_METADATA
 
   try {
     const res = await queryClient.fetchQuery(
@@ -40,7 +44,7 @@ export const prefetchTokensMetadata = async (
   queryClient: QueryClient,
   trpc: TRPC,
 ) => {
-  const unitsWithoutAda = units.filter((unit) => !isAda(unit))
+  const unitsWithoutAda = units.filter((unit) => !isLovelaceUnit(unit))
 
   const setMetadataQueryData = (unit: Unit, metadata: TokenMetadata | null) => {
     const tokenMetadataOptions = trpc.tokenMetadata.queryOptions(unit)
@@ -78,7 +82,7 @@ export const useTokenMetadata = (unit: Unit | null) => {
   const trpc = useTRPC()
   const {data, isLoading} = useQuery(
     trpc.tokenMetadata.queryOptions(unit ?? skipToken, {
-      enabled: !!unit && !isAda(unit),
+      enabled: !!unit && !isLovelaceUnit(unit),
     }),
   )
 
@@ -86,7 +90,7 @@ export const useTokenMetadata = (unit: Unit | null) => {
     metadata:
       !unit || isLoading
         ? undefined
-        : isAda(unit)
+        : isLovelaceUnit(unit)
           ? ADA_METADATA
           : (data ?? getDefaultMetadata(unit)),
     hasRemoteMetadata: data != null,

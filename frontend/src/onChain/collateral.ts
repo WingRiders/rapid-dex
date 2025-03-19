@@ -1,4 +1,5 @@
 import type {UTxO} from '@meshsdk/core'
+import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 
 const COLLATERAL_MIN_LOVELACE_AMOUNT = new BigNumber(3_000_000)
@@ -7,7 +8,7 @@ const COLLATERAL_MAX_LOVELACE_AMOUNT = new BigNumber(5_000_000)
 export const isCollateralUtxo = (utxo: UTxO) => {
   if (
     utxo.output.amount.length !== 1 ||
-    utxo.output.amount[0]!.unit !== 'lovelace'
+    !isLovelaceUnit(utxo.output.amount[0]!.unit)
   )
     return false
 

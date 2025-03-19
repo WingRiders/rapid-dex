@@ -1,4 +1,4 @@
-import {createUnit} from '../helpers/asset'
+import {createUnit} from '@wingriders/rapid-dex-common'
 import {useTokenMetadata} from '../metadata/queries'
 import type {PoolsListItem} from '../types'
 import {AssetQuantity} from './asset-quantity'

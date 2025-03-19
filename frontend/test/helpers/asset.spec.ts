@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'bun:test'
 import {type Asset, POLICY_ID_LENGTH} from '@meshsdk/core'
+import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import {sortAssets} from '../../src/helpers/asset'
 
 describe('asset helpers', () => {
@@ -10,13 +11,13 @@ describe('asset helpers', () => {
       isSameOrder: boolean
     }[] = [
       {
-        assetX: {unit: 'lovelace', quantity: '1'},
+        assetX: {unit: LOVELACE_UNIT, quantity: '1'},
         assetY: {unit: `${'a'.repeat(POLICY_ID_LENGTH)}a`, quantity: '1'},
         isSameOrder: true,
       },
       {
         assetX: {unit: `${'a'.repeat(POLICY_ID_LENGTH)}a`, quantity: '1'},
-        assetY: {unit: 'lovelace', quantity: '1'},
+        assetY: {unit: LOVELACE_UNIT, quantity: '1'},
         isSameOrder: false,
       },
       {

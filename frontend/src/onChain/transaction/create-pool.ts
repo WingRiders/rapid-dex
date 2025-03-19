@@ -2,13 +2,17 @@ import {poolDatumToMesh} from '@/onChain/datums'
 import {mintRedeemerToMesh} from '@/onChain/redeemers'
 import {initTxBuilder} from '@/onChain/transaction/init'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
-import {type Asset, parseAssetUnit} from '@meshsdk/core'
+import type {Asset} from '@meshsdk/core'
 import {
+  LOVELACE_UNIT,
   type MintRedeemer,
   type PoolDatum,
   burnedShareTokens,
+  createUnit,
   getShareAssetName,
+  isLovelaceUnit,
   maxShareTokens,
+  parseUnit,
   poolOil,
   poolRefScriptSizeByNetwork,
   poolRefScriptUtxoByNetwork,
@@ -58,17 +62,16 @@ export const buildCreatePoolTx = async ({
     now,
   })
 
-  const poolValidityUnit = `${poolValidatorHash}${poolValidityAssetNameHex}`
+  const poolValidityUnit = createUnit(
+    poolValidatorHash,
+    poolValidityAssetNameHex,
+  )
   const sharesAssetName = getShareAssetName(seed)
-  const poolShareUnit = `${poolValidatorHash}${sharesAssetName}`
+  const poolShareUnit = createUnit(poolValidatorHash, sharesAssetName)
   const [assetA, assetB] = sortAssets(assetX, assetY)
 
-  const {policyId: aPolicyId, assetName: aAssetName} = parseAssetUnit(
-    assetA.unit === 'lovelace' ? '' : assetA.unit,
-  )
-  const {policyId: bPolicyId, assetName: bAssetName} = parseAssetUnit(
-    assetB.unit,
-  )
+  const [aPolicyId, aAssetName] = parseUnit(assetA.unit)
+  const [bPolicyId, bAssetName] = parseUnit(assetB.unit)
 
   const poolDatum: PoolDatum = {
     aAssetName,
@@ -106,15 +109,15 @@ export const buildCreatePoolTx = async ({
     )
     .mintRedeemerValue(mintRedeemerToMesh(mintRedeemer), 'Mesh')
     .txOut(poolScriptAddressByNetwork[network], [
-      ...(assetA.unit === 'lovelace'
+      ...(isLovelaceUnit(assetA.unit)
         ? []
-        : [{unit: 'lovelace', quantity: poolOil.toString()}]),
+        : [{unit: LOVELACE_UNIT, quantity: poolOil.toString()}]),
       {unit: poolValidityUnit, quantity: '1'},
       {unit: poolShareUnit, quantity: poolSharesQuantity.toString()},
       {
         ...assetA,
         quantity: new BigNumber(assetA.quantity)
-          .plus(assetA.unit === 'lovelace' ? poolOil : 0)
+          .plus(isLovelaceUnit(assetA.unit) ? poolOil : 0)
           .toString(),
       },
       assetB,

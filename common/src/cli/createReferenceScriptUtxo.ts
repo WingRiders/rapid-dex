@@ -9,6 +9,7 @@ import {
   applyCborEncoding,
   serializePlutusScript,
 } from '@meshsdk/core'
+import {LOVELACE_UNIT} from '../helpers'
 
 // Wrap to a CBOR array together with script version
 const scriptCborToScriptRef = (scriptCbor: string) => `8203${scriptCbor}`
@@ -31,7 +32,7 @@ const createResultFileContent = (
     '',
     `export const ${network}PoolRefScriptUtxo: UTxO = {`,
     `  input: {txHash: '${txHash}', outputIndex: 0},`,
-    `  output: {address: '${refScriptHolderAddress}', amount: [{unit: 'lovelace', quantity: '${lovelaceOnRefScriptUtxo}'}], scriptRef: '${scriptCborToScriptRef(scriptCbor)}', scriptHash: '${scriptHash}'},`,
+    `  output: {address: '${refScriptHolderAddress}', amount: [{unit: '${LOVELACE_UNIT}', quantity: '${lovelaceOnRefScriptUtxo}'}], scriptRef: '${scriptCborToScriptRef(scriptCbor)}', scriptHash: '${scriptHash}'},`,
     '}',
     '',
     `export const ${network}PoolRefScriptSize = ${scriptSize}`,

@@ -6,10 +6,10 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import {createUnit} from '@wingriders/rapid-dex-common'
 import {ArrowDownUp} from 'lucide-react'
 import {useState} from 'react'
 import {DEFAULT_PAGE_SIZE} from '../constants'
-import {createUnit} from '../helpers/asset'
 import type {PoolsListItem} from '../types'
 import {AssetQuantity} from './asset-quantity'
 import {PoolPrice} from './pool-price'

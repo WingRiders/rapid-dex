@@ -1,3 +1,4 @@
+import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import {getTokenLogo} from '../tokenRegistry'
 
 const ADA_LOGO =
@@ -5,7 +6,7 @@ const ADA_LOGO =
 
 // Handle the /token-image/[subject] route
 export const handleTokenImageRequest = (unit: string): Response => {
-  const logoBase64 = unit === 'lovelace' ? ADA_LOGO : getTokenLogo(unit)
+  const logoBase64 = isLovelaceUnit(unit) ? ADA_LOGO : getTokenLogo(unit)
 
   if (logoBase64 == null) {
     return new Response('Token image not found', {status: 404})

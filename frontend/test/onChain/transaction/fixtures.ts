@@ -2,8 +2,10 @@ import {mock} from 'bun:test'
 import type {PoolState} from '@/onChain/transaction/pool-state'
 import type {IWallet, UTxO} from '@meshsdk/core'
 import {
+  LOVELACE_UNIT,
   NetworkId,
   burnedShareTokens,
+  createUnit,
   maxShareTokens,
   poolValidatorHash,
   poolValidityAssetNameHex,
@@ -46,7 +48,7 @@ export const collateralUtxo = {
     outputIndex: 0,
   },
   output: {
-    amount: [{unit: 'lovelace', quantity: '5000000'}],
+    amount: [{unit: LOVELACE_UNIT, quantity: '5000000'}],
     address,
   },
 }
@@ -67,7 +69,7 @@ export const seedUtxo = {
     outputIndex: 1,
   },
   output: {
-    amount: [{unit: 'lovelace', quantity: '8000000'}, assetA, assetB],
+    amount: [{unit: LOVELACE_UNIT, quantity: '8000000'}, assetA, assetB],
     address,
   },
 }
@@ -78,7 +80,7 @@ export const userAdaOnlyUtxo = {
     outputIndex: 1,
   },
   output: {
-    amount: [{unit: 'lovelace', quantity: '20000000'}],
+    amount: [{unit: LOVELACE_UNIT, quantity: '20000000'}],
     address,
   },
 }
@@ -90,7 +92,7 @@ export const userAdaAndWrtUtxo = {
   },
   output: {
     amount: [
-      {unit: 'lovelace', quantity: '20000000'},
+      {unit: LOVELACE_UNIT, quantity: '20000000'},
       {
         unit: '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
         quantity: '20000000',
@@ -107,7 +109,7 @@ export const userSharesUtxo = {
   },
   output: {
     amount: [
-      {unit: 'lovelace', quantity: '20000000'},
+      {unit: LOVELACE_UNIT, quantity: '20000000'},
       {
         unit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
         quantity: '20000000',
@@ -120,13 +122,13 @@ export const userSharesUtxo = {
 export const poolState: PoolState = {
   utxoId: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe#2',
   poolUnits: {
-    aTokenUnit: 'lovelace',
+    aTokenUnit: LOVELACE_UNIT,
     bTokenUnit:
       '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
     shareUnit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
   },
   assets: [
-    {unit: 'lovelace', quantity: '20000000'},
+    {unit: LOVELACE_UNIT, quantity: '20000000'},
     {
       unit: '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
       quantity: '20000000',
@@ -139,7 +141,7 @@ export const poolState: PoolState = {
         .toString(),
     },
     {
-      unit: `${poolValidatorHash}${poolValidityAssetNameHex}`,
+      unit: createUnit(poolValidatorHash, poolValidityAssetNameHex),
       quantity: '1',
     },
   ],
