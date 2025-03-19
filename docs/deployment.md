@@ -17,9 +17,10 @@ and writes the deployment information to `refScriptUtxos/<network>.ts`.
 
 ### Usage
 
-Run the following command, replacing placeholders with your actual values:
+Run the following commands, replacing placeholders with your actual values:
 
 ```sh
+bun install
 cd common
 bun cli create-reference-script-utxo \
   --blockfrostProjectId <your_blockfrost_project_id> \
