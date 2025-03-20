@@ -1,10 +1,5 @@
 import type {Asset, UTxO} from '@meshsdk/core'
-import {
-  LOVELACE_UNIT,
-  parseUtxoId,
-  poolScriptAddressByNetwork,
-} from '@wingriders/rapid-dex-common'
-import {config} from '../config'
+import {LOVELACE_UNIT, parseUtxoId} from '@wingriders/rapid-dex-common'
 import {prisma} from '../db/prismaClient'
 
 export const getPoolUtxo = async (shareAssetName: string) => {
@@ -18,12 +13,13 @@ export const getPoolUtxo = async (shareAssetName: string) => {
       assets: true,
       coins: true,
       datumCBOR: true,
+      address: true,
     },
   })
   const utxo: UTxO = {
     input: parseUtxoId(pool.utxoId),
     output: {
-      address: poolScriptAddressByNetwork[config.NETWORK],
+      address: pool.address,
       amount: (pool.assets as Asset[]).concat({
         unit: LOVELACE_UNIT,
         quantity: pool.coins.toString(),

@@ -3,7 +3,6 @@ import {
   type PoolRedeemer,
   poolRefScriptSizeByNetwork,
   poolRefScriptUtxoByNetwork,
-  poolScriptAddressByNetwork,
   walletNetworkIdToNetwork,
 } from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
@@ -47,7 +46,7 @@ export const buildSpentPoolOutputTx = async ({
       poolUtxo.input.txHash,
       poolUtxo.input.outputIndex,
       poolUtxo.output.amount,
-      poolScriptAddressByNetwork[network],
+      poolUtxo.output.address,
       poolRefScriptSizeByNetwork[network],
     )
     .spendingTxInReference(
@@ -58,7 +57,7 @@ export const buildSpentPoolOutputTx = async ({
     )
     .txInInlineDatumPresent()
     .txInRedeemerValue(poolRedeemerToMesh(poolRedeemer), 'Mesh')
-    .txOut(poolScriptAddressByNetwork[network], newPoolAmount)
+    .txOut(poolUtxo.output.address, newPoolAmount)
     .txOutInlineDatumValue(poolUtxo.output.plutusData!, 'CBOR')
 
   const builtTx = await txBuilder.complete()

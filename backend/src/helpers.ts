@@ -8,8 +8,8 @@ export const originPoint = {
     height: 4490511,
   },
   preprod: {
-    id: '90b13c95a0988dd097a5c4be510dab3b4157be23876df151f43eeb3683ce867a',
-    slot: 85566517,
-    height: 3252089,
+    id: '2c3985ab424e7d5f683f3529c6e18638cfc4289e7a4d0a279b4169f4d2b38302',
+    slot: 86531256,
+    height: 3287900,
   },
 }[config.NETWORK]

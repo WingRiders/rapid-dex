@@ -41,6 +41,7 @@ model PoolOutput {
   swapFeePoints  Int
   feeBasis       Int
 
+  address       String // bech32 encoded
   assets        Json
   coins         BigInt
   datumCBOR     String
