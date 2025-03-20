@@ -1,4 +1,8 @@
-import {type NetworkId, walletNetworkIdToNetwork} from '@/helpers/wallet'
+import {
+  type NetworkId,
+  type SupportedNetwork,
+  walletNetworkIdToNetwork,
+} from '@/helpers/wallet'
 import {poolValidatorCompiledCode, poolValidatorHash} from '@/onChain'
 import {Serialization} from '@cardano-sdk/core'
 import {
@@ -10,6 +14,11 @@ import {
   serializePlutusScript,
 } from '@meshsdk/core'
 import {LOVELACE_UNIT} from '../helpers'
+
+const DEFAULT_REF_SCRIPT_HOLDER_ADDRESS: Record<SupportedNetwork, string> = {
+  preprod:
+    'addr_test1qqlfh42dn2ndvpxcrrc6nt7u36ctz3krwwvpu65rl6zyaqwnt0wn7dhjucum8cuh0v7gcyuwpj0e56pxff74mefcyzrqe72pne',
+}
 
 // Wrap to a CBOR array together with script version
 const scriptCborToScriptRef = (scriptCbor: string) => `8203${scriptCbor}`
@@ -45,7 +54,7 @@ type CreateReferenceScriptUtxoParams = {
   networkId: NetworkId
   mnemonic: string
   stakeKeyHash: string
-  refScriptHolderAddress: string
+  refScriptHolderAddress?: string
 }
 
 export const createReferenceScriptUtxo = async ({
@@ -53,7 +62,7 @@ export const createReferenceScriptUtxo = async ({
   networkId,
   mnemonic,
   stakeKeyHash,
-  refScriptHolderAddress,
+  refScriptHolderAddress: refScriptHolderAddressParam,
 }: CreateReferenceScriptUtxoParams) => {
   const blockchainProvider = new BlockfrostProvider(blockfrostProjectId)
   console.info('Init wallet')
@@ -79,13 +88,16 @@ export const createReferenceScriptUtxo = async ({
   }
   console.info(`Found ${utxos.length} UTxOs`)
 
+  const network = walletNetworkIdToNetwork(networkId)
+  const refScriptHolderAddress =
+    refScriptHolderAddressParam || DEFAULT_REF_SCRIPT_HOLDER_ADDRESS[network]
   console.info(`Building transaction with output on ${refScriptHolderAddress}`)
   const scriptCbor = applyCborEncoding(poolValidatorCompiledCode)
   const txBuilder = new MeshTxBuilder({
     fetcher: blockchainProvider,
     verbose: false,
   })
-  const network = walletNetworkIdToNetwork(networkId)
+
   const unsignedTx = await txBuilder
     .setNetwork(network)
     .txOut(refScriptHolderAddress, [])

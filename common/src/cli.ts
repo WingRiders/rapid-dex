@@ -29,7 +29,7 @@ program
   )
   .requiredOption('--mnemonic <string>', 'Wallet mnemonic phrase')
   .option('--stakeKeyHash <string>', 'Staking part for pool address')
-  .requiredOption(
+  .option(
     '--refScriptHolderAddress <string>',
     'Address holding the reference script',
   )
