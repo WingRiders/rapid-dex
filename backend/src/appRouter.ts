@@ -3,7 +3,7 @@ import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
 import superjson from 'superjson'
 import {z} from 'zod'
 import {healthcheck} from './endpoints/healthcheck'
-import {getPool} from './endpoints/pool'
+import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
 
@@ -19,9 +19,9 @@ export const aggregatorAppRouter = t.router({
 export const serverAppRouter = t.router({
   healthcheck: publicProcedure.query(healthcheck),
   pools: publicProcedure.query(getPools),
-  pool: publicProcedure
+  poolUtxo: publicProcedure
     .input(z.object({shareAssetName: z.string()}))
-    .query(({input}) => getPool(input.shareAssetName)),
+    .query(({input}) => getPoolUtxo(input.shareAssetName)),
   // using mutation instead of query because the input can be too large for a GET request
   tokensMetadata: publicProcedure
     .input(z.array(z.string()))

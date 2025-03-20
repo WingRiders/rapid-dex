@@ -1,13 +1,14 @@
 import type {IFetcher, IWallet} from '@meshsdk/core'
 import type {AddLiquidityRedeemer} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
-import {type PoolState, getNewPoolAmount} from './pool-state'
+import {getNewPoolAmount} from './pool-state'
 import {buildSpentPoolOutputTx} from './spent-pool-output'
+import type {PoolInteractionTxPool} from './types'
 
 type BuildAddLiquidityTxArgs = {
   wallet: IWallet
   fetcher?: IFetcher
-  poolState: PoolState
+  pool: PoolInteractionTxPool
   lockA: BigNumber
   lockB: BigNumber
   earnedShares: BigNumber
@@ -17,7 +18,7 @@ type BuildAddLiquidityTxArgs = {
 export const buildAddLiquidityTx = async ({
   wallet,
   fetcher,
-  poolState,
+  pool,
   lockA,
   lockB,
   earnedShares,
@@ -30,10 +31,10 @@ export const buildAddLiquidityTx = async ({
   return buildSpentPoolOutputTx({
     wallet,
     fetcher,
-    poolState,
+    poolUtxo: pool.utxo,
     poolRedeemer: addLiquidityRedeemer,
     newPoolAmount: getNewPoolAmount({
-      poolState,
+      pool,
       lockA,
       lockB,
       lockShares: earnedShares.negated(),

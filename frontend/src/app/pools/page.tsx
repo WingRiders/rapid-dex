@@ -1,7 +1,7 @@
 import {HydrateClient} from '@/components/hydrate-client'
 import {Button} from '@/components/ui/button'
 import {getQueryClient, trpc} from '@/trpc/server'
-import {createUnit, isLovelaceUnit} from '@wingriders/rapid-dex-common'
+import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import {uniq} from 'lodash'
 import Link from 'next/link'
 import {prefetchTokensMetadata} from '../../metadata/queries'
@@ -14,10 +14,7 @@ const PoolsPage = async () => {
     const pools = await queryClient.fetchQuery(trpc.pools.queryOptions())
 
     const poolsUnits = uniq(
-      pools.flatMap((pool) => {
-        const unitA = createUnit(pool.assetAPolicy, pool.assetAName)
-        const unitB = createUnit(pool.assetBPolicy, pool.assetBName)
-
+      pools.flatMap(({unitA, unitB}) => {
         return isLovelaceUnit(unitA) ? [unitB] : [unitA, unitB]
       }),
     )

@@ -1,26 +1,18 @@
-import {createUnit} from '@wingriders/rapid-dex-common'
 import {useTokenMetadata} from '../metadata/queries'
 import type {PoolsListItem} from '../types'
 import {AssetQuantity} from './asset-quantity'
 
 type PoolPriceProps = {
-  pool: Pick<
-    PoolsListItem,
-    | 'assetAPolicy'
-    | 'assetAName'
-    | 'assetBPolicy'
-    | 'assetBName'
-    | 'qtyA'
-    | 'qtyB'
-  >
+  pool: Pick<PoolsListItem, 'unitA' | 'unitB' | 'poolState'>
 }
 
-export const PoolPrice = ({pool}: PoolPriceProps) => {
-  const unitA = createUnit(pool.assetAPolicy, pool.assetAName)
-  const unitB = createUnit(pool.assetBPolicy, pool.assetBName)
-
+export const PoolPrice = ({
+  pool: {unitA, unitB, poolState},
+}: PoolPriceProps) => {
   const {metadata: unitBMetadata} = useTokenMetadata(unitB)
-  const price = pool.qtyA.div(pool.qtyB).shiftedBy(unitBMetadata?.decimals ?? 0)
+  const price = poolState.qtyA
+    .div(poolState.qtyB)
+    .shiftedBy(unitBMetadata?.decimals ?? 0)
 
   return <AssetQuantity unit={unitA} quantity={price} />
 }

@@ -1,8 +1,12 @@
 import {createChainSynchronizationClient} from '@cardano-ogmios/client'
 import type {BlockPraos, Point} from '@cardano-ogmios/schema'
+import {
+  getUtxoId,
+  poolDatumFromCbor,
+  poolOil,
+  poolValidatorHash,
+} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
-import {poolDatumFromCbor, utxoId} from '../../../common/src/helpers'
-import {poolOil, poolValidatorHash} from '../../../common/src/onChain'
 import {
   type Block,
   type PoolOutput,
@@ -47,7 +51,7 @@ const processBlock = async (block: BlockPraos) => {
         const poolDatum = poolDatumFromCbor(datum)
         const isAdaPool = poolDatum.aAssetName === ''
 
-        const poolUtxoId = utxoId({txHash: tx.id, outputIndex})
+        const poolUtxoId = getUtxoId({txHash: tx.id, outputIndex})
         addPoolOutputToCache(poolUtxoId, poolDatum.sharesAssetName)
         const script = parseOgmiosScript(output.script)
 
@@ -86,7 +90,7 @@ const processBlock = async (block: BlockPraos) => {
     // Mark spent pool outputs
     tx.inputs
       .map((input) =>
-        utxoId({txHash: input.transaction.id, outputIndex: input.index}),
+        getUtxoId({txHash: input.transaction.id, outputIndex: input.index}),
       )
       .filter(poolOutputExists)
       .forEach((utxoId) => {

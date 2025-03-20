@@ -5,7 +5,7 @@ import {
   collateralUtxo,
   mockWallet,
   mockWalletUtxos,
-  poolState,
+  pool,
   userAdaAndWrtUtxo,
   userAdaOnlyUtxo,
 } from './fixtures'
@@ -14,7 +14,7 @@ describe('buildAddLiquidityTx', () => {
   const addLiquidityTxArgs = {
     network: 'preprod' as const,
     wallet: mockWallet,
-    poolState,
+    pool,
     lockA: new BigNumber(200_000),
     lockB: new BigNumber(200_000),
     earnedShares: new BigNumber(200_010),

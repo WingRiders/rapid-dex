@@ -1,52 +1,36 @@
-import {bigintToBigNumber, maxShareTokens} from '@wingriders/rapid-dex-common'
-import BigNumber from 'bignumber.js'
-import {z} from 'zod'
+import type {Asset, UTxO} from '@meshsdk/core'
+import {
+  LOVELACE_UNIT,
+  parseUtxoId,
+  poolScriptAddressByNetwork,
+} from '@wingriders/rapid-dex-common'
+import {config} from '../config'
 import {prisma} from '../db/prismaClient'
 
-export const getPool = async (shareAssetName: string) => {
+export const getPoolUtxo = async (shareAssetName: string) => {
   const pool = await prisma.poolOutput.findFirstOrThrow({
     where: {
       spendSlot: null,
       shareAssetName,
     },
     select: {
-      shareAssetName: true,
-      assetAPolicy: true,
-      assetAName: true,
-      assetBPolicy: true,
-      assetBName: true,
-      lpts: true,
-      qtyA: true,
-      qtyB: true,
-      swapFeePoints: true,
-      feeBasis: true,
+      utxoId: true,
       assets: true,
       coins: true,
       datumCBOR: true,
-      txMetadata: true,
-      scriptCBOR: true,
-      scriptVersion: true,
     },
   })
-
-  const assetsSchema = z.array(
-    z
-      .object({
-        unit: z.string(),
-        quantity: z.string(),
-      })
-      .transform(({unit, quantity}) => ({
-        unit,
-        quantity: new BigNumber(quantity),
-      })),
-  )
-
-  return {
-    ...pool,
-    issuedShares: maxShareTokens.minus(bigintToBigNumber(pool.lpts)),
-    qtyA: bigintToBigNumber(pool.qtyA),
-    qtyB: bigintToBigNumber(pool.qtyB),
-    assets: assetsSchema.parse(pool.assets),
-    coins: bigintToBigNumber(pool.coins),
+  const utxo: UTxO = {
+    input: parseUtxoId(pool.utxoId),
+    output: {
+      address: poolScriptAddressByNetwork[config.NETWORK],
+      amount: (pool.assets as Asset[]).concat({
+        unit: LOVELACE_UNIT,
+        quantity: pool.coins.toString(),
+      }),
+      plutusData: pool.datumCBOR,
+    },
   }
+
+  return utxo
 }

@@ -6,7 +6,6 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import {createUnit} from '@wingriders/rapid-dex-common'
 import {ArrowDownUp} from 'lucide-react'
 import {useState} from 'react'
 import {DEFAULT_PAGE_SIZE} from '../constants'
@@ -20,12 +19,11 @@ import {UnitPairDisplay} from './unit-pair-display'
 const columns: ColumnDef<PoolsListItem>[] = [
   {
     header: 'Pool',
-    cell: ({row: {original: pool}}) => (
-      <UnitPairDisplay
-        unitA={createUnit(pool.assetAPolicy, pool.assetAName)}
-        unitB={createUnit(pool.assetBPolicy, pool.assetBName)}
-      />
-    ),
+    cell: ({
+      row: {
+        original: {unitA, unitB},
+      },
+    }) => <UnitPairDisplay unitA={unitA} unitB={unitB} />,
   },
   {
     header: 'Price',
@@ -37,23 +35,25 @@ const columns: ColumnDef<PoolsListItem>[] = [
   },
   {
     header: 'Asset A amount',
-    cell: ({row: {original: pool}}) => (
+    cell: ({
+      row: {
+        original: {unitA, poolState},
+      },
+    }) => (
       <p>
-        <AssetQuantity
-          unit={createUnit(pool.assetAPolicy, pool.assetAName)}
-          quantity={pool.qtyA}
-        />
+        <AssetQuantity unit={unitA} quantity={poolState.qtyA} />
       </p>
     ),
   },
   {
     header: 'Asset B amount',
-    cell: ({row: {original: pool}}) => (
+    cell: ({
+      row: {
+        original: {unitB, poolState},
+      },
+    }) => (
       <p>
-        <AssetQuantity
-          unit={createUnit(pool.assetBPolicy, pool.assetBName)}
-          quantity={pool.qtyB}
-        />
+        <AssetQuantity unit={unitB} quantity={poolState.qtyB} />
       </p>
     ),
   },

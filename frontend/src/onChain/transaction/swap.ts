@@ -1,16 +1,14 @@
-import {
-  type PoolState,
-  getNewPoolAmount,
-} from '@/onChain/transaction/pool-state'
+import {getNewPoolAmount} from '@/onChain/transaction/pool-state'
 import type {IFetcher, IWallet} from '@meshsdk/core'
 import type {SwapRedeemer} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {buildSpentPoolOutputTx} from './spent-pool-output'
+import type {PoolInteractionTxPool} from './types'
 
 type BuildSwapTxArgs = {
   wallet: IWallet
   fetcher?: IFetcher
-  poolState: PoolState
+  pool: PoolInteractionTxPool
   aToB: boolean
   lockX: BigNumber
   outY: BigNumber
@@ -25,7 +23,7 @@ type BuildSwapTxResult = {
 export const buildSwapTx = async ({
   wallet,
   fetcher,
-  poolState,
+  pool,
   aToB,
   lockX,
   outY,
@@ -39,10 +37,10 @@ export const buildSwapTx = async ({
   return buildSpentPoolOutputTx({
     wallet,
     fetcher,
-    poolState,
+    poolUtxo: pool.utxo,
     poolRedeemer: swapRedeemer,
     newPoolAmount: getNewPoolAmount({
-      poolState,
+      pool,
       lockA: aToB ? lockX : outY.negated(),
       lockB: aToB ? outY.negated() : lockX,
     }),

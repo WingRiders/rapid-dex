@@ -1,76 +1,36 @@
 import {MeshValue} from '@meshsdk/core'
-import type {Asset, UTxO} from '@meshsdk/core'
-import {
-  type SupportedNetwork,
-  poolScriptAddressByNetwork,
-} from '@wingriders/rapid-dex-common'
+import type {Asset} from '@meshsdk/core'
+import {createUnit, poolValidatorHash} from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
-
-type PoolUnits = {
-  aTokenUnit: string
-  bTokenUnit: string
-  shareUnit: string
-}
-
-// Corresponds to PoolOutput prisma model
-// Can be replaced with tRPC type once client is implemented
-export type PoolState = {
-  utxoId: string
-  poolUnits: PoolUnits
-  assets: Asset[]
-  qtyA: BigNumber
-  qtyB: BigNumber
-  qtyShares: BigNumber
-  coins: BigNumber
-  datumCbor: string
-  swapFeePoints: number
-  feeBasis: number
-}
-
-export const poolStateToUtxo = (
-  network: SupportedNetwork,
-  poolState: PoolState,
-): UTxO => {
-  const [txHash, outputIndex] = poolState.utxoId.split('#')
-  if (!txHash || !outputIndex) {
-    throw new Error(`Invalid utxoId: ${poolState.utxoId}`)
-  }
-
-  return {
-    input: {txHash, outputIndex: Number(outputIndex)},
-    output: {
-      address: poolScriptAddressByNetwork[network],
-      amount: poolState.assets,
-      plutusData: poolState.datumCbor,
-    },
-  }
-}
+import type {PoolsListItem} from '../../types'
 
 type GetNewPoolAmountArgs = {
-  poolState: PoolState
+  pool: Pick<PoolsListItem, 'unitA' | 'unitB' | 'shareAssetName'> & {
+    utxo: {output: {amount: Asset[]}}
+  }
   lockA: BigNumber
   lockB: BigNumber
   lockShares?: BigNumber
 }
 
 export const getNewPoolAmount = ({
-  poolState,
+  pool,
   lockA,
   lockB,
   lockShares = new BigNumber(0),
 }: GetNewPoolAmountArgs) => {
-  const meshValue = MeshValue.fromAssets(poolState.assets)
+  const meshValue = MeshValue.fromAssets(pool.utxo.output.amount)
   meshValue.addAssets([
     {
-      unit: poolState.poolUnits.aTokenUnit,
+      unit: pool.unitA,
       quantity: lockA.toString(),
     },
     {
-      unit: poolState.poolUnits.bTokenUnit,
+      unit: pool.unitB,
       quantity: lockB.toString(),
     },
     {
-      unit: poolState.poolUnits.shareUnit,
+      unit: createUnit(poolValidatorHash, pool.shareAssetName),
       quantity: lockShares.toString(),
     },
   ])

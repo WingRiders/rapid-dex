@@ -1,5 +1,4 @@
 import {mock} from 'bun:test'
-import type {PoolState} from '@/onChain/transaction/pool-state'
 import type {IWallet, UTxO} from '@meshsdk/core'
 import {
   LOVELACE_UNIT,
@@ -7,10 +6,12 @@ import {
   burnedShareTokens,
   createUnit,
   maxShareTokens,
+  poolScriptAddressByNetwork,
   poolValidatorHash,
   poolValidityAssetNameHex,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
+import type {PoolInteractionTxPool} from '../../../src/onChain/transaction/types'
 
 export const mockWallet: IWallet = {
   getAssets: mock(),
@@ -119,38 +120,45 @@ export const userSharesUtxo = {
   },
 }
 
-export const poolState: PoolState = {
-  utxoId: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe#2',
-  poolUnits: {
-    aTokenUnit: LOVELACE_UNIT,
-    bTokenUnit:
-      '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
-    shareUnit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
+export const pool: PoolInteractionTxPool = {
+  unitA: LOVELACE_UNIT,
+  unitB:
+    '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
+  shareAssetName:
+    '4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
+  poolState: {
+    qtyA: new BigNumber(18_000_000),
+    qtyB: new BigNumber(20_000_000),
+    issuedShares: new BigNumber(20_000_000),
   },
-  assets: [
-    {unit: LOVELACE_UNIT, quantity: '20000000'},
-    {
-      unit: '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
-      quantity: '20000000',
+  utxo: {
+    input: {
+      txHash:
+        'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe',
+      outputIndex: 2,
     },
-    {
-      unit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
-      quantity: maxShareTokens
-        .minus(burnedShareTokens)
-        .minus(20_000_000)
-        .toString(),
+    output: {
+      address: poolScriptAddressByNetwork.preprod,
+      amount: [
+        {unit: LOVELACE_UNIT, quantity: '20000000'},
+        {
+          unit: '659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273',
+          quantity: '20000000',
+        },
+        {
+          unit: `${poolValidatorHash}4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e`,
+          quantity: maxShareTokens
+            .minus(burnedShareTokens)
+            .minus(20_000_000)
+            .toString(),
+        },
+        {
+          unit: createUnit(poolValidatorHash, poolValidityAssetNameHex),
+          quantity: '1',
+        },
+      ],
+      plutusData:
+        'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572730a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
     },
-    {
-      unit: createUnit(poolValidatorHash, poolValidityAssetNameHex),
-      quantity: '1',
-    },
-  ],
-  qtyA: new BigNumber(18_000_000),
-  qtyB: new BigNumber(20_000_000),
-  qtyShares: maxShareTokens.minus(burnedShareTokens).minus(20_000_000),
-  coins: new BigNumber(20_000_000),
-  datumCbor:
-    'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572730a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
-  swapFeePoints: 10,
-  feeBasis: 10_000,
+  },
 }

@@ -1,4 +1,4 @@
-import type {Asset, IFetcher, IWallet} from '@meshsdk/core'
+import type {Asset, IFetcher, IWallet, UTxO} from '@meshsdk/core'
 import {
   type PoolRedeemer,
   poolRefScriptSizeByNetwork,
@@ -10,18 +10,17 @@ import type BigNumber from 'bignumber.js'
 import {poolRedeemerToMesh} from '../redeemers'
 import {getTxFee} from './fee'
 import {initTxBuilder} from './init'
-import {type PoolState, poolStateToUtxo} from './pool-state'
 
 type BuildSpentPoolOutputTxArgs = {
   wallet: IWallet
   fetcher?: IFetcher
-  poolState: PoolState
+  poolUtxo: UTxO
   poolRedeemer: PoolRedeemer
   newPoolAmount: Asset[]
   now?: Date // if not provided, the current date will be used
 }
 
-export type BuildAddLiquidityTxResult = {
+type BuildSpentPoolOutputTxResult = {
   builtTx: string
   txFee: BigNumber
 }
@@ -29,13 +28,12 @@ export type BuildAddLiquidityTxResult = {
 export const buildSpentPoolOutputTx = async ({
   wallet,
   fetcher,
-  poolState,
+  poolUtxo,
   poolRedeemer,
   newPoolAmount,
   now = new Date(),
-}: BuildSpentPoolOutputTxArgs): Promise<BuildAddLiquidityTxResult> => {
+}: BuildSpentPoolOutputTxArgs): Promise<BuildSpentPoolOutputTxResult> => {
   const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
-  const poolUtxo = poolStateToUtxo(network, poolState)
   const {txBuilder} = await initTxBuilder({
     wallet,
     additionalUtxos: [poolRefScriptUtxoByNetwork[network], poolUtxo],
@@ -43,18 +41,12 @@ export const buildSpentPoolOutputTx = async ({
     now,
   })
 
-  const [txHash, outputIndex] = poolState.utxoId.split('#')
-
-  if (!txHash || !outputIndex) {
-    throw new Error(`Invalid utxoId: ${poolState.utxoId}`)
-  }
-
   txBuilder
     .spendingPlutusScriptV3()
     .txIn(
-      txHash,
-      Number(outputIndex),
-      poolState.assets,
+      poolUtxo.input.txHash,
+      poolUtxo.input.outputIndex,
+      poolUtxo.output.amount,
       poolScriptAddressByNetwork[network],
       poolRefScriptSizeByNetwork[network],
     )
@@ -67,7 +59,7 @@ export const buildSpentPoolOutputTx = async ({
     .txInInlineDatumPresent()
     .txInRedeemerValue(poolRedeemerToMesh(poolRedeemer), 'Mesh')
     .txOut(poolScriptAddressByNetwork[network], newPoolAmount)
-    .txOutInlineDatumValue(poolState.datumCbor, 'CBOR')
+    .txOutInlineDatumValue(poolUtxo.output.plutusData!, 'CBOR')
 
   const builtTx = await txBuilder.complete()
   const txFee = await getTxFee(builtTx)
