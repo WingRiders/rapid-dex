@@ -39,6 +39,17 @@ export const fetchTokenMetadata = async (
   }
 }
 
+export const getTokenMetadataFromQueryCache = (
+  unit: Unit,
+  queryClient: QueryClient,
+  trpc: TRPC,
+) => {
+  if (isLovelaceUnit(unit)) return ADA_METADATA
+
+  const metadata = queryClient.getQueryData(trpc.tokenMetadata.queryKey(unit))
+  return metadata ?? getDefaultMetadata(unit)
+}
+
 export const prefetchTokensMetadata = async (
   units: Unit[],
   queryClient: QueryClient,

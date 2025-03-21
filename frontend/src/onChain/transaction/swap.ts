@@ -5,7 +5,7 @@ import type BigNumber from 'bignumber.js'
 import {buildSpentPoolOutputTx} from './spent-pool-output'
 import type {PoolInteractionTxPool} from './types'
 
-type BuildSwapTxArgs = {
+export type BuildSwapTxArgs = {
   wallet: IWallet
   fetcher?: IFetcher
   pool: PoolInteractionTxPool

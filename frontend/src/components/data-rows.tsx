@@ -9,6 +9,8 @@ type DataRowsProps = {
 }
 
 export const DataRows = ({rows, className}: DataRowsProps) => {
+  if (rows.length === 0) return null
+
   return (
     <div className={className}>
       {rows.map(({label, value}) => (

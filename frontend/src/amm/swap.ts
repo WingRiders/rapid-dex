@@ -1,3 +1,4 @@
+import {computeFee} from '@/helpers/fee'
 import BigNumber from 'bignumber.js'
 
 export type ComputeNewReservesParams = {
@@ -21,11 +22,11 @@ export const computeNewReserves = ({
     throw new Error('Provide only one of lockX or outY, not both.')
   if (!lockX && !outY) throw new Error('Either lockX or outY must be provided.')
 
+  const swapFee = computeFee(swapFeePoints, feeBasis)
+
   if (!lockX) {
     // Compute lockX from outY
-    const feeFactor = new BigNumber(1).minus(
-      new BigNumber(swapFeePoints).div(feeBasis),
-    )
+    const feeFactor = new BigNumber(1).minus(swapFee)
     const newY = currentY.minus(outY!)
     lockX = currentX
       .times(outY!)
@@ -35,14 +36,11 @@ export const computeNewReserves = ({
       .integerValue(BigNumber.ROUND_CEIL)
   }
 
-  const swapFee = lockX
-    .times(swapFeePoints)
-    .div(feeBasis)
-    .integerValue(BigNumber.ROUND_CEIL)
+  const paidSwapFee = lockX.times(swapFee).integerValue(BigNumber.ROUND_CEIL)
   const newX = currentX.plus(lockX)
   const newY = currentY
     .times(currentX)
-    .dividedBy(currentX.plus(lockX).minus(swapFee))
+    .dividedBy(currentX.plus(lockX).minus(paidSwapFee))
     .integerValue(BigNumber.ROUND_CEIL)
   const computedOutY = currentY.minus(newY)
   if (outY && computedOutY.lt(outY))
@@ -50,5 +48,5 @@ export const computeNewReserves = ({
       `Computed reserves ({lockX: ${lockX}, outY: ${computedOutY.toString()}} do not satisfy given outY (${outY}).`,
     )
   outY = computedOutY
-  return {newX, newY, lockX, outY}
+  return {newX, newY, lockX, outY, paidSwapFee}
 }

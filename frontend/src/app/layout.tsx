@@ -1,6 +1,7 @@
 import type {Metadata} from 'next'
 import {Geist, Geist_Mono} from 'next/font/google'
 import './globals.css'
+import {Suspense} from 'react'
 import {ReconnectWallet} from '../components/connect-wallet/reconnect-wallet'
 import {QueryProvider} from '../components/query-provider'
 import {ThemeProvider} from '../components/theme-provider'
@@ -40,7 +41,7 @@ const RootLayout = ({
           <QueryProvider>
             <TooltipProvider>
               <AppMenu />
-              {children}
+              <Suspense>{children}</Suspense>
               <Toaster />
               <ReconnectWallet />
             </TooltipProvider>

@@ -7,7 +7,9 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import {ArrowDownUp} from 'lucide-react'
+import Link from 'next/link'
 import {useState} from 'react'
+import {getSwapUrl} from '../app/(with-pools)/swap/search-params'
 import {DEFAULT_PAGE_SIZE} from '../constants'
 import type {PoolsListItem} from '../types'
 import {AssetQuantity} from './asset-quantity'
@@ -59,14 +61,20 @@ const columns: ColumnDef<PoolsListItem>[] = [
   },
   {
     id: 'actions',
-    cell: () => (
+    cell: ({
+      row: {
+        original: {unitA, unitB, shareAssetName},
+      },
+    }) => (
       <div className="flex items-center gap-2">
         <Button variant="outline" size="default">
           Add liquidity
         </Button>
-        <Button variant="outline" size="icon">
-          <span className="sr-only">Swap</span>
-          <ArrowDownUp />
+        <Button variant="outline" size="icon" asChild>
+          <Link href={getSwapUrl(unitA, unitB, shareAssetName)}>
+            <span className="sr-only">Swap</span>
+            <ArrowDownUp />
+          </Link>
         </Button>
       </div>
     ),
