@@ -14,7 +14,7 @@
   "dependencies": {
     "@cardano-ogmios/client": "^6.11.2",
     "@prisma/client": "^6.4.0",
-    "@trpc/server": "^11.0.0-rc.833",
+    "@trpc/server": "^11.0.0",
     "@wingriders/rapid-dex-common": "workspace:^0.1.0",
     "bignumber.js": "^9.1.2",
     "date-fns": "^4.1.0",
