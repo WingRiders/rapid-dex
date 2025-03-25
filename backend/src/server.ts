@@ -1,43 +1,42 @@
-import type {BunRequest} from 'bun'
-import {createBunHttpHandler} from 'trpc-bun-adapter'
+import {createServer} from 'node:http'
+import {createHTTPHandler} from '@trpc/server/adapters/standalone'
+import {applyWSSHandler} from '@trpc/server/adapters/ws'
+import cors from 'cors'
+import {WebSocketServer} from 'ws'
 import {aggregatorAppRouter, serverAppRouter} from './appRouter'
-import {config} from './config'
+import {config, isProd} from './config'
 import {handleTokenImageRequest} from './endpoints/tokenImage'
+import {getCorsOptions} from './helpers/cors'
 import {logger} from './logger'
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'OPTIONS, POST',
-  'Access-Control-Allow-Headers': 'Content-Type',
-}
-
 export const startServer = () => {
-  const trpcHandler = createBunHttpHandler({
-    endpoint: '',
-    router:
-      config.MODE === 'aggregator' ? aggregatorAppRouter : serverAppRouter,
-    createContext: (_opts) => ({}),
+  const router =
+    config.MODE === 'aggregator' ? aggregatorAppRouter : serverAppRouter
+
+  const trpcHandler = createHTTPHandler({
+    router,
+    middleware: config.CORS_ENABLED_FOR
+      ? cors(getCorsOptions(config.CORS_ENABLED_FOR, isProd))
+      : undefined,
   })
 
-  Bun.serve({
-    port: config.SERVER_PORT,
-    routes: {
-      '/token-image/:unit': (req: BunRequest<'/token-image/:unit'>) =>
-        handleTokenImageRequest(req.params.unit),
-    },
-    async fetch(request, response) {
-      if (request.method === 'OPTIONS')
-        return new Response('Departed', {headers: CORS_HEADERS})
-
-      const trpcResponse = await trpcHandler(request, response)
-      if (!trpcResponse) return new Response('Not found', {status: 404})
-
-      Object.entries(CORS_HEADERS).forEach(([key, value]) => {
-        trpcResponse.headers.set(key, value)
-      })
-      return trpcResponse
-    },
+  // HTTP server
+  const server = createServer((req, res) => {
+    if (req.url?.match(/^\/token-image\/.+$/)) {
+      handleTokenImageRequest(req.url.split('/').pop()!, res)
+    } else {
+      trpcHandler(req, res)
+    }
   })
 
-  logger.info(`Running server on port ${config.SERVER_PORT}`)
+  // WebSocket server
+  const wss = new WebSocketServer({server})
+  applyWSSHandler({
+    wss,
+    router,
+  })
+
+  server.listen(config.SERVER_PORT)
+
+  logger.info(`Server is running on port ${config.SERVER_PORT}`)
 }

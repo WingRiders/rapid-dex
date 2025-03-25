@@ -10,6 +10,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   OGMIOS_HOST: z.string(),
   OGMIOS_PORT: z.coerce.number().positive(),
+  CORS_ENABLED_FOR: z.string().optional(),
 })
 
 const parsedEnv = envSchema.safeParse(process.env)
@@ -24,3 +25,5 @@ if (!parsedEnv.success) {
 }
 
 export const config = parsedEnv.data
+
+export const isProd = config.NODE_ENV === 'production'

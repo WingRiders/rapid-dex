@@ -94,7 +94,7 @@ const SwapPage = () => {
           aToB: from.unit === selectedRoute.pool.unitA,
           pool: {
             ...selectedRoute.pool,
-            utxo: selectedPoolUtxo,
+            utxo: selectedPoolUtxo.utxo,
           },
         }
       : undefined,

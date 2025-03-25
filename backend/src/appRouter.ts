@@ -6,6 +6,7 @@ import {healthcheck} from './endpoints/healthcheck'
 import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
+import {poolsUpdatesEventEmitterIterable} from './poolsUpdates'
 
 augmentSuperJSON()
 
@@ -29,6 +30,42 @@ export const serverAppRouter = t.router({
   tokenMetadata: publicProcedure
     .input(z.string())
     .query(({input}) => getTokenMetadata(input)),
+  onPoolStateUpdated: publicProcedure.subscription(async function* (opts) {
+    for await (const [payload] of poolsUpdatesEventEmitterIterable(
+      'poolStateUpdated',
+      {signal: opts.signal},
+    )) {
+      yield payload
+    }
+  }),
+  onPoolUtxoUpdated: publicProcedure
+    .input(z.object({shareAssetName: z.string()}))
+    .subscription(async function* (opts) {
+      for await (const [payload] of poolsUpdatesEventEmitterIterable(
+        'poolUtxoUpdated',
+        {signal: opts.signal},
+      )) {
+        if (payload.shareAssetName === opts.input.shareAssetName) {
+          yield payload
+        }
+      }
+    }),
+  onPoolCreated: publicProcedure.subscription(async function* (opts) {
+    for await (const [payload] of poolsUpdatesEventEmitterIterable(
+      'poolCreated',
+      {signal: opts.signal},
+    )) {
+      yield payload
+    }
+  }),
+  onPoolRolledBack: publicProcedure.subscription(async function* (opts) {
+    for await (const [payload] of poolsUpdatesEventEmitterIterable(
+      'poolRolledBack',
+      {signal: opts.signal},
+    )) {
+      yield payload
+    }
+  }),
 })
 
 // export type definition of API

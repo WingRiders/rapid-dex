@@ -1,9 +1,10 @@
-import type {Asset, UTxO} from '@meshsdk/core'
-import {LOVELACE_UNIT, parseUtxoId} from '@wingriders/rapid-dex-common'
+import {dbPoolOutputToUtxo} from '../db/helpers'
 import {prisma} from '../db/prismaClient'
 
 export const getPoolUtxo = async (shareAssetName: string) => {
-  const pool = await prisma.poolOutput.findFirstOrThrow({
+  const validAt = new Date()
+
+  const poolOutput = await prisma.poolOutput.findFirstOrThrow({
     where: {
       spendSlot: null,
       shareAssetName,
@@ -16,17 +17,6 @@ export const getPoolUtxo = async (shareAssetName: string) => {
       address: true,
     },
   })
-  const utxo: UTxO = {
-    input: parseUtxoId(pool.utxoId),
-    output: {
-      address: pool.address,
-      amount: (pool.assets as Asset[]).concat({
-        unit: LOVELACE_UNIT,
-        quantity: pool.coins.toString(),
-      }),
-      plutusData: pool.datumCBOR,
-    },
-  }
 
-  return utxo
+  return {utxo: dbPoolOutputToUtxo(poolOutput), validAt}
 }

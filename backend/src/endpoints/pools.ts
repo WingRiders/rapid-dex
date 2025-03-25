@@ -1,13 +1,11 @@
-import {
-  type PoolState,
-  bigintToBigNumber,
-  createUnit,
-  maxShareTokens,
-} from '@wingriders/rapid-dex-common'
+import {} from '@wingriders/rapid-dex-common'
+import {dbPoolOutputToPool} from '../db/helpers'
 import {prisma} from '../db/prismaClient'
 
 export const getPools = async () => {
-  const pools = await prisma.poolOutput.findMany({
+  const validAt = new Date()
+
+  const poolOutputs = await prisma.poolOutput.findMany({
     where: {
       spendSlot: null,
     },
@@ -25,19 +23,8 @@ export const getPools = async () => {
     },
   })
 
-  return pools.map((pool) => {
-    const poolState: PoolState = {
-      qtyA: bigintToBigNumber(pool.qtyA),
-      qtyB: bigintToBigNumber(pool.qtyB),
-      issuedShares: maxShareTokens.minus(bigintToBigNumber(pool.lpts)),
-    }
-    return {
-      unitA: createUnit(pool.assetAPolicy, pool.assetAName),
-      unitB: createUnit(pool.assetBPolicy, pool.assetBName),
-      shareAssetName: pool.shareAssetName,
-      poolState,
-      swapFeePoints: pool.swapFeePoints,
-      feeBasis: pool.feeBasis,
-    }
-  })
+  return poolOutputs.map((poolOutput) => ({
+    validAt,
+    ...dbPoolOutputToPool(poolOutput),
+  }))
 }

@@ -1,5 +1,5 @@
 import {createChainSynchronizationClient} from '@cardano-ogmios/client'
-import type {BlockPraos, Point} from '@cardano-ogmios/schema'
+import type {BlockPraos, Origin, Point, Tip} from '@cardano-ogmios/schema'
 import {
   getUtxoId,
   poolDatumFromCbor,
@@ -8,6 +8,11 @@ import {
 } from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {
+  dbPoolOutputToPool,
+  dbPoolOutputToPoolState,
+  dbPoolOutputToUtxo,
+} from '../db/helpers'
+import {
   type Block,
   type PoolOutput,
   type Prisma,
@@ -15,6 +20,12 @@ import {
 } from '../db/prismaClient'
 import {originPoint} from '../helpers'
 import {logger} from '../logger'
+import {
+  emitPoolCreated,
+  emitPoolStateUpdated,
+  emitPoolUpdatesOnRollback,
+  emitPoolUtxoUpdated,
+} from '../poolsUpdates'
 import {isPoolOutput} from './helpers'
 import {getOgmiosContext} from './ogmios'
 import {ogmiosMetadataToJson} from './ogmiosMetadataToJson'
@@ -32,7 +43,9 @@ import {
 const BUFFER_SIZE = 10_000
 
 // Aggregation logic is here
-const processBlock = async (block: BlockPraos) => {
+const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
+  const isFullySynced = tip !== 'origin' && block.height === tip.height
+
   blockBuffer.push({
     slot: block.slot,
     hash: block.id,
@@ -43,6 +56,14 @@ const processBlock = async (block: BlockPraos) => {
   // - Check for any inputs spending tracked PoolOutputs
   // - Handle pool outputs
   block.transactions?.forEach((tx) => {
+    const hasPoolInInputsIfFullySynced =
+      isFullySynced &&
+      // do this loop only if isFullySynced is true because that's only when we need it
+      tx.inputs.some((input) =>
+        poolOutputExists(
+          getUtxoId({txHash: input.transaction.id, outputIndex: input.index}),
+        ),
+      )
     tx.outputs.forEach((output, outputIndex) => {
       // Handle pool output
       if (isPoolOutput(output)) {
@@ -84,6 +105,30 @@ const processBlock = async (block: BlockPraos) => {
           scriptVersion: script?.version ?? null,
           scriptCBOR: script?.cbor ?? null,
         }
+
+        if (isFullySynced) {
+          const validAt = new Date()
+          if (hasPoolInInputsIfFullySynced) {
+            emitPoolStateUpdated({
+              shareAssetName: poolDatum.sharesAssetName,
+              poolState: dbPoolOutputToPoolState(poolOutput),
+              validAt,
+            })
+            emitPoolUtxoUpdated({
+              shareAssetName: poolDatum.sharesAssetName,
+              utxo: dbPoolOutputToUtxo(poolOutput),
+              validAt,
+            })
+          } else {
+            emitPoolCreated({
+              pool: {
+                ...dbPoolOutputToPool(poolOutput),
+                validAt,
+              },
+            })
+          }
+        }
+
         poolOutputBuffer.push(poolOutput)
       }
     })
@@ -123,6 +168,7 @@ const processBlock = async (block: BlockPraos) => {
 const processRollback = async (point: 'origin' | Point) => {
   logger.info(point, 'Rollback')
   const rollbackSlot = point === 'origin' ? originPoint.slot : point.slot
+  await emitPoolUpdatesOnRollback(rollbackSlot)
   await prisma.$transaction((prismaTx) =>
     prismaTx.block.deleteMany({where: {slot: {gt: rollbackSlot}}}),
   )
@@ -250,7 +296,7 @@ export const startChainSyncClient = async () => {
           'Roll forward',
         )
 
-        await processBlock(response.block)
+        await processBlock(response.block, response.tip)
 
         const latestLedgerHeight =
           response.tip === 'origin' ? originPoint.height : response.tip.height
