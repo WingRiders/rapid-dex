@@ -77,12 +77,13 @@ const transformSwapValues = (
     | 'toUnit'
     | 'toQuantity'
     | 'shareAssetName'
-    | 'init',
+    | 'init'
+    | 'pools',
   pools: PoolsListItem[] | undefined,
 ): SwapFormValues => {
   const transformedValues: SwapFormValues = values
 
-  if (['fromUnit', 'toUnit', 'init'].includes(trigger)) {
+  if (['fromUnit', 'toUnit', 'init', 'pools'].includes(trigger)) {
     if (values.from.unit && values.to.unit && pools) {
       const newAvailableRoutes = pools
         .filter(matchPoolForSwapUnits(values.from.unit, values.to.unit))
@@ -104,7 +105,12 @@ const transformSwapValues = (
         values.from.unit,
         {type: 'lockX', value: values.from.quantity},
       )
-      const selectedRoute = newAvailableRoutes[0]
+      const selectedRoute =
+        values.isSelectedRouteLocked && values.shareAssetName
+          ? newAvailableRoutes.find(
+              ({pool}) => pool.shareAssetName === values.shareAssetName,
+            )
+          : newAvailableRoutes[0]
 
       return {
         ...values,
@@ -124,7 +130,14 @@ const transformSwapValues = (
       values.to.unit,
       {type: 'outY', value: values.to.quantity},
     )
-    const selectedRoute = newAvailableRoutes[0]
+    const selectedRoute =
+      values.isSelectedRouteLocked && values.shareAssetName
+        ? newAvailableRoutes.find(
+            ({pool}) => pool.shareAssetName === values.shareAssetName,
+          )
+        : (newAvailableRoutes.filter(
+            ({swapQuantities}) => swapQuantities != null,
+          )[0] ?? newAvailableRoutes[0])
 
     return {
       ...values,
@@ -307,6 +320,13 @@ export const useSwapForm = ({
     swapFormValues.shareAssetName,
     setUrlValues,
   ])
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: we want to update the swap form values when the pools change
+  useEffect(() => {
+    if (pools) {
+      setSwapFormValues(transformSwapValues(swapFormValues, 'pools', pools))
+    }
+  }, [pools])
 
   const onFromValueChange = useCallback(
     (

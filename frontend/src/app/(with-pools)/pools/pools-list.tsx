@@ -2,13 +2,11 @@
 
 import {ErrorAlert} from '@/components/error-alert'
 import {PoolsTable} from '@/components/pools-table'
-import {useTRPC} from '@/trpc/client'
-import {useQuery} from '@tanstack/react-query'
+import {usePoolsQuery} from '@/helpers/pool'
 import {Loader2} from 'lucide-react'
 
 export const PoolsList = () => {
-  const trpc = useTRPC()
-  const {data: pools, isLoading, error} = useQuery(trpc.pools.queryOptions())
+  const {data: pools, isLoading, error} = usePoolsQuery()
 
   if (isLoading)
     return (

@@ -1,4 +1,5 @@
 import {HydrateClient} from '@/components/hydrate-client'
+import {LivePoolsUpdate} from '@/components/live-pools-update'
 import {prefetchTokensMetadata} from '@/metadata/queries'
 import {getQueryClient, trpc} from '@/trpc/server'
 import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
@@ -28,7 +29,12 @@ const RootLayout = async ({
     console.error(error)
   }
 
-  return <HydrateClient>{children}</HydrateClient>
+  return (
+    <HydrateClient>
+      {children}
+      <LivePoolsUpdate />
+    </HydrateClient>
+  )
 }
 
 export default RootLayout

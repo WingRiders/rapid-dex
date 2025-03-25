@@ -7,13 +7,13 @@ import {ErrorAlert} from '@/components/error-alert'
 import {TxSubmittedDialog} from '@/components/tx-submitted-dialog'
 import {Button} from '@/components/ui/button'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
+import {useLivePoolUtxoQuery, usePoolsQuery} from '@/helpers/pool'
 import {useBuildSwapTxQuery} from '@/onChain/transaction/queries'
-import {useTRPC} from '@/trpc/client'
 import {
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
 } from '@/wallet/queries'
-import {skipToken, useQuery} from '@tanstack/react-query'
+import {skipToken} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import {compact} from 'lodash'
 import {ArrowDownUpIcon} from 'lucide-react'
@@ -23,10 +23,8 @@ import {RouteSelectButton} from './route-select-button'
 import {useSwapForm, useValidateSwapForm} from './swap-form'
 
 const SwapPage = () => {
-  const trpc = useTRPC()
-
   const {data: balance} = useWalletBalanceQuery()
-  const {data: pools} = useQuery(trpc.pools.queryOptions())
+  const {data: pools} = usePoolsQuery()
 
   const {swapUnits, shareAssetNames} = useMemo(() => {
     if (!pools) return {swapUnits: undefined, shareAssetNames: undefined}
@@ -67,9 +65,11 @@ const SwapPage = () => {
       ? availableRoutes?.[selectedRouteIndex]
       : undefined
 
-  const {data: selectedPoolUtxo} = useQuery(
-    trpc.poolUtxo.queryOptions(shareAssetName ? {shareAssetName} : skipToken),
-  )
+  const {
+    data: selectedPoolUtxo,
+    isLoading: isLoadingSelectedPoolUtxo,
+    error: selectedPoolUtxoError,
+  } = useLivePoolUtxoQuery(shareAssetName ? {shareAssetName} : skipToken)
 
   const {
     mutate: signAndSubmitTx,
@@ -158,9 +158,14 @@ const SwapPage = () => {
               <Button
                 size="lg"
                 className=" w-full"
-                loading={isLoadingBuildTx || isSigningAndSubmittingTx}
+                loading={
+                  isLoadingBuildTx ||
+                  isSigningAndSubmittingTx ||
+                  isLoadingSelectedPoolUtxo
+                }
                 disabled={
                   isLoadingBuildTx ||
+                  isLoadingSelectedPoolUtxo ||
                   !isValid ||
                   !buildSwapTxResult ||
                   isSigningAndSubmittingTx
@@ -222,6 +227,13 @@ const SwapPage = () => {
           <ErrorAlert
             title="Error while building transaction"
             description={buildSwapTxError.message}
+            className="mt-2"
+          />
+        )}
+        {selectedPoolUtxoError && (
+          <ErrorAlert
+            title="Error while fetching pool UTxO"
+            description={selectedPoolUtxoError.message}
             className="mt-2"
           />
         )}
