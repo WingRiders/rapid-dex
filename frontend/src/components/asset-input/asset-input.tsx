@@ -1,3 +1,4 @@
+import {UnitDisplay} from '../unit-display'
 import {QuantityInput} from './quantity-input'
 import type {AssetInputItem, AssetInputValue} from './types'
 import {UnitSelect} from './unit-select'
@@ -7,6 +8,7 @@ export type AssetInputProps = {
   value: AssetInputValue
   onChange: (value: AssetInputValue) => void
   disabled?: boolean
+  singleItem?: boolean
   noItemsMessage?: string
   emptyItemsMessage?: string
 }
@@ -16,19 +18,26 @@ export const AssetInput = ({
   value,
   onChange,
   disabled,
+  singleItem,
   noItemsMessage,
   emptyItemsMessage,
 }: AssetInputProps) => {
   return (
     <div className="flex flex-row items-stretch gap-2 rounded-md bg-gray-800 p-3">
-      <UnitSelect
-        items={items}
-        value={value.unit}
-        onChange={(unit) => onChange({...value, unit})}
-        disabled={disabled}
-        noItemsMessage={noItemsMessage}
-        emptyItemsMessage={emptyItemsMessage}
-      />
+      {singleItem ? (
+        <div className="px-4 py-3">
+          {value.unit ? <UnitDisplay unit={value.unit} /> : 'No asset'}
+        </div>
+      ) : (
+        <UnitSelect
+          items={items}
+          value={value.unit}
+          onChange={(unit) => onChange({...value, unit})}
+          disabled={disabled}
+          noItemsMessage={noItemsMessage}
+          emptyItemsMessage={emptyItemsMessage}
+        />
+      )}
 
       <div className="flex-1">
         <QuantityInput

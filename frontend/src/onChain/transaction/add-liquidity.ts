@@ -5,7 +5,7 @@ import {getNewPoolAmount} from './pool-state'
 import {buildSpentPoolOutputTx} from './spent-pool-output'
 import type {PoolInteractionTxPool} from './types'
 
-type BuildAddLiquidityTxArgs = {
+export type BuildAddLiquidityTxArgs = {
   wallet: IWallet
   fetcher?: IFetcher
   pool: PoolInteractionTxPool

@@ -172,3 +172,32 @@ a {
     cursor: pointer;
   }
 }
+
+/* Accordion */
+.animated-accordion-content {
+  overflow: hidden;
+}
+.animated-accordion-content[data-state="open"] {
+  animation: slideDown 150ms ease-out;
+}
+.animated-accordion-content[data-state="closed"] {
+  animation: slideUp 150ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}

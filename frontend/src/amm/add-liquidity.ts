@@ -1,31 +1,32 @@
-import {maxShareTokens} from '@wingriders/rapid-dex-common'
+import type {PoolState} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 
-type ComputeEarnedSharesParams = {
+export type ComputeEarnedSharesParams = {
   lockA: BigNumber
   lockB: BigNumber
-  currentA: BigNumber
-  currentB: BigNumber
-  currentShares: BigNumber
+  poolState: PoolState
 }
 
 export const computeEarnedShares = ({
   lockA,
   lockB,
-  currentA,
-  currentB,
-  currentShares,
+  poolState,
 }: ComputeEarnedSharesParams) => {
-  const totalEmittedShares = maxShareTokens.minus(currentShares)
   const computeEarnedSharesFromOneToken = (
     lockX: BigNumber,
     currentX: BigNumber,
   ) =>
     lockX
-      .multipliedBy(totalEmittedShares)
+      .multipliedBy(poolState.issuedShares)
       .dividedBy(currentX)
       .integerValue(BigNumber.ROUND_FLOOR)
-  const earnedSharesFromA = computeEarnedSharesFromOneToken(lockA, currentA)
-  const earnedSharesFromB = computeEarnedSharesFromOneToken(lockB, currentB)
+  const earnedSharesFromA = computeEarnedSharesFromOneToken(
+    lockA,
+    poolState.qtyA,
+  )
+  const earnedSharesFromB = computeEarnedSharesFromOneToken(
+    lockB,
+    poolState.qtyB,
+  )
   return BigNumber.min(earnedSharesFromA, earnedSharesFromB)
 }
