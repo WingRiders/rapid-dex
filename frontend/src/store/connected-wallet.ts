@@ -17,7 +17,10 @@ export type ConnectedWalletState = {
   connectedWalletType: SupportedWalletType | null
   connectedWallet: ConnectedWallet | null
   isWalletConnecting: boolean
-  connectWallet: (walletType: SupportedWalletType) => Promise<void>
+  connectWallet: (
+    walletType: SupportedWalletType,
+    walletApi?: BrowserWallet,
+  ) => Promise<void>
   disconnectWallet: () => void
 }
 
@@ -27,11 +30,11 @@ export const useConnectedWalletStore = create<ConnectedWalletState>()(
       connectedWalletType: null,
       connectedWallet: null,
       isWalletConnecting: false,
-      connectWallet: async (walletType) => {
+      connectWallet: async (walletType, walletApi) => {
         set({isWalletConnecting: true})
         try {
           const walletId = supportedWalletsInfo[walletType].id
-          const wallet = await BrowserWallet.enable(walletId)
+          const wallet = walletApi ?? (await BrowserWallet.enable(walletId))
           const [address, networkId] = await Promise.all([
             wallet.getChangeAddress(),
             wallet.getNetworkId(),

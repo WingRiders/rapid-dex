@@ -87,7 +87,8 @@ const SwapPage = () => {
     isAssetInputValueNonEmpty(from) &&
       isAssetInputValueNonEmpty(to) &&
       selectedRoute &&
-      selectedPoolUtxo
+      selectedPoolUtxo &&
+      isValid
       ? {
           lockX: from.quantity,
           outY: to.quantity,

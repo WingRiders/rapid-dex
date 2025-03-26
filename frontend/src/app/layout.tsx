@@ -2,7 +2,7 @@ import type {Metadata} from 'next'
 import {Geist, Geist_Mono} from 'next/font/google'
 import './globals.css'
 import {Suspense} from 'react'
-import {ReconnectWallet} from '../components/connect-wallet/reconnect-wallet'
+import {WalletStateHandler} from '../components/connect-wallet/wallet-state-handler'
 import {QueryProvider} from '../components/query-provider'
 import {ThemeProvider} from '../components/theme-provider'
 import {Toaster} from '../components/ui/sonner'
@@ -43,7 +43,7 @@ const RootLayout = ({
               <AppMenu />
               <Suspense>{children}</Suspense>
               <Toaster />
-              <ReconnectWallet />
+              <WalletStateHandler />
             </TooltipProvider>
           </QueryProvider>
         </ThemeProvider>
