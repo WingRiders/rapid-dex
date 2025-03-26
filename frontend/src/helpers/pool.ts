@@ -3,9 +3,9 @@ import {skipToken, useQuery, useQueryClient} from '@tanstack/react-query'
 import {useSubscription} from '@trpc/tanstack-react-query'
 import {keyBy} from 'lodash'
 
-export const usePoolsQuery = () => {
+export const usePoolsQuery = (options?: {enabled?: boolean}) => {
   const trpc = useTRPC()
-  const queryOptions = trpc.pools.queryOptions()
+  const queryOptions = trpc.pools.queryOptions(undefined, options)
 
   return useQuery({
     ...queryOptions,

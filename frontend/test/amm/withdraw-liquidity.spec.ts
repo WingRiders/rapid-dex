@@ -1,14 +1,18 @@
 import {describe, expect, it} from 'bun:test'
-import {computeReturnedTokens} from '@/amm/withdraw-liquidity'
-import {maxShareTokens} from '@wingriders/rapid-dex-common'
+import {
+  type ComputeWithdrawnTokensParams,
+  computeReturnedTokens,
+} from '@/amm/withdraw-liquidity'
 import BigNumber from 'bignumber.js'
 
 describe('computeReturnedTokens', () => {
-  const params = {
+  const params: ComputeWithdrawnTokensParams = {
     lockShares: new BigNumber(100),
-    currentA: new BigNumber(1000),
-    currentB: new BigNumber(1000),
-    currentShares: maxShareTokens.minus(1000),
+    poolState: {
+      qtyA: new BigNumber(1000),
+      qtyB: new BigNumber(1000),
+      issuedShares: new BigNumber(1000),
+    },
   }
 
   it('should compute returned tokens correctly', () => {

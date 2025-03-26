@@ -1,5 +1,6 @@
 import {computeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
+import type {PortfolioItem} from '@/helpers/portfolio'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
 import {useState} from 'react'
@@ -19,7 +20,9 @@ import {
   DialogTitle,
 } from '../ui/dialog'
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '../ui/tabs'
+import {Tooltip, TooltipContent, TooltipTrigger} from '../ui/tooltip'
 import {AddLiquidityContent} from './add-liquidity-content'
+import {WithdrawLiquidityContent} from './withdraw-liquidity-content'
 
 enum LiquidityManagementTab {
   ADD_LIQUIDITY = 'add-liquidity',
@@ -28,16 +31,23 @@ enum LiquidityManagementTab {
 
 type LiquidityManagementDialogProps = Pick<DialogProps, 'onOpenChange'> & {
   pool: PoolsListItem | null
+  portfolioItem?: PortfolioItem
 }
 
 export const LiquidityManagementDialog = ({
   onOpenChange,
   pool,
+  portfolioItem,
 }: LiquidityManagementDialogProps) => {
   return (
     <Dialog open={!!pool} onOpenChange={onOpenChange}>
       <DialogContent onInteractOutside={(e) => e.preventDefault()}>
-        {pool && <LiquidityManagementDialogContent pool={pool} />}
+        {pool && (
+          <LiquidityManagementDialogContent
+            pool={pool}
+            portfolioItem={portfolioItem}
+          />
+        )}
       </DialogContent>
     </Dialog>
   )
@@ -45,10 +55,12 @@ export const LiquidityManagementDialog = ({
 
 type LiquidityManagementDialogContentProps = {
   pool: PoolsListItem
+  portfolioItem?: PortfolioItem
 }
 
 const LiquidityManagementDialogContent = ({
   pool,
+  portfolioItem,
 }: LiquidityManagementDialogContentProps) => {
   const [currentTab, setCurrentTab] = useState<LiquidityManagementTab>(
     LiquidityManagementTab.ADD_LIQUIDITY,
@@ -60,6 +72,8 @@ const LiquidityManagementDialogContent = ({
   const unitBTicker = unitBMetadata?.ticker ?? 'Unknown'
 
   const poolLabel = `${unitATicker} / ${unitBTicker}`
+
+  const isInPortfolio = portfolioItem != null
 
   return (
     <DialogHeader>
@@ -116,17 +130,34 @@ const LiquidityManagementDialogContent = ({
             <TabsTrigger value={LiquidityManagementTab.ADD_LIQUIDITY}>
               Add liquidity
             </TabsTrigger>
-            <TabsTrigger value={LiquidityManagementTab.WITHDRAW_LIQUIDITY}>
-              Withdraw liquidity
-            </TabsTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-center">
+                  <TabsTrigger
+                    value={LiquidityManagementTab.WITHDRAW_LIQUIDITY}
+                    disabled={!isInPortfolio}
+                  >
+                    Withdraw liquidity
+                  </TabsTrigger>
+                </div>
+              </TooltipTrigger>
+
+              {!isInPortfolio && (
+                <TooltipContent>
+                  You don't have any liquidity in this pool.
+                </TooltipContent>
+              )}
+            </Tooltip>
           </TabsList>
 
           <TabsContent value={LiquidityManagementTab.ADD_LIQUIDITY}>
             <AddLiquidityContent pool={pool} />
           </TabsContent>
-          <TabsContent value={LiquidityManagementTab.WITHDRAW_LIQUIDITY}>
-            Withdraw liquidity
-          </TabsContent>
+          {isInPortfolio && (
+            <TabsContent value={LiquidityManagementTab.WITHDRAW_LIQUIDITY}>
+              <WithdrawLiquidityContent portfolioItem={portfolioItem} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </DialogHeader>

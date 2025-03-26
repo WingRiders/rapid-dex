@@ -16,7 +16,11 @@ export const DataRows = ({rows, className}: DataRowsProps) => {
       {rows.map(({label, value}) => (
         <div key={label} className="flex flex-row justify-between">
           <p className="text-md text-muted-foreground">{label}</p>
-          <p className="text-md">{value}</p>
+          {typeof value === 'string' ? (
+            <p className="text-md">{value}</p>
+          ) : (
+            value
+          )}
         </div>
       ))}
     </div>

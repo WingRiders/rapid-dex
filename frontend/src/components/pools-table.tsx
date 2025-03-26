@@ -6,11 +6,13 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import type {Dictionary} from 'lodash'
 import {ArrowDownUp} from 'lucide-react'
 import Link from 'next/link'
 import {useMemo, useState} from 'react'
 import {getSwapUrl} from '../app/(with-pools)/swap/search-params'
 import {DEFAULT_PAGE_SIZE} from '../constants'
+import type {PortfolioItem} from '../helpers/portfolio'
 import type {PoolsListItem} from '../types'
 import {AssetQuantity} from './asset-quantity'
 import {LiquidityManagementDialog} from './liquidity-management/liquidity-management-dialog'
@@ -21,9 +23,14 @@ import {UnitPairDisplay} from './unit-pair-display'
 
 type PoolsTableProps = {
   pools: PoolsListItem[]
+  portfolioItems?: Dictionary<PortfolioItem>
 }
 
-export const PoolsTable = ({pools}: PoolsTableProps) => {
+type PoolsTableMeta = {
+  portfolioItems?: Dictionary<PortfolioItem>
+}
+
+export const PoolsTable = ({pools, portfolioItems}: PoolsTableProps) => {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -76,28 +83,41 @@ export const PoolsTable = ({pools}: PoolsTableProps) => {
       },
       {
         id: 'actions',
-        cell: ({row: {original: pool}}) => (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="default"
-              onClick={() => setLiquidityManagementPool(pool)}
-            >
-              Manage liquidity
-            </Button>
-            <Button variant="outline" size="icon" asChild>
-              <Link
-                href={getSwapUrl(pool.unitA, pool.unitB, pool.shareAssetName)}
+        cell: ({row: {original: pool}, table}) => {
+          const {portfolioItems} = table.options.meta as PoolsTableMeta
+          const portfolioItem = portfolioItems?.[pool.shareAssetName]
+          const isInPortfolio = portfolioItem != null
+
+          return (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => setLiquidityManagementPool(pool)}
               >
-                <span className="sr-only">Swap</span>
-                <ArrowDownUp />
-              </Link>
-            </Button>
-          </div>
-        ),
+                {isInPortfolio ? 'Manage liquidity' : 'Add liquidity'}{' '}
+              </Button>
+              <Button variant="outline" size="icon" asChild>
+                <Link
+                  href={getSwapUrl(pool.unitA, pool.unitB, pool.shareAssetName)}
+                >
+                  <span className="sr-only">Swap</span>
+                  <ArrowDownUp />
+                </Link>
+              </Button>
+            </div>
+          )
+        },
       },
     ],
     [],
+  )
+
+  const meta = useMemo<PoolsTableMeta>(
+    () => ({
+      portfolioItems,
+    }),
+    [portfolioItems],
   )
 
   const table = useReactTable({
@@ -109,6 +129,7 @@ export const PoolsTable = ({pools}: PoolsTableProps) => {
     state: {
       pagination,
     },
+    meta,
   })
 
   return (
@@ -116,6 +137,11 @@ export const PoolsTable = ({pools}: PoolsTableProps) => {
       <DataTable table={table} />
       <LiquidityManagementDialog
         pool={liquidityManagementPool}
+        portfolioItem={
+          liquidityManagementPool
+            ? portfolioItems?.[liquidityManagementPool.shareAssetName]
+            : undefined
+        }
         onOpenChange={(open) => {
           if (!open) setLiquidityManagementPool(null)
         }}

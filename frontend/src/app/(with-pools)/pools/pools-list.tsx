@@ -3,10 +3,12 @@
 import {ErrorAlert} from '@/components/error-alert'
 import {PoolsTable} from '@/components/pools-table'
 import {usePoolsQuery} from '@/helpers/pool'
+import {usePortfolioQuery} from '@/helpers/portfolio'
 import {Loader2} from 'lucide-react'
 
 export const PoolsList = () => {
   const {data: pools, isLoading, error} = usePoolsQuery()
+  const {portfolioItems} = usePortfolioQuery()
 
   if (isLoading)
     return (
@@ -27,5 +29,5 @@ export const PoolsList = () => {
 
   if (!pools) return null
 
-  return <PoolsTable pools={pools} />
+  return <PoolsTable pools={pools} portfolioItems={portfolioItems} />
 }

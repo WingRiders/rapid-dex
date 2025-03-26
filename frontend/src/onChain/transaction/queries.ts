@@ -7,6 +7,10 @@ import {
 } from './add-liquidity'
 import {type BuildCreatePoolTxArgs, buildCreatePoolTx} from './create-pool'
 import {type BuildSwapTxArgs, buildSwapTx} from './swap'
+import {
+  type BuildWithdrawLiquidityTxArgs,
+  buildWithdrawLiquidityTx,
+} from './withdraw-liquidity'
 
 export const useBuildCreatePoolTxQuery = (
   args: BuildCreatePoolTxArgs | undefined,
@@ -45,5 +49,21 @@ export const useBuildAddLiquidityTxQuery = (
     queryKey: ['build-add-liquidity-tx', args, wallet],
     queryFn:
       wallet && args ? () => buildAddLiquidityTx({...args, wallet}) : skipToken,
+  })
+}
+
+export const useBuildWithdrawLiquidityTxQuery = (
+  args: Omit<BuildWithdrawLiquidityTxArgs, 'wallet'> | undefined,
+) => {
+  const wallet = useConnectedWalletStore(
+    useShallow((state) => state.connectedWallet?.wallet),
+  )
+
+  return useQuery({
+    queryKey: ['build-withdraw-liquidity-tx', args, wallet],
+    queryFn:
+      wallet && args
+        ? () => buildWithdrawLiquidityTx({...args, wallet})
+        : skipToken,
   })
 }
