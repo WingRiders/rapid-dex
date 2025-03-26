@@ -6,6 +6,7 @@ import {createUnit, poolValidatorHash} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {compact, keyBy} from 'lodash'
 import {usePoolsQuery} from './pool'
+import {queryKeyFactory} from './query-key'
 
 export type PortfolioItem = {
   pool: PoolsListItem
@@ -23,7 +24,7 @@ export const usePortfolioQuery = () => {
   const {data: balance, isLoading: isLoadingBalance} = useWalletBalanceQuery()
 
   const {data: portfolioItems, isLoading: isLoadingPortfolioItems} = useQuery({
-    queryKey: ['wallet', 'portfolio', pools, balance],
+    queryKey: queryKeyFactory.portfolio({pools, balance}),
     queryFn:
       pools && balance
         ? () => {

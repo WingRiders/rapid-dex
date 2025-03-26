@@ -1,3 +1,4 @@
+import {queryKeyFactory} from '@/helpers/query-key'
 import {skipToken, useQuery} from '@tanstack/react-query'
 import {useShallow} from 'zustand/shallow'
 import {useConnectedWalletStore} from '../../store/connected-wallet'
@@ -13,15 +14,16 @@ import {
 } from './withdraw-liquidity'
 
 export const useBuildCreatePoolTxQuery = (
-  args: BuildCreatePoolTxArgs | undefined,
+  args: Omit<BuildCreatePoolTxArgs, 'wallet'> | undefined,
 ) => {
   const wallet = useConnectedWalletStore(
     useShallow((state) => state.connectedWallet?.wallet),
   )
 
   return useQuery({
-    queryKey: ['build-create-pool-tx', args, wallet],
-    queryFn: wallet && args ? () => buildCreatePoolTx(args) : skipToken,
+    queryKey: queryKeyFactory.buildCreatePoolTx(args),
+    queryFn:
+      wallet && args ? () => buildCreatePoolTx({...args, wallet}) : skipToken,
   })
 }
 
@@ -33,7 +35,7 @@ export const useBuildSwapTxQuery = (
   )
 
   return useQuery({
-    queryKey: ['build-swap-tx', args, wallet],
+    queryKey: queryKeyFactory.buildSwapTx(args),
     queryFn: wallet && args ? () => buildSwapTx({...args, wallet}) : skipToken,
   })
 }
@@ -46,7 +48,7 @@ export const useBuildAddLiquidityTxQuery = (
   )
 
   return useQuery({
-    queryKey: ['build-add-liquidity-tx', args, wallet],
+    queryKey: queryKeyFactory.buildAddLiquidityTx(args),
     queryFn:
       wallet && args ? () => buildAddLiquidityTx({...args, wallet}) : skipToken,
   })
@@ -60,7 +62,7 @@ export const useBuildWithdrawLiquidityTxQuery = (
   )
 
   return useQuery({
-    queryKey: ['build-withdraw-liquidity-tx', args, wallet],
+    queryKey: queryKeyFactory.buildWithdrawLiquidityTx(args),
     queryFn:
       wallet && args
         ? () => buildWithdrawLiquidityTx({...args, wallet})

@@ -1,3 +1,4 @@
+import {queryKeyFactory} from '@/helpers/query-key'
 import {BrowserWallet} from '@meshsdk/core'
 import {
   skipToken,
@@ -13,7 +14,7 @@ import {useTRPC} from '../trpc/client'
 
 export const useInstalledWalletsIdsQuery = () =>
   useQuery({
-    queryKey: ['installed-wallets-ids'],
+    queryKey: queryKeyFactory.installedWalletsIds(),
     queryFn: async () => {
       const wallets = await BrowserWallet.getAvailableWallets()
       return new Set(wallets.map((wallet) => wallet.id))
@@ -28,7 +29,7 @@ export const useWalletBalanceQuery = () => {
   const trpc = useTRPC()
 
   return useQuery({
-    queryKey: ['wallet', 'balance', wallet],
+    queryKey: queryKeyFactory.walletBalance(),
     queryFn: wallet
       ? async () => {
           const balance = await wallet.getBalance()
@@ -59,7 +60,7 @@ export const useWalletUtxosQuery = () => {
   )
 
   return useQuery({
-    queryKey: ['wallet', 'utxos', wallet],
+    queryKey: queryKeyFactory.walletUtxos(),
     queryFn: wallet ? () => wallet.getUtxos() : skipToken,
   })
 }
@@ -70,7 +71,7 @@ export const useSignAndSubmitTxMutation = () => {
   )
 
   return useMutation({
-    mutationKey: ['wallet', 'sign-and-submit-tx', wallet],
+    mutationKey: queryKeyFactory.signAndSubmitTx(),
     mutationFn: async (tx: string) => {
       if (!wallet) throw new Error('Wallet not connected')
       const signedTx = await wallet.signTx(tx)

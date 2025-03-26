@@ -94,7 +94,6 @@ const CreatePoolPage = () => {
       connectedWallet &&
       seed
       ? {
-          wallet: connectedWallet.wallet,
           assetX: assetInputValueToAsset(assetX),
           assetY: assetInputValueToAsset(assetY),
           outShares: earnedShares,
