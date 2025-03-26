@@ -3,8 +3,12 @@ import {formatBigNumber} from '@/helpers/format-number'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import {useBuildAddLiquidityTxQuery} from '@/onChain/transaction/queries'
 import type {PoolsListItem} from '@/types'
-import {useSignAndSubmitTxMutation} from '@/wallet/queries'
+import {
+  useSignAndSubmitTxMutation,
+  useWalletBalanceQuery,
+} from '@/wallet/queries'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
 import {useEffect, useMemo} from 'react'
 import {AssetInput} from '../asset-input/asset-input'
@@ -24,6 +28,8 @@ type AddLiquidityContentProps = {
 }
 
 export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
+  const {data: balance} = useWalletBalanceQuery()
+
   const {
     addLiquidityFormValues,
     onQuantityAChange,
@@ -109,7 +115,12 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
       <div>
         <div className="mt-2 flex flex-col gap-1">
           <AssetInput
-            items={null}
+            items={[
+              {
+                unit: pool.unitA,
+                balance: balance?.[pool.unitA] ?? new BigNumber(0),
+              },
+            ]}
             value={{
               unit: pool.unitA,
               quantity: addLiquidityFormValues.quantityA,
@@ -117,9 +128,15 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
             onChange={(value) => onQuantityAChange(value.quantity)}
             disabled={isSigningAndSubmittingTx}
             singleItem
+            showMaxButton
           />
           <AssetInput
-            items={null}
+            items={[
+              {
+                unit: pool.unitB,
+                balance: balance?.[pool.unitB] ?? new BigNumber(0),
+              },
+            ]}
             value={{
               unit: pool.unitB,
               quantity: addLiquidityFormValues.quantityB,
@@ -127,6 +144,7 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
             onChange={(value) => onQuantityBChange(value.quantity)}
             disabled={isSigningAndSubmittingTx}
             singleItem
+            showMaxButton
           />
         </div>
 

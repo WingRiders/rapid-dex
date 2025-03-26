@@ -86,6 +86,8 @@ const SwapPage = () => {
   } = useBuildSwapTxQuery(
     isAssetInputValueNonEmpty(from) &&
       isAssetInputValueNonEmpty(to) &&
+      from.quantity.gt(0) &&
+      to.quantity.gt(0) &&
       selectedRoute &&
       selectedPoolUtxo &&
       isValid
@@ -102,7 +104,7 @@ const SwapPage = () => {
   )
 
   const [assetFromInputItems, assetToInputItems] = useMemo(() => {
-    if (!pools || !swapUnits || !balance) return [null, null]
+    if (!pools || !swapUnits) return [null, null]
 
     return getSwapFormInputItems(pools, swapUnits, balance, from.unit)
   }, [pools, balance, from.unit, swapUnits])
@@ -130,6 +132,7 @@ const SwapPage = () => {
             value={from}
             onChange={onFromValueChange}
             disabled={isSigningAndSubmittingTx}
+            showMaxButton
           />
 
           <AssetInput

@@ -45,19 +45,26 @@ const appendSwapQuantitiesToAvailableRoutes = (
         fromUnit === pool.unitA
           ? [pool.poolState.qtyA, pool.poolState.qtyB]
           : [pool.poolState.qtyB, pool.poolState.qtyA]
-      const {lockX, outY, newX, newY, paidSwapFee} = computeNewReserves({
-        currentX: poolX,
-        currentY: poolY,
-        swapFeePoints: pool.swapFeePoints,
-        feeBasis: pool.feeBasis,
-        lockX: basedOn.type === 'lockX' ? basedOn.value : undefined,
-        outY: basedOn.type === 'outY' ? basedOn.value : undefined,
-      })
+      try {
+        const {lockX, outY, newX, newY, paidSwapFee} = computeNewReserves({
+          currentX: poolX,
+          currentY: poolY,
+          swapFeePoints: pool.swapFeePoints,
+          feeBasis: pool.feeBasis,
+          lockX: basedOn.type === 'lockX' ? basedOn.value : undefined,
+          outY: basedOn.type === 'outY' ? basedOn.value : undefined,
+        })
 
-      return {
-        pool,
-        swapQuantities:
-          newX.gt(0) && newY.gt(0) ? {lockX, outY, paidSwapFee} : null,
+        return {
+          pool,
+          swapQuantities:
+            newX.gt(0) && newY.gt(0) ? {lockX, outY, paidSwapFee} : null,
+        }
+      } catch {
+        return {
+          pool,
+          swapQuantities: null,
+        }
       }
     })
     .sort((a, b) =>

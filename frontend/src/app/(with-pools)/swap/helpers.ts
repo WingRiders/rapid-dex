@@ -42,13 +42,13 @@ export const matchPoolForSwapUnits =
 export const getSwapFormInputItems = (
   pools: PoolsListItem[],
   poolsUnits: Unit[],
-  balance: WalletBalance,
+  balance: WalletBalance | undefined,
   fromUnit: Unit | null,
 ): [fromItems: AssetInputItem[], toItems: AssetInputItem[]] => {
   const unitsToItems = (units: Unit[]): AssetInputItem[] =>
     units.map<AssetInputItem>((unit) => ({
       unit,
-      balance: balance[unit] ?? new BigNumber(0),
+      balance: balance?.[unit] ?? new BigNumber(0),
     }))
 
   const allItems = unitsToItems(poolsUnits)

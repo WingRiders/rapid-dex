@@ -163,6 +163,7 @@ const CreatePoolPage = () => {
                 {...field}
                 noItemsMessage={noAssetInputItemsMessage}
                 emptyItemsMessage={emptyAssetInputItemsMessage}
+                showMaxButton
               />
             )}
           />
@@ -176,6 +177,7 @@ const CreatePoolPage = () => {
                 {...field}
                 noItemsMessage={noAssetInputItemsMessage}
                 emptyItemsMessage={emptyAssetInputItemsMessage}
+                showMaxButton
               />
             )}
           />
