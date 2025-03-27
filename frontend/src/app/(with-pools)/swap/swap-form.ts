@@ -3,6 +3,7 @@ import {EMPTY_ASSET_INPUT_VALUE} from '@/components/asset-input/constants'
 import {isAssetInputValueNonEmpty} from '@/components/asset-input/helpers'
 import type {AssetInputValue} from '@/components/asset-input/types'
 import {compareMaybeBigNumbers} from '@/helpers/number'
+import {matchPoolForUnits} from '@/helpers/pool'
 import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
@@ -13,7 +14,6 @@ import type {Unit} from '@meshsdk/core'
 import {useQueryClient} from '@tanstack/react-query'
 import BigNumber from 'bignumber.js'
 import {useCallback, useEffect, useMemo, useState} from 'react'
-import {matchPoolForSwapUnits} from './helpers'
 import {useSwapFormUrlValues} from './search-params'
 
 export type AvailableRoute = {
@@ -58,7 +58,9 @@ const appendSwapQuantitiesToAvailableRoutes = (
         return {
           pool,
           swapQuantities:
-            newX.gt(0) && newY.gt(0) ? {lockX, outY, paidSwapFee} : null,
+            newX.gt(0) && newY.gt(0) && lockX.gt(0) && outY.gt(0)
+              ? {lockX, outY, paidSwapFee}
+              : null,
         }
       } catch {
         return {
@@ -93,7 +95,7 @@ const transformSwapValues = (
   if (['fromUnit', 'toUnit', 'init', 'pools'].includes(trigger)) {
     if (values.from.unit && values.to.unit && pools) {
       const newAvailableRoutes = pools
-        .filter(matchPoolForSwapUnits(values.from.unit, values.to.unit))
+        .filter(matchPoolForUnits(values.from.unit, values.to.unit))
         .map((pool) => ({pool, swapQuantities: null}))
       transformedValues.availableRoutes = newAvailableRoutes
       if (newAvailableRoutes.length === 0) {
@@ -193,7 +195,7 @@ const transformSwapValues = (
   }
 
   if (['fromQuantity'].includes(trigger)) {
-    if (!values.from.quantity)
+    if (!values.from.quantity?.gt(0))
       return {
         ...values,
         shareAssetName: values.isSelectedRouteLocked
@@ -232,7 +234,7 @@ const transformSwapValues = (
   }
 
   if (['toQuantity'].includes(trigger)) {
-    if (!values.to.quantity)
+    if (!values.to.quantity?.gt(0))
       return {
         ...values,
         shareAssetName: values.isSelectedRouteLocked
@@ -349,12 +351,7 @@ export const useSwapForm = ({
       const trigger =
         value.unit === swapFormValues.from.unit ? 'fromQuantity' : 'fromUnit'
 
-      if (
-        value.quantity &&
-        swapFormValues.from.unit &&
-        value.unit &&
-        trigger === 'fromUnit'
-      ) {
+      if (value.quantity && value.unit !== swapFormValues.from.unit) {
         value.quantity = transformQuantityToNewUnitDecimals(
           value.quantity,
           swapFormValues.from.unit,
@@ -393,12 +390,7 @@ export const useSwapForm = ({
       const trigger =
         value.unit === swapFormValues.to.unit ? 'toQuantity' : 'toUnit'
 
-      if (
-        value.quantity &&
-        swapFormValues.to.unit &&
-        value.unit &&
-        trigger === 'toUnit'
-      ) {
+      if (value.quantity && value.unit !== swapFormValues.to.unit) {
         value.quantity = transformQuantityToNewUnitDecimals(
           value.quantity,
           swapFormValues.to.unit,

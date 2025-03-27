@@ -1,5 +1,12 @@
 'use client'
 
+import {computeSharesCreatePool} from '@//amm/create-pool'
+import {AssetQuantity} from '@//components/asset-quantity'
+import {DataRows} from '@//components/data-rows'
+import {TxSubmittedDialog} from '@//components/tx-submitted-dialog'
+import {Tooltip, TooltipContent, TooltipTrigger} from '@//components/ui/tooltip'
+import {formatBigNumber} from '@//helpers/format-number'
+import {useTRPC} from '@//trpc/client'
 import {AssetInput} from '@/components/asset-input/asset-input'
 import {EMPTY_ASSET_INPUT_VALUE} from '@/components/asset-input/constants'
 import {
@@ -8,31 +15,37 @@ import {
 } from '@/components/asset-input/helpers'
 import type {AssetInputItem} from '@/components/asset-input/types'
 import {ErrorAlert} from '@/components/error-alert'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import {Alert, AlertTitle} from '@/components/ui/alert'
 import {Button} from '@/components/ui/button'
+import {computeFee} from '@/helpers/fee'
+import {formatPercentage} from '@/helpers/format-percentage'
+import {matchPoolForUnits, usePoolsQuery} from '@/helpers/pool'
+import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
 import {useBuildCreatePoolTxQuery} from '@/onChain/transaction/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
+import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
   useWalletUtxosQuery,
 } from '@/wallet/queries'
+import {useQueryClient} from '@tanstack/react-query'
 import {
   LOVELACE_UNIT,
   isLovelaceUnit,
   poolOil,
 } from '@wingriders/rapid-dex-common'
+import {ArrowLeftIcon} from 'lucide-react'
+import {useRouter} from 'next/navigation'
+import pluralize from 'pluralize'
 import {useEffect, useMemo} from 'react'
 import {Controller, useForm} from 'react-hook-form'
-import {computeSharesCreatePool} from '../../../amm/create-pool'
-import {AssetQuantity} from '../../../components/asset-quantity'
-import {DataRows} from '../../../components/data-rows'
-import {TxSubmittedDialog} from '../../../components/tx-submitted-dialog'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '../../../components/ui/tooltip'
-import {formatBigNumber} from '../../../helpers/format-number'
 import {useValidateCreatePoolForm} from './helpers'
 import type {CreatePoolFormInputs} from './types'
 
@@ -40,6 +53,12 @@ const DEFAULT_FEE_BASIS = 10_000
 const DEFAULT_SWAP_FEE_POINTS = 1
 
 const CreatePoolPage = () => {
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  const {data: pools} = usePoolsQuery()
+
   const {data: balance} = useWalletBalanceQuery()
   const {data: utxos} = useWalletUtxosQuery()
   const connectedWallet = useConnectedWalletStore(
@@ -47,10 +66,10 @@ const CreatePoolPage = () => {
   )
 
   const {
-    mutate: signAndSubmitTx,
-    data: signAndSubmitTxResult,
+    signAndSubmitTx,
+    signTxMutationResult,
+    submitTxMutationResult,
     isPending: isSigningAndSubmittingTx,
-    error: signAndSubmitTxError,
     reset: resetSignAndSubmitTx,
   } = useSignAndSubmitTxMutation()
 
@@ -133,6 +152,14 @@ const CreatePoolPage = () => {
     [balance],
   )
 
+  const poolsWithSamePair = useMemo(
+    () =>
+      assetX.unit && assetY.unit
+        ? pools?.filter(matchPoolForUnits(assetX.unit, assetY.unit))
+        : undefined,
+    [pools, assetX.unit, assetY.unit],
+  )
+
   const handleCreatePool = () => {
     if (!buildCreatePoolTxResult) return
     signAndSubmitTx(buildCreatePoolTxResult.builtTx)
@@ -145,15 +172,25 @@ const CreatePoolPage = () => {
     }
   }
 
-  const noAssetInputItemsMessage = 'Connect wallet'
+  const noAssetInputItemsMessage = 'Connect your wallet'
   const emptyAssetInputItemsMessage = 'No assets found'
 
   return (
     <>
-      <div className="mx-auto mt-4 max-w-2xl">
-        <h2 className="font-bold text-2xl">Create new liquidity pool</h2>
+      <div className="mx-auto mt-4 max-w-2xl px-4">
+        <div className="flex flex-row flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/pools')}
+            size="sm"
+          >
+            <ArrowLeftIcon />
+            Pools
+          </Button>
+          <h2 className="font-bold text-2xl">Create new liquidity pool</h2>
+        </div>
 
-        <div className="mt-2 flex flex-col gap-1">
+        <div className="mt-4 flex flex-col gap-1">
           <Controller
             control={control}
             name="assetX"
@@ -161,6 +198,19 @@ const CreatePoolPage = () => {
               <AssetInput
                 items={assetInputItems}
                 {...field}
+                onChange={(value) => {
+                  const newValue = {...value}
+                  if (value.quantity && value.unit !== assetX.unit) {
+                    newValue.quantity = transformQuantityToNewUnitDecimals(
+                      value.quantity,
+                      assetX.unit,
+                      value.unit,
+                      trpc,
+                      queryClient,
+                    )
+                  }
+                  field.onChange(newValue)
+                }}
                 noItemsMessage={noAssetInputItemsMessage}
                 emptyItemsMessage={emptyAssetInputItemsMessage}
                 showMaxButton
@@ -175,6 +225,19 @@ const CreatePoolPage = () => {
               <AssetInput
                 items={assetInputItems}
                 {...field}
+                onChange={(value) => {
+                  const newValue = {...value}
+                  if (value.quantity && value.unit !== assetY.unit) {
+                    newValue.quantity = transformQuantityToNewUnitDecimals(
+                      value.quantity,
+                      assetY.unit,
+                      value.unit,
+                      trpc,
+                      queryClient,
+                    )
+                  }
+                  field.onChange(newValue)
+                }}
                 noItemsMessage={noAssetInputItemsMessage}
                 emptyItemsMessage={emptyAssetInputItemsMessage}
                 showMaxButton
@@ -211,6 +274,70 @@ const CreatePoolPage = () => {
           )}
         </Tooltip>
 
+        {poolsWithSamePair && poolsWithSamePair.length > 0 && (
+          <Alert className="mt-2">
+            <AlertTitle>
+              <Accordion type="single" collapsible>
+                <AccordionItem value="pools-with-same-pair">
+                  <AccordionTrigger className="py-2">
+                    There {poolsWithSamePair.length === 1 ? 'is' : 'are'}{' '}
+                    already {poolsWithSamePair.length}{' '}
+                    {pluralize('pool', poolsWithSamePair.length)} created with
+                    this pair
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-1">
+                      {poolsWithSamePair.map((pool) => (
+                        <div
+                          key={pool.shareAssetName}
+                          className="rounded-md border border-input p-2"
+                        >
+                          <DataRows
+                            rows={[
+                              {
+                                label: 'Pool reserves',
+                                value: (
+                                  <div className="flex flex-col items-end gap-1">
+                                    <p className="text-right">
+                                      <AssetQuantity
+                                        unit={pool.unitA}
+                                        quantity={pool.poolState.qtyA}
+                                      />
+                                    </p>
+                                    <p className="text-right">
+                                      <AssetQuantity
+                                        unit={pool.unitB}
+                                        quantity={pool.poolState.qtyB}
+                                      />
+                                    </p>
+                                  </div>
+                                ),
+                              },
+                              {
+                                label: 'Swap fee',
+                                value: (
+                                  <p>
+                                    {formatPercentage(
+                                      computeFee(
+                                        pool.swapFeePoints,
+                                        pool.feeBasis,
+                                      ).times(100),
+                                    )}
+                                  </p>
+                                ),
+                              },
+                            ]}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </AlertTitle>
+          </Alert>
+        )}
+
         {buildCreatePoolTxResult && earnedShares && (
           <DataRows
             className="mt-2"
@@ -245,22 +372,24 @@ const CreatePoolPage = () => {
             className="mt-2"
           />
         )}
-        {signAndSubmitTxError && (
+        {signTxMutationResult.error && (
+          <ErrorAlert
+            title="Error while signing transaction"
+            description={getTxSignErrorMessage(signTxMutationResult.error)}
+            className="mt-2"
+          />
+        )}
+        {submitTxMutationResult.error && (
           <ErrorAlert
             title="Error while submitting transaction"
-            description={
-              'info' in signAndSubmitTxError &&
-              typeof signAndSubmitTxError.info === 'string'
-                ? signAndSubmitTxError.info
-                : (signAndSubmitTxError.message ?? 'Unknown error')
-            }
+            description={getTxSendErrorMessage(submitTxMutationResult.error)}
             className="mt-2"
           />
         )}
       </div>
 
       <TxSubmittedDialog
-        txHash={signAndSubmitTxResult?.txHash}
+        txHash={submitTxMutationResult.data}
         onOpenChange={handleTxSubmittedDialogOpenChange}
       />
     </>

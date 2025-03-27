@@ -4,6 +4,7 @@ import type {PortfolioItem} from '@/helpers/portfolio'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
 import {useState} from 'react'
+import {useConnectedWalletStore} from '../../store/connected-wallet'
 import {AssetQuantity} from '../asset-quantity'
 import {DataRows} from '../data-rows'
 import {
@@ -62,6 +63,10 @@ const LiquidityManagementDialogContent = ({
   pool,
   portfolioItem,
 }: LiquidityManagementDialogContentProps) => {
+  const isWalletConnected = useConnectedWalletStore(
+    (state) => state.connectedWallet != null,
+  )
+
   const [currentTab, setCurrentTab] = useState<LiquidityManagementTab>(
     LiquidityManagementTab.ADD_LIQUIDITY,
   )
@@ -142,9 +147,11 @@ const LiquidityManagementDialogContent = ({
                 </div>
               </TooltipTrigger>
 
-              {!isInPortfolio && (
+              {(!isWalletConnected || !isInPortfolio) && (
                 <TooltipContent>
-                  You don't have any liquidity in this pool.
+                  {!isWalletConnected
+                    ? 'Connect your wallet '
+                    : "You don't have any liquidity in this pool."}
                 </TooltipContent>
               )}
             </Tooltip>

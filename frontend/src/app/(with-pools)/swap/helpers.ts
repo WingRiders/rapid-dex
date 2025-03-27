@@ -33,12 +33,6 @@ export const poolsToUnits = (
   pools: Pick<PoolsListItem, 'unitA' | 'unitB'>[],
 ): Unit[] => uniq(pools.flatMap<Unit>(({unitA, unitB}) => [unitA, unitB]))
 
-export const matchPoolForSwapUnits =
-  (fromUnit: Unit, toUnit: Unit) =>
-  (pool: Pick<PoolsListItem, 'unitA' | 'unitB'>) =>
-    (fromUnit === pool.unitA && toUnit === pool.unitB) ||
-    (fromUnit === pool.unitB && toUnit === pool.unitA)
-
 export const getSwapFormInputItems = (
   pools: PoolsListItem[],
   poolsUnits: Unit[],

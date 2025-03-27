@@ -6,6 +6,7 @@ import type {PortfolioItem} from '@/helpers/portfolio'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildWithdrawLiquidityTxQuery} from '@/onChain/transaction/queries'
+import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {useSignAndSubmitTxMutation} from '@/wallet/queries'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
@@ -114,10 +115,10 @@ export const WithdrawLiquidityContent = ({
   } = useBuildWithdrawLiquidityTxQuery(debouncedBuildTxQueryArgs)
 
   const {
-    mutate: signAndSubmitTx,
-    data: signAndSubmitTxResult,
+    signAndSubmitTx,
+    signTxMutationResult,
+    submitTxMutationResult,
     isPending: isSigningAndSubmittingTx,
-    error: signAndSubmitTxError,
     reset: resetSignAndSubmitTx,
   } = useSignAndSubmitTxMutation()
 
@@ -290,22 +291,24 @@ export const WithdrawLiquidityContent = ({
             className="mt-2"
           />
         )}
-        {signAndSubmitTxError && (
+        {signTxMutationResult.error && (
+          <ErrorAlert
+            title="Error while signing transaction"
+            description={getTxSignErrorMessage(signTxMutationResult.error)}
+            className="mt-2"
+          />
+        )}
+        {submitTxMutationResult.error && (
           <ErrorAlert
             title="Error while submitting transaction"
-            description={
-              'info' in signAndSubmitTxError &&
-              typeof signAndSubmitTxError.info === 'string'
-                ? signAndSubmitTxError.info
-                : (signAndSubmitTxError.message ?? 'Unknown error')
-            }
+            description={getTxSendErrorMessage(submitTxMutationResult.error)}
             className="mt-2"
           />
         )}
       </div>
 
       <TxSubmittedDialog
-        txHash={signAndSubmitTxResult?.txHash}
+        txHash={submitTxMutationResult.data}
         onOpenChange={handleTxSubmittedDialogOpenChange}
       />
     </>

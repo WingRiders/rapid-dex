@@ -1,7 +1,9 @@
 import {type TRPC, useTRPC} from '@/trpc/client'
+import type {Unit} from '@meshsdk/core'
 import {skipToken, useQuery, useQueryClient} from '@tanstack/react-query'
 import {useSubscription} from '@trpc/tanstack-react-query'
 import {keyBy} from 'lodash'
+import type {PoolsListItem} from '../types'
 
 export const usePoolsQuery = (options?: {enabled?: boolean}) => {
   const trpc = useTRPC()
@@ -107,3 +109,9 @@ export const useLivePoolUtxoQuery = (
     enabled: !!hasInput,
   })
 }
+
+export const matchPoolForUnits =
+  (unitX: Unit, unitY: Unit) =>
+  (pool: Pick<PoolsListItem, 'unitA' | 'unitB'>) =>
+    (unitX === pool.unitA && unitY === pool.unitB) ||
+    (unitX === pool.unitB && unitY === pool.unitA)

@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react'
+import {cn} from '../lib/utils'
 
 type DataRowsProps = {
   rows: {
@@ -12,7 +13,7 @@ export const DataRows = ({rows, className}: DataRowsProps) => {
   if (rows.length === 0) return null
 
   return (
-    <div className={className}>
+    <div className={cn('flex flex-col gap-1', className)}>
       {rows.map(({label, value}) => (
         <div key={label} className="flex flex-row justify-between">
           <p className="text-md text-muted-foreground">{label}</p>

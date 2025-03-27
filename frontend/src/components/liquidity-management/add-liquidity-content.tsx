@@ -3,6 +3,7 @@ import {formatBigNumber} from '@/helpers/format-number'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import {useBuildAddLiquidityTxQuery} from '@/onChain/transaction/queries'
 import type {PoolsListItem} from '@/types'
+import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
@@ -86,10 +87,10 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
   )
 
   const {
-    mutate: signAndSubmitTx,
-    data: signAndSubmitTxResult,
+    signAndSubmitTx,
+    signTxMutationResult,
+    submitTxMutationResult,
     isPending: isSigningAndSubmittingTx,
-    error: signAndSubmitTxError,
     reset: resetSignAndSubmitTx,
   } = useSignAndSubmitTxMutation()
 
@@ -214,22 +215,24 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
             className="mt-2"
           />
         )}
-        {signAndSubmitTxError && (
+        {signTxMutationResult.error && (
+          <ErrorAlert
+            title="Error while signing transaction"
+            description={getTxSignErrorMessage(signTxMutationResult.error)}
+            className="mt-2"
+          />
+        )}
+        {submitTxMutationResult.error && (
           <ErrorAlert
             title="Error while submitting transaction"
-            description={
-              'info' in signAndSubmitTxError &&
-              typeof signAndSubmitTxError.info === 'string'
-                ? signAndSubmitTxError.info
-                : (signAndSubmitTxError.message ?? 'Unknown error')
-            }
+            description={getTxSendErrorMessage(submitTxMutationResult.error)}
             className="mt-2"
           />
         )}
       </div>
 
       <TxSubmittedDialog
-        txHash={signAndSubmitTxResult?.txHash}
+        txHash={submitTxMutationResult.data}
         onOpenChange={handleTxSubmittedDialogOpenChange}
       />
     </>

@@ -9,6 +9,7 @@ import {Button} from '@/components/ui/button'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
 import {useLivePoolUtxoQuery, usePoolsQuery} from '@/helpers/pool'
 import {useBuildSwapTxQuery} from '@/onChain/transaction/queries'
+import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
@@ -17,7 +18,7 @@ import {skipToken} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import {compact} from 'lodash'
 import {ArrowDownUpIcon} from 'lucide-react'
-import {useMemo} from 'react'
+import {useEffect, useMemo} from 'react'
 import {getSwapFormInputItems, poolsToUnits} from './helpers'
 import {RouteSelectButton} from './route-select-button'
 import {useSwapForm, useValidateSwapForm} from './swap-form'
@@ -72,10 +73,10 @@ const SwapPage = () => {
   } = useLivePoolUtxoQuery(shareAssetName ? {shareAssetName} : skipToken)
 
   const {
-    mutate: signAndSubmitTx,
-    data: signAndSubmitTxResult,
+    signAndSubmitTx,
+    signTxMutationResult,
+    submitTxMutationResult,
     isPending: isSigningAndSubmittingTx,
-    error: signAndSubmitTxError,
     reset: resetSignAndSubmitTx,
   } = useSignAndSubmitTxMutation()
 
@@ -108,6 +109,11 @@ const SwapPage = () => {
 
     return getSwapFormInputItems(pools, swapUnits, balance, from.unit)
   }, [pools, balance, from.unit, swapUnits])
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the sign and submit tx when the build tx result is updated
+  useEffect(() => {
+    resetSignAndSubmitTx()
+  }, [buildSwapTxResult, resetSignAndSubmitTx])
 
   const handleSwap = () => {
     if (!buildSwapTxResult) return
@@ -241,22 +247,24 @@ const SwapPage = () => {
             className="mt-2"
           />
         )}
-        {signAndSubmitTxError && (
+        {signTxMutationResult.error && (
+          <ErrorAlert
+            title="Error while signing transaction"
+            description={getTxSignErrorMessage(signTxMutationResult.error)}
+            className="mt-2"
+          />
+        )}
+        {submitTxMutationResult.error && (
           <ErrorAlert
             title="Error while submitting transaction"
-            description={
-              'info' in signAndSubmitTxError &&
-              typeof signAndSubmitTxError.info === 'string'
-                ? signAndSubmitTxError.info
-                : (signAndSubmitTxError.message ?? 'Unknown error')
-            }
+            description={getTxSendErrorMessage(submitTxMutationResult.error)}
             className="mt-2"
           />
         )}
       </div>
 
       <TxSubmittedDialog
-        txHash={signAndSubmitTxResult?.txHash}
+        txHash={submitTxMutationResult.data}
         onOpenChange={handleTxSubmittedDialogOpenChange}
       />
     </>

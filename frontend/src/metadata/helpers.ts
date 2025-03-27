@@ -9,15 +9,17 @@ import {getTokenMetadataFromQueryCache} from './queries'
  */
 export const transformQuantityToNewUnitDecimals = (
   quantity: BigNumber,
-  oldUnit: Unit,
-  newUnit: Unit,
+  oldUnit: Unit | null,
+  newUnit: Unit | null,
   trpc: TRPC,
   queryClient: QueryClient,
 ) => {
-  const oldUnitDecimals =
-    getTokenMetadataFromQueryCache(oldUnit, queryClient, trpc).decimals ?? 0
-  const newUnitDecimals =
-    getTokenMetadataFromQueryCache(newUnit, queryClient, trpc).decimals ?? 0
+  const oldUnitDecimals = oldUnit
+    ? (getTokenMetadataFromQueryCache(oldUnit, queryClient, trpc).decimals ?? 0)
+    : 0
+  const newUnitDecimals = newUnit
+    ? (getTokenMetadataFromQueryCache(newUnit, queryClient, trpc).decimals ?? 0)
+    : 0
   const realQuantity = quantity.shiftedBy(-oldUnitDecimals)
   return realQuantity.shiftedBy(newUnitDecimals)
 }

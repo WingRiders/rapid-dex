@@ -12,7 +12,8 @@ const f = {
   wallet: () => ['wallet'] as const,
   walletBalance: () => [...f.wallet(), 'balance'] as const,
   walletUtxos: () => [...f.wallet(), 'utxos'] as const,
-  signAndSubmitTx: () => [...f.wallet(), 'sign-and-submit-tx'] as const,
+  signTx: () => [...f.wallet(), 'sign-tx'] as const,
+  submitTx: () => [...f.wallet(), 'submit-tx'] as const,
   portfolio: (deps: {
     pools: PoolsListItem[] | undefined
     balance: Dictionary<BigNumber> | undefined
