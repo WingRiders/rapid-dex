@@ -23,7 +23,9 @@ import {
 } from '@/components/ui/accordion'
 import {Alert, AlertTitle} from '@/components/ui/alert'
 import {Button} from '@/components/ui/button'
-import {computeFee} from '@/helpers/fee'
+import {Input} from '@/components/ui/input'
+import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
+import {computeFee, encodeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {matchPoolForUnits, usePoolsQuery} from '@/helpers/pool'
 import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
@@ -41,16 +43,18 @@ import {
   isLovelaceUnit,
   poolOil,
 } from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
 import {ArrowLeftIcon} from 'lucide-react'
 import {useRouter} from 'next/navigation'
 import pluralize from 'pluralize'
 import {useEffect, useMemo} from 'react'
 import {Controller, useForm} from 'react-hook-form'
+import {NumericFormat} from 'react-number-format'
 import {useValidateCreatePoolForm} from './helpers'
 import type {CreatePoolFormInputs} from './types'
 
-const DEFAULT_FEE_BASIS = 10_000
-const DEFAULT_SWAP_FEE_POINTS = 1
+const DEFAULT_SWAP_FEE_PERCENTAGE = 0.2
+const FEE_MAX_DECIMALS = 5
 
 const CreatePoolPage = () => {
   const trpc = useTRPC()
@@ -81,12 +85,13 @@ const CreatePoolPage = () => {
     defaultValues: {
       assetX: EMPTY_ASSET_INPUT_VALUE,
       assetY: EMPTY_ASSET_INPUT_VALUE,
+      swapFeePercentage: DEFAULT_SWAP_FEE_PERCENTAGE,
     },
     disabled: isSigningAndSubmittingTx,
   })
 
   const inputs = watch()
-  const {assetX, assetY} = inputs
+  const {assetX, assetY, swapFeePercentage} = inputs
 
   const earnedShares = useMemo(() => {
     if (!assetX.quantity || !assetY.quantity) return undefined
@@ -101,6 +106,11 @@ const CreatePoolPage = () => {
 
   const seed = utxos?.[0]
 
+  const encodedSwapFee =
+    swapFeePercentage != null
+      ? encodeFee(new BigNumber(swapFeePercentage).div(100))
+      : undefined
+
   const {
     data: buildCreatePoolTxResult,
     isLoading: isLoadingBuildTx,
@@ -111,7 +121,8 @@ const CreatePoolPage = () => {
       isAssetInputValueNonEmpty(assetY) &&
       earnedShares != null &&
       connectedWallet &&
-      seed
+      seed &&
+      encodedSwapFee
       ? {
           assetX: assetInputValueToAsset(assetX),
           assetY: assetInputValueToAsset(assetY),
@@ -120,8 +131,8 @@ const CreatePoolPage = () => {
             txHash: seed.input.txHash,
             txIndex: seed.input.outputIndex,
           },
-          feeBasis: DEFAULT_FEE_BASIS,
-          swapFeePoints: DEFAULT_SWAP_FEE_POINTS,
+          feeBasis: encodedSwapFee.feeBasis,
+          swapFeePoints: encodedSwapFee.feePoints,
         }
       : undefined,
   )
@@ -241,6 +252,38 @@ const CreatePoolPage = () => {
                 noItemsMessage={noAssetInputItemsMessage}
                 emptyItemsMessage={emptyAssetInputItemsMessage}
                 showMaxButton
+              />
+            )}
+          />
+        </div>
+
+        <div className="wrap mt-2 flex flex-row items-center justify-between gap-2">
+          <p className="flex-3">Swap fee</p>
+          <Controller
+            control={control}
+            name="swapFeePercentage"
+            render={({field}) => (
+              <NumericFormat
+                customInput={Input}
+                thousandSeparator={THOUSAND_SEPARATOR}
+                decimalSeparator={DECIMAL_SEPARATOR}
+                allowedDecimalSeparators={['.', ',']}
+                allowNegative={false}
+                decimalScale={FEE_MAX_DECIMALS}
+                isAllowed={({value}) => !value || new BigNumber(value).lte(100)}
+                type="text"
+                placeholder="e.g. 0.2%"
+                onValueChange={({value: newValue}, {source}) => {
+                  if (source === 'prop') return
+                  const number = Number.parseFloat(newValue)
+                  field.onChange(Number.isNaN(number) ? undefined : number)
+                }}
+                value={field.value?.toString()}
+                suffix="%"
+                valueIsNumericString
+                autoComplete="off"
+                className="flex-1 text-right text-md"
+                disabled={field.disabled}
               />
             )}
           />

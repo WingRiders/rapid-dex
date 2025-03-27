@@ -4,4 +4,5 @@ export type CreatePoolFormInputs = {
   errorField: unknown
   assetX: AssetInputValue
   assetY: AssetInputValue
+  swapFeePercentage: number
 }
