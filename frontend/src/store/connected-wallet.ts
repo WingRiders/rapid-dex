@@ -1,4 +1,6 @@
+import {queryKeyFactory} from '@/helpers/query-key'
 import {BrowserWallet, type Network} from '@meshsdk/core'
+import type {QueryClient} from '@tanstack/react-query'
 import {walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
 import {create} from 'zustand'
 import {persist} from 'zustand/middleware'
@@ -21,7 +23,7 @@ export type ConnectedWalletState = {
     walletType: SupportedWalletType,
     walletApi?: BrowserWallet,
   ) => Promise<void>
-  disconnectWallet: () => void
+  disconnectWallet: (queryClient: QueryClient) => void
   isHydrated: boolean
 }
 
@@ -59,11 +61,16 @@ export const useConnectedWalletStore = create<ConnectedWalletState>()(
           throw error
         }
       },
-      disconnectWallet: () =>
+      disconnectWallet: (queryClient) => {
         set({
           connectedWalletType: null,
           connectedWallet: null,
-        }),
+        })
+        // using setTimeout so that the invalidation is executed after the store state is updated in all components
+        setTimeout(() => {
+          queryClient.resetQueries({queryKey: queryKeyFactory.wallet()})
+        }, 0)
+      },
     }),
     {
       name: 'connected-wallet',

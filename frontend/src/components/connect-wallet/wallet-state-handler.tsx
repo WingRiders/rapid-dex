@@ -14,7 +14,6 @@ import {useShallow} from 'zustand/shallow'
 /**
  * This component:
  * - Reconnects the wallet if it is not connected (when the app loads)
- * - Invalidates the wallet queries when wallet API changes
  * - Reconnects the wallet on window focus if the wallet address has changed (e.g. when user switches accounts in the wallet)
  * - Clears the local interactions when the wallet is reconnected because the wallet address has changed or when the wallet is disconnected
  */
@@ -59,7 +58,7 @@ export const WalletStateHandler = () => {
           await connectWallet(connectedWalletType)
           toast.success('Wallet connected successfully!')
         } catch (error) {
-          disconnectWallet()
+          disconnectWallet(queryClient)
           toast.error('Failed to connect wallet!', {
             description:
               error instanceof Error ? error.message : 'Unknown error',
@@ -76,12 +75,8 @@ export const WalletStateHandler = () => {
     connectWallet,
     disconnectWallet,
     isWalletConnecting,
+    queryClient,
   ])
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to reset the wallet queries when wallet API changes
-  useEffect(() => {
-    queryClient.resetQueries({queryKey: queryKeyFactory.wallet()})
-  }, [connectedWallet?.wallet, queryClient])
 
   useEffect(() => {
     const handleFocus = async () => {
@@ -92,11 +87,12 @@ export const WalletStateHandler = () => {
           const newAddress = await wallet.getChangeAddress()
           if (newAddress !== connectedWallet.address) {
             await connectWallet(connectedWalletType, wallet)
+            queryClient.resetQueries({queryKey: queryKeyFactory.wallet()})
             clearLocalInteractions()
             toast.success('Wallet connected successfully!')
           }
         } catch (error) {
-          disconnectWallet()
+          disconnectWallet(queryClient)
           toast.error('Failed to connect wallet!', {
             description:
               error instanceof Error ? error.message : 'Unknown error',
@@ -117,6 +113,7 @@ export const WalletStateHandler = () => {
     connectWallet,
     disconnectWallet,
     clearLocalInteractions,
+    queryClient,
   ])
 
   useEffect(() => {

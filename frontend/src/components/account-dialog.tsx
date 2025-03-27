@@ -1,3 +1,4 @@
+import {useQueryClient} from '@tanstack/react-query'
 import {CheckIcon, CopyIcon} from 'lucide-react'
 import Image from 'next/image'
 import {toast} from 'sonner'
@@ -36,6 +37,8 @@ export const AccountDialog = ({open, onOpenChange}: AccountDialogProps) => {
 type AccountDialogContentProps = Pick<AccountDialogProps, 'onOpenChange'>
 
 const AccountDialogContent = ({onOpenChange}: AccountDialogContentProps) => {
+  const queryClient = useQueryClient()
+
   const {connectedWallet, connectedWalletType, disconnectWallet} =
     useConnectedWalletStore(
       useShallow(
@@ -48,7 +51,7 @@ const AccountDialogContent = ({onOpenChange}: AccountDialogContentProps) => {
     )
 
   const handleDisconnect = () => {
-    disconnectWallet()
+    disconnectWallet(queryClient)
     toast('Wallet disconnected.')
     onOpenChange?.(false)
   }
