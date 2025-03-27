@@ -22,6 +22,7 @@ export type ConnectedWalletState = {
     walletApi?: BrowserWallet,
   ) => Promise<void>
   disconnectWallet: () => void
+  isHydrated: boolean
 }
 
 export const useConnectedWalletStore = create<ConnectedWalletState>()(
@@ -30,6 +31,7 @@ export const useConnectedWalletStore = create<ConnectedWalletState>()(
       connectedWalletType: null,
       connectedWallet: null,
       isWalletConnecting: false,
+      isHydrated: false,
       connectWallet: async (walletType, walletApi) => {
         set({isWalletConnecting: true})
         try {
@@ -68,6 +70,11 @@ export const useConnectedWalletStore = create<ConnectedWalletState>()(
       partialize: ({connectedWalletType}) => ({
         connectedWalletType,
       }),
+      onRehydrateStorage: () => {
+        return (state) => {
+          if (state) state.isHydrated = true
+        }
+      },
     },
   ),
 )

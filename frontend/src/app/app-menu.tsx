@@ -1,6 +1,7 @@
 'use client'
 
 import {ConnectWalletButton} from '@/components/connect-wallet/connect-wallet-button'
+import {UnconfirmedTxsCounter} from '@/components/unconfirmed-txs-counter'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {cn} from '../lib/utils'
@@ -15,7 +16,8 @@ export const AppMenu = () => {
         <MenuItem label="Pools" href="/pools" />
       </div>
 
-      <div className="ml-auto">
+      <div className="ml-auto flex flex-row items-center gap-5">
+        <UnconfirmedTxsCounter />
         <ConnectWalletButton />
       </div>
     </div>

@@ -26,6 +26,7 @@ import {
   emitPoolUpdatesOnRollback,
   emitPoolUtxoUpdated,
 } from '../poolsUpdates'
+import {emitTxAddedToBlock} from '../txsListener'
 import {isPoolOutput} from './helpers'
 import {getOgmiosContext} from './ogmios'
 import {ogmiosMetadataToJson} from './ogmiosMetadataToJson'
@@ -56,6 +57,8 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
   // - Check for any inputs spending tracked PoolOutputs
   // - Handle pool outputs
   block.transactions?.forEach((tx) => {
+    emitTxAddedToBlock(tx.id)
+
     const hasPoolInInputsIfFullySynced =
       isFullySynced &&
       // do this loop only if isFullySynced is true because that's only when we need it

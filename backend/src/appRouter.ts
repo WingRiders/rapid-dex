@@ -6,7 +6,9 @@ import {healthcheck} from './endpoints/healthcheck'
 import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
+import {isPoolTxInBlock} from './endpoints/transaction'
 import {poolsUpdatesEventEmitterIterable} from './poolsUpdates'
+import {txsListenerEmitterIterable} from './txsListener'
 
 augmentSuperJSON()
 
@@ -30,6 +32,9 @@ export const serverAppRouter = t.router({
   tokenMetadata: publicProcedure
     .input(z.string())
     .query(({input}) => getTokenMetadata(input)),
+  isPoolTxInBlock: publicProcedure
+    .input(z.object({txHash: z.string()}))
+    .query(({input}) => isPoolTxInBlock(input.txHash)),
   onPoolStateUpdated: publicProcedure.subscription(async function* (opts) {
     for await (const [payload] of poolsUpdatesEventEmitterIterable(
       'poolStateUpdated',
@@ -66,6 +71,18 @@ export const serverAppRouter = t.router({
       yield payload
     }
   }),
+  onTxAddedToBlock: publicProcedure
+    .input(z.object({txHashes: z.set(z.string())}))
+    .subscription(async function* (opts) {
+      for await (const [txHash] of txsListenerEmitterIterable(
+        'txAddedToBlock',
+        {signal: opts.signal},
+      )) {
+        if (opts.input.txHashes.has(txHash)) {
+          yield txHash
+        }
+      }
+    }),
 })
 
 // export type definition of API

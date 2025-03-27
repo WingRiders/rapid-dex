@@ -1,4 +1,5 @@
 export * from './helpers'
+export * from './interactions'
 export * from './metadata'
 export * from './onChain'
 export * from './refScriptUtxos'

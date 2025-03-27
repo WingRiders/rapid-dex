@@ -9,6 +9,7 @@ import {Button} from '@/components/ui/button'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
 import {useLivePoolUtxoQuery, usePoolsQuery} from '@/helpers/pool'
 import {useBuildSwapTxQuery} from '@/onChain/transaction/queries'
+import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   useSignAndSubmitTxMutation,
@@ -26,6 +27,9 @@ import {useSwapForm, useValidateSwapForm} from './swap-form'
 const SwapPage = () => {
   const {data: balance} = useWalletBalanceQuery()
   const {data: pools} = usePoolsQuery()
+  const addUnconfirmedInteraction = useLocalInteractionsStore(
+    (state) => state.addUnconfirmedInteraction,
+  )
 
   const {swapUnits, shareAssetNames} = useMemo(() => {
     if (!pools) return {swapUnits: undefined, shareAssetNames: undefined}
@@ -115,9 +119,14 @@ const SwapPage = () => {
     resetSignAndSubmitTx()
   }, [buildSwapTxResult, resetSignAndSubmitTx])
 
-  const handleSwap = () => {
+  const handleSwap = async () => {
     if (!buildSwapTxResult) return
-    signAndSubmitTx(buildSwapTxResult.builtTx)
+    const res = await signAndSubmitTx(buildSwapTxResult.builtTx)
+    if (res) {
+      addUnconfirmedInteraction({
+        txHash: res.txHash,
+      })
+    }
   }
 
   const handleTxSubmittedDialogOpenChange = (open: boolean) => {

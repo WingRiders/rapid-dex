@@ -4,6 +4,7 @@ import {queryKeyFactory} from '@/helpers/query-key'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
 import {BrowserWallet} from '@meshsdk/core'
 
+import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {supportedWalletsInfo} from '@/wallet/supported-wallets'
 import {useQueryClient} from '@tanstack/react-query'
 import {useEffect} from 'react'
@@ -15,6 +16,7 @@ import {useShallow} from 'zustand/shallow'
  * - Reconnects the wallet if it is not connected (when the app loads)
  * - Invalidates the wallet queries when wallet API changes
  * - Reconnects the wallet on window focus if the wallet address has changed (e.g. when user switches accounts in the wallet)
+ * - Clears the local interactions when the wallet is reconnected because the wallet address has changed or when the wallet is disconnected
  */
 export const WalletStateHandler = () => {
   const queryClient = useQueryClient()
@@ -25,6 +27,7 @@ export const WalletStateHandler = () => {
     connectWallet,
     disconnectWallet,
     isWalletConnecting,
+    isHydrated: isConnectedWalletStoreHydrated,
   } = useConnectedWalletStore(
     useShallow(
       ({
@@ -33,14 +36,20 @@ export const WalletStateHandler = () => {
         connectWallet,
         disconnectWallet,
         isWalletConnecting,
+        isHydrated,
       }) => ({
         connectedWalletType,
         connectedWallet,
         connectWallet,
         disconnectWallet,
         isWalletConnecting,
+        isHydrated,
       }),
     ),
+  )
+
+  const {clear: clearLocalInteractions} = useLocalInteractionsStore(
+    useShallow(({clear}) => ({clear})),
   )
 
   useEffect(() => {
@@ -82,7 +91,8 @@ export const WalletStateHandler = () => {
           const wallet = await BrowserWallet.enable(walletId)
           const newAddress = await wallet.getChangeAddress()
           if (newAddress !== connectedWallet.address) {
-            connectWallet(connectedWalletType, wallet)
+            await connectWallet(connectedWalletType, wallet)
+            clearLocalInteractions()
             toast.success('Wallet connected successfully!')
           }
         } catch (error) {
@@ -101,7 +111,30 @@ export const WalletStateHandler = () => {
     return () => {
       window.removeEventListener('focus', handleFocus)
     }
-  }, [connectedWallet, connectedWalletType, connectWallet, disconnectWallet])
+  }, [
+    connectedWallet,
+    connectedWalletType,
+    connectWallet,
+    disconnectWallet,
+    clearLocalInteractions,
+  ])
+
+  useEffect(() => {
+    if (
+      !connectedWallet &&
+      !connectedWalletType &&
+      !isWalletConnecting &&
+      isConnectedWalletStoreHydrated
+    ) {
+      clearLocalInteractions()
+    }
+  }, [
+    connectedWallet,
+    connectedWalletType,
+    isWalletConnecting,
+    clearLocalInteractions,
+    isConnectedWalletStoreHydrated,
+  ])
 
   return <></>
 }

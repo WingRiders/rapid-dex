@@ -5,6 +5,7 @@ import {Suspense} from 'react'
 import {WalletStateHandler} from '../components/connect-wallet/wallet-state-handler'
 import {QueryProvider} from '../components/query-provider'
 import {ThemeProvider} from '../components/theme-provider'
+import {TxsListener} from '../components/txs-listener'
 import {Toaster} from '../components/ui/sonner'
 import {TooltipProvider} from '../components/ui/tooltip'
 import {AppMenu} from './app-menu'
@@ -44,6 +45,7 @@ const RootLayout = ({
               <Suspense>{children}</Suspense>
               <Toaster />
               <WalletStateHandler />
+              <TxsListener />
             </TooltipProvider>
           </QueryProvider>
         </ThemeProvider>
