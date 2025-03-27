@@ -55,7 +55,25 @@ export const prefetchTokensMetadata = async (
   queryClient: QueryClient,
   trpc: TRPC,
 ) => {
-  const unitsWithoutAda = units.filter((unit) => !isLovelaceUnit(unit))
+  const unitsToFetch = units.filter((unit) => {
+    // no need to fetch metadata for ADA, it's hardcoded in the frontend
+    if (isLovelaceUnit(unit)) return false
+
+    // no need to fetch metadata for assets that already have metadata in the query cache
+    const existingMetadata = queryClient.getQueryData(
+      trpc.tokenMetadata.queryKey(unit),
+    )
+    // existingMetadata will be:
+    // - null if it was fetched but there is no metadata for the asset
+    // - undefined if it was not fetched yet
+    if (existingMetadata !== undefined) {
+      return false
+    }
+
+    return true
+  })
+
+  if (unitsToFetch.length === 0) return
 
   const setMetadataQueryData = (unit: Unit, metadata: TokenMetadata | null) => {
     const tokenMetadataOptions = trpc.tokenMetadata.queryOptions(unit)
@@ -74,16 +92,16 @@ export const prefetchTokensMetadata = async (
     const opts = trpc.tokensMetadata.mutationOptions()
     const tokensMetadata = await queryClient.fetchQuery({
       queryKey: opts.mutationKey,
-      queryFn: () => opts.mutationFn?.(unitsWithoutAda),
+      queryFn: () => opts.mutationFn?.(unitsToFetch),
     })
-    unitsWithoutAda.forEach((unit) => {
+    unitsToFetch.forEach((unit) => {
       const metadata = tokensMetadata?.[unit]
       setMetadataQueryData(unit, metadata ?? null)
     })
   } catch (error) {
     console.error(error)
 
-    unitsWithoutAda.forEach((unit) => {
+    unitsToFetch.forEach((unit) => {
       setMetadataQueryData(unit, null)
     })
   }
