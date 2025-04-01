@@ -4,6 +4,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
     "check": "bun biome check . && tsc --noEmit",
     "fix": "bun biome check . --write",
     "prisma:generate": "prisma generate",
