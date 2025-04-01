@@ -1,7 +1,7 @@
+import {env} from '@/config'
 import {CheckIcon, ExternalLinkIcon} from 'lucide-react'
 import type {SetRequired} from 'type-fest'
 import {CardanoscanLinks} from '../helpers/explorer-links'
-import {useConnectedWalletStore} from '../store/connected-wallet'
 import {Button} from './ui/button'
 import {
   Dialog,
@@ -42,12 +42,7 @@ const TxSubmittedDialogContent = ({
   txHash,
   onOpenChange,
 }: TxSubmittedDialogContentProps) => {
-  const network = useConnectedWalletStore(
-    (state) => state.connectedWallet?.network,
-  )
-  if (!network) return null
-
-  const explorerLinks = new CardanoscanLinks(network)
+  const explorerLinks = new CardanoscanLinks(env('NEXT_PUBLIC_NETWORK'))
 
   return (
     <DialogHeader>

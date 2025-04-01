@@ -1,15 +1,22 @@
 'use client'
 
 import {ConnectWalletButton} from '@/components/connect-wallet/connect-wallet-button'
+import {Badge} from '@/components/ui/badge'
 import {UnconfirmedTxsCounter} from '@/components/unconfirmed-txs-counter'
+import {env} from '@/config'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {cn} from '../lib/utils'
 
 export const AppMenu = () => {
+  const network = env('NEXT_PUBLIC_NETWORK')
+
   return (
     <div className="flex items-center bg-gray-900 p-5">
-      <h2 className="font-bold text-2xl">Rapid DEX</h2>
+      <div className="flex flex-row flex-wrap items-center gap-2">
+        <h2 className="font-bold text-2xl">Rapid DEX</h2>
+        <Badge>{network}</Badge>
+      </div>
 
       <div className="mr-4 ml-10 flex flex-row items-center gap-8 lg:ml-28">
         <MenuItem label="Swap" href="/swap" />

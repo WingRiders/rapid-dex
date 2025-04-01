@@ -4,7 +4,7 @@ export enum NetworkId {
 }
 
 // Mainnet will be added once bootstrap is done
-const supportedNetworks = ['preprod'] as const
+export const supportedNetworks = ['preprod'] as const
 export type SupportedNetwork = (typeof supportedNetworks)[number]
 
 export const walletNetworkIdToNetwork = (

@@ -1,3 +1,4 @@
+import {env} from '@/config'
 import {useQueryClient} from '@tanstack/react-query'
 import {CheckIcon, CopyIcon} from 'lucide-react'
 import Image from 'next/image'
@@ -58,7 +59,7 @@ const AccountDialogContent = ({onOpenChange}: AccountDialogContentProps) => {
 
   if (!connectedWallet || !connectedWalletType) return null
 
-  const explorerLinks = new CardanoscanLinks(connectedWallet.network)
+  const explorerLinks = new CardanoscanLinks(env('NEXT_PUBLIC_NETWORK'))
   const connectedWalletInfo = supportedWalletsInfo[connectedWalletType]
 
   return (

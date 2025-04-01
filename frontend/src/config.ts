@@ -1,3 +1,4 @@
+import {supportedNetworks} from '@wingriders/rapid-dex-common'
 import {env as runtimeEnv} from 'next-runtime-env'
 import {z} from 'zod'
 
@@ -5,6 +6,7 @@ const envSchemas = {
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+  NEXT_PUBLIC_NETWORK: z.enum(supportedNetworks),
   // internal network, used only on the server
   SERVER_URL: z.string(),
   // public network, used in the browser

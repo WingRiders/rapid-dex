@@ -1,5 +1,6 @@
+import {env} from '@/config'
 import {queryKeyFactory} from '@/helpers/query-key'
-import {BrowserWallet, type Network} from '@meshsdk/core'
+import {BrowserWallet} from '@meshsdk/core'
 import type {QueryClient} from '@tanstack/react-query'
 import {walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
 import {create} from 'zustand'
@@ -12,7 +13,6 @@ import {
 type ConnectedWallet = {
   wallet: BrowserWallet
   address: string
-  network: Network
 }
 
 export type ConnectedWalletState = {
@@ -43,11 +43,17 @@ export const useConnectedWalletStore = create<ConnectedWalletState>()(
             wallet.getChangeAddress(),
             wallet.getNetworkId(),
           ])
+          const walletNetwork = walletNetworkIdToNetwork(networkId)
+          const expectedNetwork = env('NEXT_PUBLIC_NETWORK')
+          if (walletNetwork !== expectedNetwork) {
+            throw new Error(
+              `Cannot connect to wallet that is not on ${expectedNetwork} network`,
+            )
+          }
           set({
             connectedWallet: {
               wallet,
               address,
-              network: walletNetworkIdToNetwork(networkId),
             },
             connectedWalletType: walletType,
             isWalletConnecting: false,
