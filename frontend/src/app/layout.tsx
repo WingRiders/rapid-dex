@@ -1,6 +1,7 @@
 import type {Metadata} from 'next'
 import {Geist, Geist_Mono} from 'next/font/google'
 import './globals.css'
+import {PublicEnvScript} from 'next-runtime-env'
 import {Suspense} from 'react'
 import {WalletStateHandler} from '../components/connect-wallet/wallet-state-handler'
 import {QueryProvider} from '../components/query-provider'
@@ -32,6 +33,10 @@ const RootLayout = ({
 }>) => {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <PublicEnvScript />
+      </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeProvider
           attribute="class"

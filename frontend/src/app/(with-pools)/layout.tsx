@@ -1,7 +1,7 @@
 import {HydrateClient} from '@/components/hydrate-client'
 import {LivePoolsUpdate} from '@/components/live-pools-update'
 import {prefetchTokensMetadata} from '@/metadata/queries'
-import {getQueryClient, trpc} from '@/trpc/server'
+import {getQueryClient, getServerTrpc} from '@/trpc/server'
 import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import {uniq} from 'lodash'
 import type {ReactNode} from 'react'
@@ -14,6 +14,7 @@ const RootLayout = async ({
   children: ReactNode
 }>) => {
   const queryClient = getQueryClient()
+  const trpc = getServerTrpc()
 
   try {
     const pools = await queryClient.fetchQuery(trpc.pools.queryOptions())

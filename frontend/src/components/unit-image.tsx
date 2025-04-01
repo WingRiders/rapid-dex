@@ -1,7 +1,7 @@
+import {env} from '@/config'
 import type {Unit} from '@meshsdk/core'
 import {type TokenMetadata, isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import {CircleHelpIcon} from 'lucide-react'
-import {config} from '../config'
 import {cn} from '../lib/utils'
 
 type UnitImageProps = {
@@ -37,7 +37,7 @@ export const UnitImage = ({
   return (
     <img
       key={unit}
-      src={`${config.NEXT_PUBLIC_SERVER_URL}/token-image/${unit}`}
+      src={`${env('NEXT_PUBLIC_SERVER_URL')}/token-image/${unit}`}
       alt={metadata?.ticker ?? metadata?.name ?? 'logo'}
       width={size}
       height={size}

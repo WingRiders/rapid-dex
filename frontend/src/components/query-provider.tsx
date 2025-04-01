@@ -1,5 +1,6 @@
 'use client'
 
+import {env} from '@/config'
 import {
   type QueryClient,
   QueryClientProvider,
@@ -15,7 +16,6 @@ import {
 import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
 import {useState} from 'react'
 import SuperJSON from 'superjson'
-import {config} from '../config'
 import {TRPCProvider} from '../trpc/client'
 import {makeQueryClient} from '../trpc/query-client'
 
@@ -24,7 +24,7 @@ let browserQueryClient: QueryClient | undefined = undefined
 const wsClient: ReturnType<typeof createWSClient> | undefined = isServer
   ? undefined
   : createWSClient({
-      url: config.NEXT_PUBLIC_SERVER_URL,
+      url: env('NEXT_PUBLIC_SERVER_URL'),
     })
 
 const getQueryClient = () => {
@@ -50,7 +50,7 @@ export const QueryProvider = ({children}: {children: React.ReactNode}) => {
             transformer: SuperJSON,
           }),
           false: httpBatchStreamLink({
-            url: config.NEXT_PUBLIC_SERVER_URL,
+            url: env('NEXT_PUBLIC_SERVER_URL'),
             transformer: SuperJSON,
           }),
         }),
