@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test'
-import {buildSwapTx} from '@/onChain/transaction/swap'
+import {buildSwapTx} from '@/on-chain/transaction/swap'
 import BigNumber from 'bignumber.js'
 import {
   collateralUtxo,

@@ -1,4 +1,5 @@
 import {mock} from 'bun:test'
+import type {PoolInteractionTxPool} from '@/on-chain/transaction/types'
 import type {IWallet, UTxO} from '@meshsdk/core'
 import {
   LOVELACE_UNIT,
@@ -11,7 +12,6 @@ import {
   poolValidityAssetNameHex,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
-import type {PoolInteractionTxPool} from '../../../src/onChain/transaction/types'
 
 export const mockWallet: IWallet = {
   getAssets: mock(),

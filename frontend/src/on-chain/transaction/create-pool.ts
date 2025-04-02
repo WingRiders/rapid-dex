@@ -1,6 +1,6 @@
-import {poolDatumToMesh} from '@/onChain/datums'
-import {mintRedeemerToMesh} from '@/onChain/redeemers'
-import {initTxBuilder} from '@/onChain/transaction/init'
+import {poolDatumToMesh} from '@/on-chain/datums'
+import {mintRedeemerToMesh} from '@/on-chain/redeemers'
+import {initTxBuilder} from '@/on-chain/transaction/init'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import type {Asset} from '@meshsdk/core'
 import {

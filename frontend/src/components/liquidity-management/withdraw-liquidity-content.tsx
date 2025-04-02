@@ -5,7 +5,7 @@ import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import type {PortfolioItem} from '@/helpers/portfolio'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
-import {useBuildWithdrawLiquidityTxQuery} from '@/onChain/transaction/queries'
+import {useBuildWithdrawLiquidityTxQuery} from '@/on-chain/transaction/queries'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {useSignAndSubmitTxMutation} from '@/wallet/queries'
@@ -60,7 +60,12 @@ export const WithdrawLiquidityContent = ({
     newPercentage: BigNumber | null,
   ) => {
     setWithdrawingShares(
-      newPercentage ? ownedShares.times(newPercentage).div(100) : null,
+      newPercentage
+        ? ownedShares
+            .times(newPercentage)
+            .div(100)
+            .integerValue(BigNumber.ROUND_FLOOR)
+        : null,
     )
   }
 

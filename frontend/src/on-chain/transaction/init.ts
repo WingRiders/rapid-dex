@@ -1,5 +1,5 @@
-import {isCollateralUtxo} from '@/onChain/collateral'
-import {calculateTtl} from '@/onChain/transaction/ttl'
+import {isCollateralUtxo} from '@/on-chain/collateral'
+import {calculateTtl} from '@/on-chain/transaction/ttl'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import {
   MeshTxBuilder,

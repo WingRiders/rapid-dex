@@ -10,7 +10,7 @@ const PoolsPage = () => {
         <h2 className="font-bold text-2xl">Liquidity pools</h2>
 
         <Button asChild variant="secondary" size="lg">
-          <Link href="/pools/create">Create new Pool</Link>
+          <Link href="/pools/create">Create new pool</Link>
         </Button>
       </div>
 

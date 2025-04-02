@@ -8,7 +8,7 @@ import {TxSubmittedDialog} from '@/components/tx-submitted-dialog'
 import {Button} from '@/components/ui/button'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
 import {useLivePoolUtxoQuery, usePoolsQuery} from '@/helpers/pool'
-import {useBuildSwapTxQuery} from '@/onChain/transaction/queries'
+import {useBuildSwapTxQuery} from '@/on-chain/transaction/queries'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {

@@ -2,7 +2,7 @@ import {describe, expect, it} from 'bun:test'
 import {
   type BuildCreatePoolTxArgs,
   buildCreatePoolTx,
-} from '@/onChain/transaction/create-pool'
+} from '@/on-chain/transaction/create-pool'
 import {BigNumber} from 'bignumber.js'
 import {
   assetA,

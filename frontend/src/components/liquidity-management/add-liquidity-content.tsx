@@ -1,7 +1,7 @@
 import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
-import {useBuildAddLiquidityTxQuery} from '@/onChain/transaction/queries'
+import {useBuildAddLiquidityTxQuery} from '@/on-chain/transaction/queries'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import type {PoolsListItem} from '@/types'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'

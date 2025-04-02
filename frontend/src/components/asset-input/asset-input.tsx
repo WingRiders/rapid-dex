@@ -104,6 +104,7 @@ export const AssetInput = ({
               size="sm"
               className="h-fit"
               onClick={handleMaxButtonClick}
+              disabled={disabled}
             >
               MAX
             </Button>
