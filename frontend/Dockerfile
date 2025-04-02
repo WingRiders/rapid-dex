@@ -1,4 +1,4 @@
-FROM oven/bun:1.2.5 AS builder
+FROM oven/bun:1.2.8 AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN bun run --filter ./frontend build
 # Install only production dependencies after build
 RUN bun install --production --frozen-lockfile
 
-FROM oven/bun:1.2.5-slim
+FROM oven/bun:1.2.8-slim
 
 # Install wget
 RUN apt-get update && \
