@@ -1,42 +1,45 @@
 # Rapid DEX
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+A Cardano AMM DEX with direct pool interactions that eliminates batchers. This enables instant trade execution, removes slippage, reduces fees, and improves user gains and decentralization.
 
-## Getting Started
+## Development
 
-First, run the development server:
+### Bun
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This project uses [Bun](https://bun.sh/) as both the package manager and runtime. If you don't have Bun installed, you can follow the installation guide on their website.
+
+This monorepo consists of the following workspaces:
+
+- `common` - Common code shared between backend and frontend
+- `backend` - A Bun application that aggregates blockchain data, stores it in a database, and provides endpoints via tRPC
+- `frontend` - A Next.js application that provides the user interface for Rapid DEX
+
+### Development
+
+#### Install dependencies
+
+```
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Run lint
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+bun run check
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Run tests
 
-## Learn More
+```
+bun run test
+```
 
-To learn more about Next.js, take a look at the following resources:
+#### Build all applications
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+bun run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+#### Run the application
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Deployment
-
-For instructions on deploying smart contracts and interacting with the Cardano blockchain, see the [Deployment Guide](docs/deployment.md).
+To run the application locally, you need to run both the [backend](./backend/README.md) and [frontend](./frontend/README.md). You can follow the instructions in their respective README files to see how to run each application.
