@@ -6,6 +6,7 @@ import type {PortfolioItem} from '@/helpers/portfolio'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildWithdrawLiquidityTxQuery} from '@/onChain/transaction/queries'
+import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {useSignAndSubmitTxMutation} from '@/wallet/queries'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
@@ -35,6 +36,10 @@ type WithdrawLiquidityContentProps = {
 export const WithdrawLiquidityContent = ({
   portfolioItem,
 }: WithdrawLiquidityContentProps) => {
+  const addUnconfirmedInteraction = useLocalInteractionsStore(
+    (state) => state.addUnconfirmedInteraction,
+  )
+
   const {pool, ownedShares} = portfolioItem
 
   const {metadata: unitAMetadata} = useTokenMetadata(pool.unitA)
@@ -127,9 +132,14 @@ export const WithdrawLiquidityContent = ({
     resetSignAndSubmitTx()
   }, [buildWithdrawLiquidityTxResult, resetSignAndSubmitTx])
 
-  const handleWithdrawLiquidity = () => {
+  const handleWithdrawLiquidity = async () => {
     if (!buildWithdrawLiquidityTxResult) return
-    signAndSubmitTx(buildWithdrawLiquidityTxResult.builtTx)
+    const res = await signAndSubmitTx(buildWithdrawLiquidityTxResult.builtTx)
+    if (res) {
+      addUnconfirmedInteraction({
+        txHash: res.txHash,
+      })
+    }
   }
 
   const handleTxSubmittedDialogOpenChange = (open: boolean) => {

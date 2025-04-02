@@ -72,13 +72,13 @@ export const serverAppRouter = t.router({
     }
   }),
   onTxAddedToBlock: publicProcedure
-    .input(z.object({txHashes: z.set(z.string())}))
+    .input(z.object({txHashes: z.array(z.string())}))
     .subscription(async function* (opts) {
       for await (const [txHash] of txsListenerEmitterIterable(
         'txAddedToBlock',
         {signal: opts.signal},
       )) {
-        if (opts.input.txHashes.has(txHash)) {
+        if (opts.input.txHashes.includes(txHash)) {
           yield txHash
         }
       }

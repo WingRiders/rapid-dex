@@ -2,6 +2,7 @@ import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import {useBuildAddLiquidityTxQuery} from '@/onChain/transaction/queries'
+import {useLocalInteractionsStore} from '@/store/local-interactions'
 import type {PoolsListItem} from '@/types'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
@@ -30,6 +31,10 @@ type AddLiquidityContentProps = {
 
 export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
   const {data: balance} = useWalletBalanceQuery()
+
+  const addUnconfirmedInteraction = useLocalInteractionsStore(
+    (state) => state.addUnconfirmedInteraction,
+  )
 
   const {
     addLiquidityFormValues,
@@ -99,9 +104,14 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
     resetSignAndSubmitTx()
   }, [buildAddLiquidityTxResult, resetSignAndSubmitTx])
 
-  const handleAddLiquidity = () => {
+  const handleAddLiquidity = async () => {
     if (!buildAddLiquidityTxResult) return
-    signAndSubmitTx(buildAddLiquidityTxResult.builtTx)
+    const res = await signAndSubmitTx(buildAddLiquidityTxResult.builtTx)
+    if (res) {
+      addUnconfirmedInteraction({
+        txHash: res.txHash,
+      })
+    }
   }
 
   const handleTxSubmittedDialogOpenChange = (open: boolean) => {

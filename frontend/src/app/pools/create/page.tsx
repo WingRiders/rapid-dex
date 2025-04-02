@@ -31,6 +31,7 @@ import {matchPoolForUnits, usePoolsQuery} from '@/helpers/pool'
 import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
 import {useBuildCreatePoolTxQuery} from '@/onChain/transaction/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
+import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   useSignAndSubmitTxMutation,
@@ -60,6 +61,10 @@ const CreatePoolPage = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const router = useRouter()
+
+  const addUnconfirmedInteraction = useLocalInteractionsStore(
+    (state) => state.addUnconfirmedInteraction,
+  )
 
   const {data: pools} = usePoolsQuery()
 
@@ -171,9 +176,14 @@ const CreatePoolPage = () => {
     [pools, assetX.unit, assetY.unit],
   )
 
-  const handleCreatePool = () => {
+  const handleCreatePool = async () => {
     if (!buildCreatePoolTxResult) return
-    signAndSubmitTx(buildCreatePoolTxResult.builtTx)
+    const res = await signAndSubmitTx(buildCreatePoolTxResult.builtTx)
+    if (res) {
+      addUnconfirmedInteraction({
+        txHash: res.txHash,
+      })
+    }
   }
 
   const handleTxSubmittedDialogOpenChange = (open: boolean) => {

@@ -23,7 +23,7 @@ const TxsListener = () => {
     })),
   )
   const unconfirmedTxsHashes = useMemo(
-    () => new Set(unconfirmedInteractions.map(({txHash}) => txHash)),
+    () => unconfirmedInteractions.map(({txHash}) => txHash),
     [unconfirmedInteractions],
   )
 
@@ -32,7 +32,7 @@ const TxsListener = () => {
   // query the data directly besides WS in case the WS connection is lost
   // or if the tx is added to a block while the app is not opened
   const isPoolTxInBlockQueries = useQueries({
-    queries: Array.from(unconfirmedTxsHashes).map((txHash) =>
+    queries: unconfirmedTxsHashes.map((txHash) =>
       trpc.isPoolTxInBlock.queryOptions(
         {txHash},
         {
@@ -50,7 +50,7 @@ const TxsListener = () => {
     isPoolTxInBlockQueriesData.forEach((queryData) => {
       if (
         queryData?.isInBlock &&
-        unconfirmedTxsHashes.has(queryData.txHash) // check whether it's still unconfirmed
+        unconfirmedTxsHashes.includes(queryData.txHash) // check whether it's still unconfirmed
       ) {
         handleTxAddedToBlock(queryData.txHash)
       }
@@ -65,7 +65,7 @@ const TxsListener = () => {
       {
         onData: (txHash) => {
           // check whether it's still unconfirmed
-          if (unconfirmedTxsHashes.has(txHash)) {
+          if (unconfirmedTxsHashes.includes(txHash)) {
             handleTxAddedToBlock(txHash)
           }
         },
