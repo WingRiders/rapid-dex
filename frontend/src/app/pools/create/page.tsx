@@ -101,8 +101,8 @@ const CreatePoolPage = () => {
   const earnedShares = useMemo(() => {
     if (!assetX.quantity || !assetY.quantity) return undefined
     return computeSharesCreatePool({
-      lockA: assetX.quantity,
-      lockB: assetY.quantity,
+      lockX: assetX.quantity,
+      lockY: assetY.quantity,
     })
   }, [assetX.quantity, assetY.quantity])
 

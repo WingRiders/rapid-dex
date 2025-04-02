@@ -10,13 +10,32 @@ describe('computeNewReserves', () => {
     feeBasis: 100,
   }
 
-  it('should compute new reserves from lockX', () => {
-    const lockX = new BigNumber(81)
-    const result = computeNewReserves({...params, lockX})
+  describe('computeNewReserves with lockX', () => {
+    const testCases: {
+      params: Required<Omit<ComputeNewReservesParams, 'outY'>>
+      expectedOutY: BigNumber
+    }[] = [
+      {
+        params: {
+          currentX: new BigNumber(100_000_000),
+          currentY: new BigNumber(1_000_000_000),
+          lockX: new BigNumber(10_000_000),
+          swapFeePoints: 1,
+          feeBasis: 500,
+        },
+        expectedOutY: new BigNumber(90_743_771),
+      },
+    ]
 
-    expect(result.newX).toEqual(params.currentX.plus(lockX))
-    expect(result.lockX).toEqual(lockX)
-    expect(result.outY).toEqual(new BigNumber(15))
+    testCases.forEach(({params, expectedOutY}) => {
+      it(`should compute new reserves for lockX = ${params.lockX}`, () => {
+        const result = computeNewReserves(params)
+
+        expect(result.newX).toEqual(params.currentX.plus(params.lockX))
+        expect(result.lockX).toEqual(params.lockX)
+        expect(result.outY).toEqual(expectedOutY)
+      })
+    })
   })
 
   const testComputeNewReservesFromOutY = (
