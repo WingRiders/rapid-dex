@@ -13,6 +13,10 @@ export const getTokenMetadataFromCache = (subject: string) =>
 export const getTokenLogo = (subject: string) =>
   tokenMetadataCache[subject]?.logo
 
+// assuming there is always at least one subject in the registry
+export const isTokenMetadataFetched = () =>
+  Object.keys(tokenMetadataCache).length > 0
+
 const githubTokenMetadataFieldSchema = (valueSchema: ZodSchema) =>
   z.object({
     value: valueSchema,

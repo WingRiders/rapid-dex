@@ -3,6 +3,7 @@ import {TRPCError} from '@trpc/server'
 import {prisma} from '../db/prismaClient'
 import {originPoint} from '../helpers'
 import {getLedgerTip, getNetworkTip} from '../ogmios/ledgerStateQuery'
+import {isTokenMetadataFetched as isTokenMetadataFetchedFn} from '../tokenRegistry'
 
 export const healthcheck = async () => {
   const tipToSlot = (tip: Point | 'origin') =>
@@ -27,15 +28,20 @@ export const healthcheck = async () => {
     networkTipPromise.then(() => true).catch(() => false),
   ])
   const healthyThresholdSlot = 300 // 5 minutes
+  const isTokenMetadataFetched = isTokenMetadataFetchedFn()
+
   const healthy =
     networkSlot - ledgerSlot < healthyThresholdSlot &&
-    ledgerSlot - lastBlockSlot < healthyThresholdSlot
+    ledgerSlot - lastBlockSlot < healthyThresholdSlot &&
+    isTokenMetadataFetched
+
   if (!healthy) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: `Healthcheck failed: lastBlockSlot = ${lastBlockSlot}, ledgerSlot = ${ledgerSlot}, networkSlot = ${networkSlot}`,
+      message: `Healthcheck failed: lastBlockSlot = ${lastBlockSlot}, ledgerSlot = ${ledgerSlot}, networkSlot = ${networkSlot}, isTokenMetadataFetched = ${isTokenMetadataFetched}`,
     })
   }
+
   return {
     healthy,
     networkSlot,
@@ -43,6 +49,7 @@ export const healthcheck = async () => {
     lastBlockSlot,
     isDbConnected,
     isOgmiosConnected,
+    isTokenMetadataFetched,
     uptime: process.uptime(),
   }
 }
