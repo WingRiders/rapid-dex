@@ -47,41 +47,20 @@ const MAX_SUBJECTS_TO_FETCH = 200
 
 const LOOP_INTERVAL = minutesToMilliseconds(15)
 
-const {
-  githubTokenRegistry,
-  subjectsPath,
-  tokenRegistryUrl,
-  adaNetworkSpecificMetadata,
-} = {
+const {githubTokenRegistry, subjectsPath, tokenRegistryUrl} = {
   mainnet: {
     githubTokenRegistry:
       'https://api.github.com/repos/cardano-foundation/cardano-token-registry',
     subjectsPath: 'mappings',
     tokenRegistryUrl: 'https://tokens.cardano.org/metadata/query',
-    adaNetworkSpecificMetadata: {
-      description: 'Cardano ADA',
-      ticker: 'ADA',
-      name: 'ADA',
-    },
   },
   preprod: {
     githubTokenRegistry:
       'https://api.github.com/repos/input-output-hk/metadata-registry-testnet',
     subjectsPath: 'registry',
     tokenRegistryUrl: 'https://metadata.world.dev.cardano.org/metadata/query',
-    adaNetworkSpecificMetadata: {
-      description: 'Testnet ADA',
-      ticker: 'tADA',
-      name: 'tADA',
-    },
   },
 }[config.NETWORK]
-
-const adaMetadata: TokenMetadata = {
-  ...adaNetworkSpecificMetadata,
-  subject: '',
-  decimals: 6,
-}
 
 const githubCommitsResponseSchema = z.array(
   z.object({
@@ -218,7 +197,6 @@ export const tokensMetadataLoop = async () => {
     try {
       const newTokenMetadata = await getNewTokenMetadata()
       if (newTokenMetadata.length > 0) {
-        newTokenMetadata.push(adaMetadata)
         tokenMetadataCache = keyBy(newTokenMetadata, 'subject')
         logger.info(
           {

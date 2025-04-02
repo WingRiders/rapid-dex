@@ -8,6 +8,7 @@ on:
 
 env:
   NODE_ENV: test
+  NEXT_PUBLIC_NETWORK: preprod
 
 jobs:
   lint-build-test:
