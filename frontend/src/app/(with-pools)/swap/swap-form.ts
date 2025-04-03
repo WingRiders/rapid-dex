@@ -494,7 +494,6 @@ export const useValidateSwapForm = ({
   const {data: balance} = useWalletBalanceQuery()
 
   const {metadata: fromUnitMetadata} = useTokenMetadata(from.unit)
-  const {metadata: toUnitMetadata} = useTokenMetadata(to.unit)
 
   return useMemo<string | undefined>(() => {
     if (!isWalletConnected) return 'Connect your wallet'
@@ -506,16 +505,11 @@ export const useValidateSwapForm = ({
       return 'Pool liquidity cannot satisfy the swap amount'
 
     const fromBalance = balance?.[from.unit] ?? new BigNumber(0)
-    const toBalance = balance?.[to.unit] ?? new BigNumber(0)
-
-    const getInsufficientBalanceError = (ticker: string | undefined) =>
-      ticker ? `Insufficient balance of ${ticker}` : 'Insufficient balance'
 
     if (from.quantity?.gt(fromBalance))
-      return getInsufficientBalanceError(fromUnitMetadata?.ticker)
-
-    if (to.quantity?.gt(toBalance))
-      return getInsufficientBalanceError(toUnitMetadata?.ticker)
+      return fromUnitMetadata?.ticker
+        ? `Insufficient balance of ${fromUnitMetadata.ticker}`
+        : 'Insufficient balance'
 
     return undefined
   }, [
@@ -525,7 +519,6 @@ export const useValidateSwapForm = ({
     fromUnitMetadata,
     to.unit,
     to.quantity,
-    toUnitMetadata,
     isWalletConnected,
   ])
 }
