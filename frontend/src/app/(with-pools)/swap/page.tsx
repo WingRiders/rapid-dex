@@ -12,10 +12,11 @@ import {useBuildSwapTxQuery} from '@/on-chain/transaction/queries'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
+  invalidateWalletQueries,
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
 } from '@/wallet/queries'
-import {skipToken} from '@tanstack/react-query'
+import {skipToken, useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import {compact} from 'lodash'
 import {ArrowDownUpIcon} from 'lucide-react'
@@ -25,6 +26,8 @@ import {RouteSelectButton} from './route-select-button'
 import {useSwapForm, useValidateSwapForm} from './swap-form'
 
 const SwapPage = () => {
+  const queryClient = useQueryClient()
+
   const {data: balance} = useWalletBalanceQuery()
   const {data: pools} = usePoolsQuery()
   const addUnconfirmedInteraction = useLocalInteractionsStore(
@@ -81,6 +84,7 @@ const SwapPage = () => {
     signTxMutationResult,
     submitTxMutationResult,
     isPending: isSigningAndSubmittingTx,
+    isError: isSignAndSubmitTxError,
     reset: resetSignAndSubmitTx,
   } = useSignAndSubmitTxMutation()
 
@@ -114,9 +118,9 @@ const SwapPage = () => {
     return getSwapFormInputItems(pools, swapUnits, balance, from.unit)
   }, [pools, balance, from.unit, swapUnits])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the sign and submit tx when the build tx result is updated
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the error state of the sign and submit tx when the build tx result is updated
   useEffect(() => {
-    resetSignAndSubmitTx()
+    if (isSignAndSubmitTxError) resetSignAndSubmitTx()
   }, [buildSwapTxResult, resetSignAndSubmitTx])
 
   const handleSwap = async () => {
@@ -126,6 +130,7 @@ const SwapPage = () => {
       addUnconfirmedInteraction({
         txHash: res.txHash,
       })
+      invalidateWalletQueries(queryClient)
     }
   }
 

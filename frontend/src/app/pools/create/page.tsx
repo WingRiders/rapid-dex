@@ -34,6 +34,7 @@ import {useConnectedWalletStore} from '@/store/connected-wallet'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
+  invalidateWalletQueries,
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
   useWalletUtxosQuery,
@@ -79,6 +80,7 @@ const CreatePoolPage = () => {
     signTxMutationResult,
     submitTxMutationResult,
     isPending: isSigningAndSubmittingTx,
+    isError: isSignAndSubmitTxError,
     reset: resetSignAndSubmitTx,
   } = useSignAndSubmitTxMutation()
 
@@ -142,9 +144,9 @@ const CreatePoolPage = () => {
       : undefined,
   )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the sign and submit tx when the build tx result is updated
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the error state of the sign and submit tx when the build tx result is updated
   useEffect(() => {
-    resetSignAndSubmitTx()
+    if (isSignAndSubmitTxError) resetSignAndSubmitTx()
   }, [buildCreatePoolTxResult, resetSignAndSubmitTx])
 
   const assetInputItems = useMemo(
@@ -183,6 +185,7 @@ const CreatePoolPage = () => {
       addUnconfirmedInteraction({
         txHash: res.txHash,
       })
+      invalidateWalletQueries(queryClient)
     }
   }
 

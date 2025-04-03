@@ -1,6 +1,7 @@
 import {queryKeyFactory} from '@/helpers/query-key'
 import {BrowserWallet} from '@meshsdk/core'
 import {
+  type QueryClient,
   skipToken,
   useMutation,
   useQuery,
@@ -12,6 +13,10 @@ import {useShallow} from 'zustand/shallow'
 import {prefetchTokensMetadata} from '../metadata/queries'
 import {useConnectedWalletStore} from '../store/connected-wallet'
 import {useTRPC} from '../trpc/client'
+
+export const invalidateWalletQueries = (queryClient: QueryClient) => {
+  queryClient.invalidateQueries({queryKey: queryKeyFactory.wallet()})
+}
 
 export const useInstalledWalletsIdsQuery = () =>
   useQuery({
@@ -130,6 +135,7 @@ export const useSignAndSubmitTxMutation = () => {
     reset,
     isPending:
       signTxMutationResult.isPending || submitTxMutationResult.isPending,
+    isError: signTxMutationResult.isError || submitTxMutationResult.isError,
     signTxMutationResult,
     submitTxMutationResult,
   }

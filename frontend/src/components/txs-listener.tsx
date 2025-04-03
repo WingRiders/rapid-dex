@@ -1,8 +1,7 @@
 'use client'
-
-import {queryKeyFactory} from '@/helpers/query-key'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {useTRPC} from '@/trpc/client'
+import {invalidateWalletQueries} from '@/wallet/queries'
 import {useQueries, useQueryClient} from '@tanstack/react-query'
 import {useSubscription} from '@trpc/tanstack-react-query'
 import {minutesToMilliseconds, secondsToMilliseconds} from 'date-fns'
@@ -94,7 +93,7 @@ const useHandleTxAddedToBlock = () => {
       await new Promise((resolve) =>
         setTimeout(resolve, WALLET_REFETCH_DELAY_MS),
       )
-      queryClient.invalidateQueries({queryKey: queryKeyFactory.wallet()})
+      invalidateWalletQueries(queryClient)
     },
     [removeUnconfirmedInteraction, queryClient],
   )

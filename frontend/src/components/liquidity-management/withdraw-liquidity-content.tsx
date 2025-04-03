@@ -8,7 +8,11 @@ import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildWithdrawLiquidityTxQuery} from '@/on-chain/transaction/queries'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
-import {useSignAndSubmitTxMutation} from '@/wallet/queries'
+import {
+  invalidateWalletQueries,
+  useSignAndSubmitTxMutation,
+} from '@/wallet/queries'
+import {useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
@@ -36,6 +40,8 @@ type WithdrawLiquidityContentProps = {
 export const WithdrawLiquidityContent = ({
   portfolioItem,
 }: WithdrawLiquidityContentProps) => {
+  const queryClient = useQueryClient()
+
   const addUnconfirmedInteraction = useLocalInteractionsStore(
     (state) => state.addUnconfirmedInteraction,
   )
@@ -129,12 +135,13 @@ export const WithdrawLiquidityContent = ({
     signTxMutationResult,
     submitTxMutationResult,
     isPending: isSigningAndSubmittingTx,
+    isError: isSignAndSubmitTxError,
     reset: resetSignAndSubmitTx,
   } = useSignAndSubmitTxMutation()
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the sign and submit tx when the build tx result is updated
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the error state of the sign and submit tx when the build tx result is updated
   useEffect(() => {
-    resetSignAndSubmitTx()
+    if (isSignAndSubmitTxError) resetSignAndSubmitTx()
   }, [buildWithdrawLiquidityTxResult, resetSignAndSubmitTx])
 
   const handleWithdrawLiquidity = async () => {
@@ -144,6 +151,7 @@ export const WithdrawLiquidityContent = ({
       addUnconfirmedInteraction({
         txHash: res.txHash,
       })
+      invalidateWalletQueries(queryClient)
     }
   }
 
