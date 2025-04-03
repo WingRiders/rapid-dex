@@ -74,19 +74,23 @@ export const RouteSelectItem = ({
             <Row
               label="Sell"
               value={
-                <AssetQuantity
-                  unit={sellUnit}
-                  quantity={swapQuantities.lockX}
-                />
+                <p>
+                  <AssetQuantity
+                    unit={sellUnit}
+                    quantity={swapQuantities.lockX}
+                  />
+                </p>
               }
             />
             <Row
               label="Receive"
               value={
-                <AssetQuantity
-                  unit={receiveUnit}
-                  quantity={swapQuantities.outY}
-                />
+                <p>
+                  <AssetQuantity
+                    unit={receiveUnit}
+                    quantity={swapQuantities.outY}
+                  />
+                </p>
               }
             />
           </>
@@ -111,7 +115,9 @@ const Row = ({label, value}: RowProps) => {
   return (
     <div className="flex w-full flex-row justify-between gap-2">
       <p className="text-muted-foreground text-sm">{label}</p>
-      <p className="text-sm">{value}</p>
+      <div className="text-sm">
+        {typeof value === 'string' ? <p>{value}</p> : value}
+      </div>
     </div>
   )
 }
