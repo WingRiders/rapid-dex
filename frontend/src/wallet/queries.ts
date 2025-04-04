@@ -1,3 +1,4 @@
+import {env} from '@/config'
 import {queryKeyFactory} from '@/helpers/query-key'
 import {BrowserWallet} from '@meshsdk/core'
 import {
@@ -86,17 +87,22 @@ export const useSignTxMutation = () => {
 }
 
 export const useSubmitTxMutation = () => {
+  const trpc = useTRPC()
   const wallet = useConnectedWalletStore(
     useShallow((state) => state.connectedWallet?.wallet),
   )
 
-  return useMutation({
-    mutationKey: queryKeyFactory.submitTx(),
-    mutationFn: async (tx: string) => {
-      if (!wallet) throw new Error('Wallet not connected')
-      return wallet.submitTx(tx)
-    },
-  })
+  return useMutation(
+    env('NEXT_PUBLIC_SUBMIT_TX_METHOD') === 'backend'
+      ? trpc.submitTx.mutationOptions()
+      : {
+          mutationKey: queryKeyFactory.submitTx(),
+          mutationFn: async (tx: string) => {
+            if (!wallet) throw new Error('Wallet not connected')
+            return wallet.submitTx(tx)
+          },
+        },
+  )
 }
 
 export const useSignAndSubmitTxMutation = () => {

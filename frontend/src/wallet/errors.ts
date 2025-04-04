@@ -1,3 +1,6 @@
+import type {TRPCClientErrorLike} from '@trpc/client'
+import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
+
 export enum TxSignErrorCode {
   /**
    * User has accepted the transaction sign, but the wallet was unable to sign the transaction
@@ -17,7 +20,11 @@ export const getTxSignErrorMessage = (error: Error): string => {
   return error.message ?? 'Unknown error'
 }
 
-export const getTxSendErrorMessage = (error: Error): string => {
+export const getTxSendErrorMessage = (
+  error: Error | TRPCClientErrorLike<ServerAppRouter>,
+): string => {
+  if ('message' in error && typeof error.message === 'string')
+    return error.message
   if ('info' in error && typeof error.info === 'string') return error.info
   return error.message ?? 'Unknown error'
 }

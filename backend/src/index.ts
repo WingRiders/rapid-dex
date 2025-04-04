@@ -7,6 +7,7 @@ import {
 import {ensureDBMigrated} from './db/migrateDb'
 import {startChainSyncClient} from './ogmios/chainSync'
 import {getOgmiosContext} from './ogmios/ogmios'
+import {initializeTxSubmissionClient} from './ogmios/txSubmissionClient'
 import {initRedisClient} from './redis/client'
 import {initRedisSubscriptions} from './redis/init'
 import {startServer} from './server'
@@ -25,6 +26,7 @@ if (isOnlyServerMode) {
 if (isAggregatorMode) {
   await ensureDBMigrated()
   await getOgmiosContext()
+  initializeTxSubmissionClient()
   startChainSyncClient()
 }
 

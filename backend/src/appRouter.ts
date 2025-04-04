@@ -12,6 +12,7 @@ import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
 import {isPoolTxInBlock} from './endpoints/transaction'
+import {submitTx} from './ogmios/txSubmissionClient'
 import {poolsUpdatesEventEmitterIterable} from './poolsUpdates'
 import {txsListenerEmitterIterable} from './txsListener'
 
@@ -28,6 +29,9 @@ export const createAggregatorRouter = () =>
 
 export const createServerRouter = () =>
   t.router({
+    submitTx: publicProcedure
+      .input(z.string())
+      .mutation(({input}) => submitTx(input)),
     healthcheck: publicProcedure.query(getServerHealthcheck),
     pools: publicProcedure.query(getPools),
     poolUtxo: publicProcedure
