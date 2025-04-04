@@ -4,24 +4,26 @@ import type {PoolState} from '@wingriders/rapid-dex-common'
 import {dbPoolOutputToPoolState, dbPoolOutputToUtxo} from './db/helpers'
 import {prisma} from './db/prismaClient'
 import type {getPools} from './endpoints/pools'
+import {handleCrossServiceEvent} from './redis/helpers'
+import {PubSubChannel} from './redis/pubsub'
 
-type PoolStateUpdatedPayload = {
+export type PoolStateUpdatedPayload = {
   shareAssetName: string
   poolState: PoolState
   validAt: Date
 }
 
-type PoolUtxoUpdatedPayload = {
+export type PoolUtxoUpdatedPayload = {
   shareAssetName: string
   utxo: UTxO
   validAt: Date
 }
 
-type PoolCreatedPayload = {
+export type PoolCreatedPayload = {
   pool: Awaited<ReturnType<typeof getPools>>[number]
 }
 
-type PoolRolledBackPayload = {
+export type PoolRolledBackPayload = {
   shareAssetName: string
   validAt: Date
 }
@@ -111,21 +113,33 @@ export const emitPoolUpdatesOnRollback = async (rollbackSlot: number) => {
     })
 
     if (lastValidPoolOutput) {
-      emitPoolStateUpdated({
-        shareAssetName: affectedPoolOutput.shareAssetName,
-        poolState: dbPoolOutputToPoolState(lastValidPoolOutput),
-        validAt,
-      })
-      emitPoolUtxoUpdated({
-        shareAssetName: affectedPoolOutput.shareAssetName,
-        utxo: dbPoolOutputToUtxo(lastValidPoolOutput),
-        validAt,
-      })
+      await handleCrossServiceEvent(
+        PubSubChannel.POOL_STATE_UPDATED,
+        {
+          shareAssetName: affectedPoolOutput.shareAssetName,
+          poolState: dbPoolOutputToPoolState(lastValidPoolOutput),
+          validAt,
+        },
+        emitPoolStateUpdated,
+      )
+      await handleCrossServiceEvent(
+        PubSubChannel.POOL_UTXO_UPDATED,
+        {
+          shareAssetName: affectedPoolOutput.shareAssetName,
+          utxo: dbPoolOutputToUtxo(lastValidPoolOutput),
+          validAt,
+        },
+        emitPoolUtxoUpdated,
+      )
     } else {
-      emitPoolRolledBack({
-        shareAssetName: affectedPoolOutput.shareAssetName,
-        validAt,
-      })
+      await handleCrossServiceEvent(
+        PubSubChannel.POOL_ROLLED_BACK,
+        {
+          shareAssetName: affectedPoolOutput.shareAssetName,
+          validAt,
+        },
+        emitPoolRolledBack,
+      )
     }
   }
 }

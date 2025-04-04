@@ -1,4 +1,18 @@
 services:
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - ${REDIS_PORT}:6379
+    command:
+      [
+        "redis-server",
+        "--maxmemory-policy volatile-lru",
+        "--requirepass ${REDIS_PASSWORD}",
+      ]
+    volumes:
+      - ./redis:/data
+    restart: unless-stopped
+
   cardano-node:
     image: ghcr.io/intersectmbo/cardano-node:10.1.4
     restart: unless-stopped
@@ -71,6 +85,10 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-pass}
       - DB_HOST=${DB_HOST:-localhost}
       - DB_PORT=${DB_PORT:-5432}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PROTOCOL=${REDIS_PROTOCOL}
       - OGMIOS_HOST=${OGMIOS_HOST:-localhost}
       - OGMIOS_PORT=${OGMIOS_PORT:-1337}
       - CORS_ENABLED_FOR=${CORS_ENABLED_FOR}
@@ -91,3 +109,4 @@ volumes:
   postgres:
   node-db:
   node-ipc:
+  redis:

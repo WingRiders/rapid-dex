@@ -1,24 +1,34 @@
-import {config} from './config'
+import {
+  isAggregatorMode,
+  isOnlyAggregatorMode,
+  isOnlyServerMode,
+  isServerMode,
+} from './config'
 import {ensureDBMigrated} from './db/migrateDb'
-import {logger} from './logger'
 import {startChainSyncClient} from './ogmios/chainSync'
 import {getOgmiosContext} from './ogmios/ogmios'
+import {initRedisClient} from './redis/client'
+import {initRedisSubscriptions} from './redis/init'
 import {startServer} from './server'
 import {tokensMetadataLoop} from './tokenRegistry'
 
-// First we need to get the Ogmios interaction context
-// It's needed for both the chain synchronization client and the HTTP server
-await getOgmiosContext()
+if (isOnlyServerMode || isOnlyAggregatorMode) {
+  initRedisClient()
+}
 
-if (['aggregator', 'both'].includes(config.MODE)) {
-  logger.info('Migrating DB if necessary')
+if (isOnlyServerMode) {
+  // Init PubSub only in the server mode (not in the both mode).
+  // We don't need it in the both mode because the events are emitted directly.
+  await initRedisSubscriptions()
+}
+
+if (isAggregatorMode) {
   await ensureDBMigrated()
-
-  // Start the Ogmios chain synchronization client
+  await getOgmiosContext()
   startChainSyncClient()
 }
 
-if (['server', 'both'].includes(config.MODE)) {
+if (isServerMode) {
   tokensMetadataLoop()
 }
 

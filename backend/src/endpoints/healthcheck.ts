@@ -1,16 +1,13 @@
-import type {Point} from '@cardano-ogmios/schema'
 import {TRPCError} from '@trpc/server'
 import {prisma} from '../db/prismaClient'
-import {originPoint} from '../helpers'
+import {tipToSlot} from '../helpers'
 import {getLedgerTip, getNetworkTip} from '../ogmios/ledgerStateQuery'
 import {isTokenMetadataFetched as isTokenMetadataFetchedFn} from '../tokenRegistry'
 
-export const healthcheck = async () => {
-  const tipToSlot = (tip: Point | 'origin') =>
-    tip === 'origin' ? originPoint.slot : tip.slot
-  const lastBlockPromise = prisma.block.findFirst({
-    orderBy: [{slot: 'desc'}],
-  })
+const IS_DB_SYNCED_THRESHOLD_SLOTS = 300 // 5 minutes
+
+const getAggregatorHealthStatus = async () => {
+  const lastBlockPromise = prisma.block.findFirst({orderBy: [{slot: 'desc'}]})
   const networkTipPromise = getNetworkTip()
   const [
     networkSlot,
@@ -27,20 +24,12 @@ export const healthcheck = async () => {
     lastBlockPromise.then(() => true).catch(() => false),
     networkTipPromise.then(() => true).catch(() => false),
   ])
-  const healthyThresholdSlot = 300 // 5 minutes
-  const isTokenMetadataFetched = isTokenMetadataFetchedFn()
 
-  const healthy =
-    networkSlot - ledgerSlot < healthyThresholdSlot &&
-    ledgerSlot - lastBlockSlot < healthyThresholdSlot &&
-    isTokenMetadataFetched
+  const isDbSynced =
+    networkSlot - ledgerSlot < IS_DB_SYNCED_THRESHOLD_SLOTS &&
+    ledgerSlot - lastBlockSlot < IS_DB_SYNCED_THRESHOLD_SLOTS
 
-  if (!healthy) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: `Healthcheck failed: lastBlockSlot = ${lastBlockSlot}, ledgerSlot = ${ledgerSlot}, networkSlot = ${networkSlot}, isTokenMetadataFetched = ${isTokenMetadataFetched}`,
-    })
-  }
+  const healthy = isDbConnected && isDbSynced && isOgmiosConnected
 
   return {
     healthy,
@@ -48,8 +37,74 @@ export const healthcheck = async () => {
     ledgerSlot,
     lastBlockSlot,
     isDbConnected,
+    isDbSynced,
     isOgmiosConnected,
+    uptime: process.uptime(),
+  }
+}
+
+export const getAggregatorHealthcheck = async () => {
+  const healthStatus = await getAggregatorHealthStatus()
+
+  if (!healthStatus.healthy) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `Healthcheck failed: ${JSON.stringify(healthStatus)}`,
+    })
+  }
+
+  return healthStatus
+}
+
+const getServerHealthStatus = async () => {
+  const isDbConnected = await prisma.block
+    .findFirst({
+      orderBy: [{slot: 'desc'}],
+    })
+    .then(() => true)
+    .catch(() => false)
+  const isTokenMetadataFetched = isTokenMetadataFetchedFn()
+
+  const healthy = isDbConnected && isTokenMetadataFetched
+
+  return {
+    healthy,
+    isDbConnected,
     isTokenMetadataFetched,
     uptime: process.uptime(),
   }
+}
+export const getServerHealthcheck = async () => {
+  const healthStatus = await getServerHealthStatus()
+
+  if (!healthStatus.healthy) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `Healthcheck failed: ${JSON.stringify(healthStatus)}`,
+    })
+  }
+
+  return healthStatus
+}
+
+export const getBothModeHealthcheck = async () => {
+  const [aggregatorHealthStatus, serverHealthStatus] = await Promise.all([
+    getAggregatorHealthStatus(),
+    getServerHealthStatus(),
+  ])
+
+  const healthStatus = {
+    ...aggregatorHealthStatus,
+    ...serverHealthStatus,
+    healthy: aggregatorHealthStatus.healthy && serverHealthStatus.healthy,
+  }
+
+  if (!healthStatus.healthy) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `Healthcheck failed: ${JSON.stringify(healthStatus)}`,
+    })
+  }
+
+  return healthStatus
 }

@@ -1,3 +1,4 @@
+import type {Point} from '@cardano-ogmios/schema'
 import {config} from './config'
 
 export const originPoint = {
@@ -13,3 +14,6 @@ export const originPoint = {
     height: 3287900,
   },
 }[config.NETWORK]
+
+export const tipToSlot = (tip: Point | 'origin') =>
+  tip === 'origin' ? originPoint.slot : tip.slot

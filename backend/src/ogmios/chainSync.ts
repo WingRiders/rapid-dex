@@ -26,6 +26,8 @@ import {
   emitPoolUpdatesOnRollback,
   emitPoolUtxoUpdated,
 } from '../poolsUpdates'
+import {handleCrossServiceEvent} from '../redis/helpers'
+import {PubSubChannel} from '../redis/pubsub'
 import {emitTxAddedToBlock} from '../txsListener'
 import {isPoolOutput} from './helpers'
 import {getOgmiosContext} from './ogmios'
@@ -57,7 +59,11 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
   // - Check for any inputs spending tracked PoolOutputs
   // - Handle pool outputs
   block.transactions?.forEach((tx) => {
-    emitTxAddedToBlock(tx.id)
+    handleCrossServiceEvent(
+      PubSubChannel.TX_ADDED_TO_BLOCK,
+      {txHash: tx.id},
+      emitTxAddedToBlock,
+    )
 
     const hasPoolInInputsIfFullySynced =
       isFullySynced &&
@@ -112,23 +118,35 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
         if (isFullySynced) {
           const validAt = new Date()
           if (hasPoolInInputsIfFullySynced) {
-            emitPoolStateUpdated({
-              shareAssetName: poolDatum.sharesAssetName,
-              poolState: dbPoolOutputToPoolState(poolOutput),
-              validAt,
-            })
-            emitPoolUtxoUpdated({
-              shareAssetName: poolDatum.sharesAssetName,
-              utxo: dbPoolOutputToUtxo(poolOutput),
-              validAt,
-            })
-          } else {
-            emitPoolCreated({
-              pool: {
-                ...dbPoolOutputToPool(poolOutput),
+            handleCrossServiceEvent(
+              PubSubChannel.POOL_STATE_UPDATED,
+              {
+                shareAssetName: poolDatum.sharesAssetName,
+                poolState: dbPoolOutputToPoolState(poolOutput),
                 validAt,
               },
-            })
+              emitPoolStateUpdated,
+            )
+            handleCrossServiceEvent(
+              PubSubChannel.POOL_UTXO_UPDATED,
+              {
+                shareAssetName: poolDatum.sharesAssetName,
+                utxo: dbPoolOutputToUtxo(poolOutput),
+                validAt,
+              },
+              emitPoolUtxoUpdated,
+            )
+          } else {
+            handleCrossServiceEvent(
+              PubSubChannel.POOL_CREATED,
+              {
+                pool: {
+                  ...dbPoolOutputToPool(poolOutput),
+                  validAt,
+                },
+              },
+              emitPoolCreated,
+            )
           }
         }
 

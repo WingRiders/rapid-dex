@@ -4,6 +4,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "bun --watch src/index.ts",
+    "dev:aggregator": "MODE=aggregator SERVER_PORT=3301 bun --watch src/index.ts",
+    "dev:server": "MODE=server SERVER_PORT=3300 bun --watch src/index.ts",
     "start": "bun src/index.ts",
     "check": "bun biome check . && tsc --noEmit",
     "fix": "bun biome check . --write",
@@ -20,6 +22,7 @@
     "bignumber.js": "^9.1.2",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
+    "ioredis": "^5.6.0",
     "lodash": "^4.17.21",
     "pino": "^9.6.0",
     "postgres": "^3.4.5",
@@ -37,6 +40,7 @@
     "@types/cors": "^2.8.17",
     "@types/lodash": "^4.14.176",
     "pino-pretty": "^13.0.0",
+    "type-fest": "^4.39.1",
     "typescript": "^5.7.3"
   }
 }

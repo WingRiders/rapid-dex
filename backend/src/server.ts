@@ -3,15 +3,22 @@ import {createHTTPHandler} from '@trpc/server/adapters/standalone'
 import {applyWSSHandler} from '@trpc/server/adapters/ws'
 import cors from 'cors'
 import {WebSocketServer} from 'ws'
-import {aggregatorAppRouter, serverAppRouter} from './appRouter'
-import {config, isProd} from './config'
+import {
+  createAggregatorRouter,
+  createBothModeRouter,
+  createServerRouter,
+} from './appRouter'
+import {config, isProd, isServerMode} from './config'
 import {handleTokenImageRequest} from './endpoints/tokenImage'
 import {getCorsOptions} from './helpers/cors'
 import {logger} from './logger'
 
 export const startServer = () => {
-  const router =
-    config.MODE === 'aggregator' ? aggregatorAppRouter : serverAppRouter
+  const router = {
+    aggregator: createAggregatorRouter(),
+    server: createServerRouter(),
+    both: createBothModeRouter(),
+  }[config.MODE]
 
   const trpcHandler = createHTTPHandler({
     router,
@@ -22,19 +29,23 @@ export const startServer = () => {
 
   // HTTP server
   const server = createServer((req, res) => {
-    if (req.url?.match(/^\/token-image\/.+$/)) {
-      handleTokenImageRequest(req.url.split('/').pop()!, res)
-    } else {
-      trpcHandler(req, res)
+    if (isServerMode) {
+      if (req.url?.match(/^\/token-image\/.+$/)) {
+        handleTokenImageRequest(req.url.split('/').pop()!, res)
+      }
     }
+
+    trpcHandler(req, res)
   })
 
-  // WebSocket server
-  const wss = new WebSocketServer({server})
-  applyWSSHandler({
-    wss,
-    router,
-  })
+  if (isServerMode) {
+    // WebSocket server
+    const wss = new WebSocketServer({server})
+    applyWSSHandler({
+      wss,
+      router,
+    })
+  }
 
   server.listen(config.SERVER_PORT)
 

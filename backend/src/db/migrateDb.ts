@@ -32,7 +32,9 @@ export const migrateDb = async () => {
  */
 let dbMigrated = config.NODE_ENV !== 'production'
 
-export async function ensureDBMigrated() {
+export const ensureDBMigrated = async () => {
+  logger.info('Migrating DB if necessary')
+
   if (dbMigrated) {
     logger.info('Skipping DB migration loop...')
     return

@@ -1,14 +1,18 @@
 import {EventEmitter, on} from 'node:events'
 
+export type TxAddedToBlockPayload = {
+  txHash: string
+}
+
 type TxsListenerEvents = {
-  txAddedToBlock: [txHash: string]
+  txAddedToBlock: [payload: TxAddedToBlockPayload]
 }
 
 const txsListenerEmitter = new EventEmitter<TxsListenerEvents>()
 txsListenerEmitter.setMaxListeners(Number.MAX_SAFE_INTEGER)
 
-export const emitTxAddedToBlock = (txHash: string) => {
-  txsListenerEmitter.emit('txAddedToBlock', txHash)
+export const emitTxAddedToBlock = (payload: TxAddedToBlockPayload) => {
+  txsListenerEmitter.emit('txAddedToBlock', payload)
 }
 
 export const txsListenerEmitterIterable = <
