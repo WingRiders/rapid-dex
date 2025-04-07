@@ -10,6 +10,19 @@ import {
   supportedWalletsInfo,
 } from '../wallet/supported-wallets'
 
+const WAIT_FOR_WALLET_EXTENSION_MAX_ATTEMPTS = 5
+const WAIT_FOR_WALLET_EXTENSION_DELAY_MS = 300
+
+const waitForWalletExtension = async (walletId: string) => {
+  for (let i = 0; i < WAIT_FOR_WALLET_EXTENSION_MAX_ATTEMPTS; i++) {
+    if (window.cardano?.[walletId] != null) return true
+    await new Promise((resolve) =>
+      setTimeout(resolve, WAIT_FOR_WALLET_EXTENSION_DELAY_MS),
+    )
+  }
+  return false
+}
+
 type ConnectedWallet = {
   wallet: BrowserWallet
   address: string
@@ -38,6 +51,12 @@ export const useConnectedWalletStore = create<ConnectedWalletState>()(
         set({isWalletConnecting: true})
         try {
           const walletId = supportedWalletsInfo[walletType].id
+          // if connectWallet is called right after the page loads, the wallet extension might not be injected yet
+          // so we wait for the extension to be injected
+          const isExtensionInstalled = await waitForWalletExtension(walletId)
+          if (!isExtensionInstalled) {
+            throw new Error('Wallet extension not installed')
+          }
           const wallet = walletApi ?? (await BrowserWallet.enable(walletId))
           const [address, networkId] = await Promise.all([
             wallet.getChangeAddress(),
