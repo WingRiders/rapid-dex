@@ -1,0 +1,32 @@
+name: 'Staging preprod: Deploy Frontend'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'common/**'
+      - 'frontend/**'
+      - 'patches/**'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/deploy-frontend-staging-preprod.yaml'
+
+concurrency: frontend_staging
+
+jobs:
+  deploy:
+    if: github.repository == 'WingRiders/rapid-dex'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: preprod
+      service: rapid-dex-frontend
+      deploy: true
+      working_directory: .
+      dockerfile: frontend/Dockerfile
+      build_args: |
+        NEXT_PUBLIC_NETWORK=preprod
+    secrets:
+      aws-region: ${{ secrets.AWS_REGION }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}

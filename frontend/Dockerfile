@@ -1,5 +1,8 @@
 FROM oven/bun:1.2.8 AS builder
 
+ARG NEXT_PUBLIC_NETWORK
+ENV NEXT_PUBLIC_NETWORK=$NEXT_PUBLIC_NETWORK
+
 WORKDIR /app
 
 COPY package.json bun.lock ./

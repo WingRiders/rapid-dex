@@ -28,15 +28,13 @@ COPY common/package.json common/package.json
 COPY backend/package.json backend/package.json
 COPY common/src common/src
 COPY backend/src backend/src
+COPY backend/prisma backend/prisma
+COPY backend/.env.prod backend/.env
 
 ENV NODE_ENV=production
-ENV DB_SSL_MODE=require
-ENV DB_SSL_ACCEPT=strict
-ENV DB_SSL_CERT=/usr/local/share/ca-certificates/rds.crt
-ENV DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=${DB_SCHEMA}&sslmode=${DB_SSL_MODE}&sslaccept=${DB_SSL_ACCEPT}&sslcert=${DB_SSL_CERT}"
 
 # Add the RDS certificate to the system
-COPY ca-certificates/rds-global-bundle.pem $DB_SSL_CERT
+COPY ca-certificates/rds-global-bundle.pem /usr/local/share/ca-certificates/rds.crt
 RUN update-ca-certificates
 
 ENTRYPOINT ["bun", "run", "--filter", "./backend", "start"]

@@ -8,7 +8,7 @@ export const migrateDb = async () => {
   // As a workaround, we spawn migration script as a child process and wait for its completion.
   // Please also refer to the following GitHub issue: https://github.com/prisma/prisma/issues/4703
   const exitCode = await new Promise((resolve, _) => {
-    Bun.spawn(['bun', 'prisma migrate deploy'], {
+    Bun.spawn(['bun', 'prisma:deploy'], {
       onExit(proc, exitCode, signalCode, error) {
         logger.info(proc.stdout)
         if (error != null) {

@@ -1,0 +1,32 @@
+name: 'Prod mainnet: Deploy Frontend'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'common/**'
+      - 'frontend/**'
+      - 'patches/**'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/deploy-frontend-prod-mainnet.yaml'
+
+concurrency: frontend_prod
+
+jobs:
+  deploy:
+    if: false # TODO: uncomment when mainnet deployment is done: github.repository == 'WingRiders/rapid-dex'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: mainnet
+      service: rapid-dex-frontend
+      deploy: true
+      working_directory: .
+      dockerfile: frontend/Dockerfile
+      build_args: |
+        NEXT_PUBLIC_NETWORK=mainnet
+    secrets:
+      aws-region: ${{ secrets.AWS_REGION }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

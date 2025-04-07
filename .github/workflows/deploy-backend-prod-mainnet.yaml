@@ -1,0 +1,47 @@
+name: 'Prod mainnet: Deploy Backend'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'common/**'
+      - 'backend/**'
+      - 'patches/**'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/deploy-backend-prod-mainnet.yaml'
+
+concurrency: backend_prod
+
+jobs:
+  deploy-aggregator:
+    if: false # TODO: uncomment when mainnet deployment is done: github.repository == 'WingRiders/rapid-dex'
+    uses: ./.github/workflows/deploy.yml
+    concurrency: backend_prod_mainnet
+    with:
+      environment: mainnet
+      service: rapid-dex-backend-aggregator
+      deploy: true
+      working_directory: .
+      dockerfile: backend/Dockerfile
+      ecr_repository_suffix: rapid-dex-backend
+    secrets:
+      aws-region: ${{ secrets.AWS_REGION }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  deploy-server:
+      needs: deploy-aggregator
+      uses: ./.github/workflows/deploy.yml
+      concurrency: backend_prod_mainnet
+      with:
+        environment: mainnet
+        service: rapid-dex-backend-server
+        deploy: true
+        working_directory: .
+        dockerfile: backend/Dockerfile
+        ecr_repository_suffix: rapid-dex-backend
+      secrets:
+        aws-region: ${{ secrets.AWS_REGION }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

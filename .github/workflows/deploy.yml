@@ -1,0 +1,181 @@
+name: Build and deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment (preprod/mainnet)
+        type: string
+        required: true
+      deploy:
+        description: Deploy to ECS
+        type: boolean
+        default: true
+        required: false
+      service:
+        description: Service to deploy
+        type: string
+        required: true
+      working_directory:
+        description: Build directory
+        type: string
+        required: true
+      dockerfile:
+        description: Dockerfile filename
+        type: string
+        default: Dockerfile
+        required: false
+      build_args:
+        description: Additional docker build arguments
+        type: string
+        default:
+        required: false
+      ecr_repository_suffix:
+        description: ECR repository name without wingriders- prefix
+        type: string
+        default:
+        required: false
+
+    secrets:
+      aws-region:
+        description: AWS Region
+        required: true
+      aws-access-key-id:
+        description: AWS Access key ID
+        required: true
+      aws-secret-access-key:
+        description: AWS Secret access key
+        required: true
+      sentry-auth-token:
+        description: Sentry auth token
+        required: false
+
+env:
+  ECR_REPOSITORY: wingriders-${{ inputs.ecr_repository_suffix || inputs.service }}
+  ECS_SERVICE: wingriders-${{ inputs.environment }}-${{ inputs.service }}
+  ECS_CLUSTER: wingriders-${{ inputs.environment }}-cluster
+  CONTAINER_NAME: wingriders-${{ inputs.environment }}-${{ inputs.service }}
+
+jobs:
+  build-and-push:
+    name: Build and push
+    runs-on: ubuntu-22.04
+
+    outputs:
+      services: ${{ steps.get-service-list.outputs.services }}
+      parallelism: ${{ steps.get-service-list.outputs.parallelism }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-region: ${{ secrets.aws-region }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Check if Docker image is already present
+        id: check-docker-image
+        run: |
+          IMAGE_SHA=$(aws ecr list-images --region ${{ secrets.aws-region }} --repository-name ${{ env.ECR_REPOSITORY }} --query "imageIds[?imageTag=='${{ github.sha }}'].imageTag" --output text)
+          echo "DOCKER_IMAGE_SHA=${IMAGE_SHA}" >> $GITHUB_OUTPUT
+          [[ -n ${IMAGE_SHA} ]] && echo "Docker image ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} found, skipping following Docker build steps." || :
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
+      - name: Set up Docker Buildx
+        if: ${{ steps.check-docker-image.outputs.DOCKER_IMAGE_SHA == '' }}
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build, tag, and push image to Amazon ECR
+        if: ${{ steps.check-docker-image.outputs.DOCKER_IMAGE_SHA == '' }}
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.working_directory }}
+          file: ${{ inputs.working_directory }}/${{ inputs.dockerfile }}
+          build-args: |
+            ${{ inputs.build_args }}
+            REVISION=${{ github.sha }}
+            SENTRY_AUTH_TOKEN=${{ secrets.sentry-auth-token }}
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }},${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Get service list
+        id: get-service-list
+        run: |
+          SERVICES=$(aws ecs list-services --cluster ${{ env.ECS_CLUSTER}} --output json | jq -c '.serviceArns[] | select(.|test("${{ env.ECS_SERVICE }}$", "${{ env.ECS_SERVICE }}-\\d+")) | (. / "/" )[-1]' | jq -nc '[inputs]')
+          SERVICES_COUNT=$(echo "${SERVICES}" | jq '. | length')
+
+          # calculate how many jobs in parallel will be allowed for deploy job, minimum is 1
+          PARALLEL_JOBS=$(echo "scale=0; sqrt(${SERVICES_COUNT})" | bc)
+          PARALLELISM="$(( ${PARALLEL_JOBS} > 1 ? ${PARALLEL_JOBS} : 1 ))"
+
+          echo "Services found: ${SERVICES}"
+          echo "max-parallel value for deploy job will set to ${PARALLELISM}"
+
+          # define output context values
+          echo "services=${SERVICES}" >> ${GITHUB_OUTPUT}
+          echo "parallelism=${PARALLELISM}" >> ${GITHUB_OUTPUT}
+
+  deploy:
+    needs: [build-and-push]
+    if: ${{ needs.build-and-push.outputs.services != '' && toJson(fromJson(needs.build-and-push.outputs.services)) != '[]' }}
+    name: Deploy
+    runs-on: ubuntu-22.04
+    strategy:
+      max-parallel: ${{ fromJson(needs.build-and-push.outputs.parallelism) }}
+      matrix:
+        service: ${{ fromJson(needs.build-and-push.outputs.services) }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-region: ${{ secrets.aws-region }}
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition ${{ matrix.service }} --query taskDefinition > ${{ github.workspace }}/task-definition-${{ matrix.service }}.json
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ github.workspace }}/task-definition-${{ matrix.service }}.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy Amazon ECS task definition
+        if: ${{ inputs.deploy != true }}
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          cluster: ${{ env.ECS_CLUSTER }}
+
+      - name: Update ECS service with the new task definition
+        if: ${{ inputs.deploy == true }}
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ matrix.service }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 20
