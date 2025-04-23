@@ -18,6 +18,10 @@ const envSchemas = {
     .string()
     .default('false')
     .transform((v) => v === 'true'),
+  NEXT_PUBLIC_ENABLE_DEBUG_LOGS: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
 }
 
 type Env = {

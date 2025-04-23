@@ -5,6 +5,7 @@ import {
   dbPoolOutputToPoolState,
   dbPoolOutputToUtxo,
 } from '../db/helpers'
+import {logger} from '../logger'
 import {
   emitPoolCreated,
   emitPoolStateUpdated,
@@ -40,6 +41,11 @@ export const handleNewPoolOutputEvents = ({
   poolDatum,
   hasSpentPoolInput,
 }: HandleNewPoolOutputEventsArgs) => {
+  logger.debug(
+    {utxoId: poolOutput.utxoId},
+    'Sending WebSocket pool updates to clients',
+  )
+
   const validAt = new Date()
 
   if (hasSpentPoolInput) {

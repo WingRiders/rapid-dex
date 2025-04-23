@@ -1,10 +1,13 @@
 import {z} from 'zod'
 
 const envSchema = z.object({
-  MODE: z.enum(['aggregator', 'server', 'both']).default('both'),
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+  LOG_LEVEL: z
+    .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
+    .default('info'),
+  MODE: z.enum(['aggregator', 'server', 'both']).default('both'),
   SERVER_PORT: z.coerce.number().positive(),
   NETWORK: z.enum(['preprod']).default('preprod'), // TODO: add mainnet once bootstrap is done
   DATABASE_URL: z.string(),

@@ -1,5 +1,6 @@
 'use client'
 
+import {wsOnDataDebugLog} from '@/helpers/logger'
 import {useTRPC} from '@/trpc/client'
 import {useQueryClient} from '@tanstack/react-query'
 import {useSubscription} from '@trpc/tanstack-react-query'
@@ -11,6 +12,8 @@ export const LivePoolsUpdate = () => {
   useSubscription(
     trpc.onPoolStateUpdated.subscriptionOptions(undefined, {
       onData: (payload) => {
+        wsOnDataDebugLog('pool state updated', payload)
+
         queryClient.setQueryData(trpc.pools.queryKey(), (existingPools) => {
           if (!existingPools) return
 
@@ -31,6 +34,8 @@ export const LivePoolsUpdate = () => {
   useSubscription(
     trpc.onPoolCreated.subscriptionOptions(undefined, {
       onData: (payload) => {
+        wsOnDataDebugLog('new pool created', payload)
+
         queryClient.setQueryData(trpc.pools.queryKey(), (existingPools) => {
           if (!existingPools) return
 
@@ -56,6 +61,8 @@ export const LivePoolsUpdate = () => {
   useSubscription(
     trpc.onPoolRolledBack.subscriptionOptions(undefined, {
       onData: (payload) => {
+        wsOnDataDebugLog('pool rolled back', payload)
+
         queryClient.setQueryData(trpc.pools.queryKey(), (existingPools) => {
           if (!existingPools) return
 

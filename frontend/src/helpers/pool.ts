@@ -4,6 +4,7 @@ import {skipToken, useQuery, useQueryClient} from '@tanstack/react-query'
 import {useSubscription} from '@trpc/tanstack-react-query'
 import {keyBy} from 'lodash'
 import type {PoolsListItem} from '../types'
+import {wsOnDataDebugLog} from './logger'
 
 export const usePoolsQuery = (options?: {enabled?: boolean}) => {
   const trpc = useTRPC()
@@ -66,6 +67,8 @@ export const useLivePoolUtxoQuery = (
       hasInput ? {shareAssetName: input.shareAssetName} : skipToken,
       {
         onData: (payload) => {
+          wsOnDataDebugLog('pool utxo updated', payload)
+
           queryClient.setQueryData(
             queryOptions.queryKey,
             (existingPoolUtxo) => {

@@ -1,4 +1,5 @@
 'use client'
+import {wsOnDataDebugLog} from '@/helpers/logger'
 import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {useTRPC} from '@/trpc/client'
 import {invalidateWalletQueries} from '@/wallet/queries'
@@ -69,6 +70,8 @@ const TxsListener = () => {
       },
       {
         onData: (txHashes) => {
+          wsOnDataDebugLog('transactions confirmed on-chain', txHashes)
+
           const confirmedTxHashes = txHashes.filter((txHash) =>
             unconfirmedTxHashes.includes(txHash),
           )
