@@ -1,6 +1,6 @@
-import {} from '@wingriders/rapid-dex-common'
 import {dbPoolOutputToPool} from '../db/helpers'
 import {prisma} from '../db/prismaClient'
+import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
 
 export const getPools = async () => {
   const validAt = new Date()
@@ -10,6 +10,7 @@ export const getPools = async () => {
       spendSlot: null,
     },
     select: {
+      utxoId: true,
       shareAssetName: true,
       assetAPolicy: true,
       assetAName: true,
@@ -23,8 +24,14 @@ export const getPools = async () => {
     },
   })
 
-  return poolOutputs.map((poolOutput) => ({
-    validAt,
-    ...dbPoolOutputToPool(poolOutput),
-  }))
+  return poolOutputs.map((dbPoolOutput) => {
+    const mempoolPoolOutput = getLatestMempoolPoolOutput(
+      dbPoolOutput.shareAssetName,
+      dbPoolOutput.utxoId,
+    )
+    return {
+      validAt,
+      ...dbPoolOutputToPool(mempoolPoolOutput ?? dbPoolOutput),
+    }
+  })
 }

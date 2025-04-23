@@ -1,29 +1,37 @@
 import SuperJSON from 'superjson'
 import type {TaggedUnion} from 'type-fest'
 import {logger} from '../logger'
+import type {MempoolPoolOutputs} from '../ogmios/mempoolCache'
 import type {
   PoolCreatedPayload,
   PoolRolledBackPayload,
   PoolStateUpdatedPayload,
   PoolUtxoUpdatedPayload,
 } from '../poolsUpdates'
-import type {TxAddedToBlockPayload} from '../txsListener'
+import type {TxsAddedToBlockPayload} from '../txsListener'
 import {getRedisClient} from './client'
 
 export enum PubSubChannel {
-  TX_ADDED_TO_BLOCK = 'txAddedToBlock',
+  TXS_ADDED_TO_BLOCK = 'txsAddedToBlock',
   POOL_STATE_UPDATED = 'poolStateUpdated',
   POOL_UTXO_UPDATED = 'poolUtxoUpdated',
   POOL_CREATED = 'poolCreated',
   POOL_ROLLED_BACK = 'poolRolledBack',
+  MEMPOOL_POOL_OUTPUTS_UPDATED = 'mempoolPoolOutputsUpdated',
 }
 
 export type PubSubPayloads = {
-  [PubSubChannel.TX_ADDED_TO_BLOCK]: TxAddedToBlockPayload
+  [PubSubChannel.TXS_ADDED_TO_BLOCK]: TxsAddedToBlockPayload
   [PubSubChannel.POOL_STATE_UPDATED]: PoolStateUpdatedPayload
   [PubSubChannel.POOL_UTXO_UPDATED]: PoolUtxoUpdatedPayload
   [PubSubChannel.POOL_CREATED]: PoolCreatedPayload
   [PubSubChannel.POOL_ROLLED_BACK]: PoolRolledBackPayload
+  [PubSubChannel.MEMPOOL_POOL_OUTPUTS_UPDATED]: {
+    // This data is already being stored in the Redis as a simple value
+    // so in theory, this pubsub payload could be just a flag that the data changed.
+    // But it's faster to just send the data instead of server having to read it from Redis upon receiving the message.
+    poolOutputs: MempoolPoolOutputs
+  }
 }
 
 export const publishToPubSub = async <TChannel extends PubSubChannel>(

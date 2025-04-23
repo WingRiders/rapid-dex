@@ -5,7 +5,7 @@ import {persist} from 'zustand/middleware'
 export type LocalInteractionsState = {
   unconfirmedInteractions: Interaction[]
   addUnconfirmedInteraction: (interaction: Interaction) => void
-  removeUnconfirmedInteraction: (txHash: string) => void
+  removeUnconfirmedInteractions: (txHashes: string[]) => void
   clear: () => void
 }
 
@@ -20,10 +20,10 @@ export const useLocalInteractionsStore = create<LocalInteractionsState>()(
             interaction,
           ],
         })),
-      removeUnconfirmedInteraction: (txHash: string) =>
+      removeUnconfirmedInteractions: (txHashes: string[]) =>
         set((state) => ({
           unconfirmedInteractions: state.unconfirmedInteractions.filter(
-            (interaction) => interaction.txHash !== txHash,
+            (interaction) => !txHashes.includes(interaction.txHash),
           ),
         })),
       clear: () => set({unconfirmedInteractions: []}),

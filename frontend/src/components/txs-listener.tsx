@@ -21,17 +21,17 @@ const TxsListener = () => {
       unconfirmedInteractions,
     })),
   )
-  const unconfirmedTxsHashes = useMemo(
+  const unconfirmedTxHashes = useMemo(
     () => unconfirmedInteractions.map(({txHash}) => txHash),
     [unconfirmedInteractions],
   )
 
-  const handleTxAddedToBlock = useHandleTxAddedToBlock()
+  const handleTxsAddedToBlock = useHandleTxsAddedToBlock()
 
   // query the data directly besides WS in case the WS connection is lost
   // or if the tx is added to a block while the app is not opened
   const isPoolTxInBlockQueries = useQueries({
-    queries: unconfirmedTxsHashes.map((txHash) =>
+    queries: unconfirmedTxHashes.map((txHash) =>
       trpc.isPoolTxInBlock.queryOptions(
         {txHash},
         {
@@ -46,26 +46,34 @@ const TxsListener = () => {
   )
 
   useEffect(() => {
-    isPoolTxInBlockQueriesData.forEach((queryData) => {
-      if (
-        queryData?.isInBlock &&
-        unconfirmedTxsHashes.includes(queryData.txHash) // check whether it's still unconfirmed
-      ) {
-        handleTxAddedToBlock(queryData.txHash)
-      }
-    })
-  }, [isPoolTxInBlockQueriesData, handleTxAddedToBlock, unconfirmedTxsHashes])
+    const confirmedTxHashes = isPoolTxInBlockQueriesData.flatMap(
+      (queryData) => {
+        if (
+          queryData?.isInBlock &&
+          unconfirmedTxHashes.includes(queryData.txHash) // check whether it's still unconfirmed
+        ) {
+          return [queryData.txHash]
+        }
+        return []
+      },
+    )
+    if (confirmedTxHashes.length > 0) {
+      handleTxsAddedToBlock(confirmedTxHashes)
+    }
+  }, [isPoolTxInBlockQueriesData, handleTxsAddedToBlock, unconfirmedTxHashes])
 
   useSubscription(
-    trpc.onTxAddedToBlock.subscriptionOptions(
+    trpc.onTxsAddedToBlock.subscriptionOptions(
       {
-        txHashes: unconfirmedTxsHashes,
+        txHashes: unconfirmedTxHashes,
       },
       {
-        onData: (txHash) => {
-          // check whether it's still unconfirmed
-          if (unconfirmedTxsHashes.includes(txHash)) {
-            handleTxAddedToBlock(txHash)
+        onData: (txHashes) => {
+          const confirmedTxHashes = txHashes.filter((txHash) =>
+            unconfirmedTxHashes.includes(txHash),
+          )
+          if (confirmedTxHashes.length > 0) {
+            handleTxsAddedToBlock(confirmedTxHashes)
           }
         },
       },
@@ -75,19 +83,21 @@ const TxsListener = () => {
   return null
 }
 
-const useHandleTxAddedToBlock = () => {
+const useHandleTxsAddedToBlock = () => {
   const queryClient = useQueryClient()
 
-  const {removeUnconfirmedInteraction} = useLocalInteractionsStore(
-    useShallow(({removeUnconfirmedInteraction}) => ({
-      removeUnconfirmedInteraction,
+  const {removeUnconfirmedInteractions} = useLocalInteractionsStore(
+    useShallow(({removeUnconfirmedInteractions}) => ({
+      removeUnconfirmedInteractions,
     })),
   )
 
   return useCallback(
-    async (txHash: string) => {
-      removeUnconfirmedInteraction(txHash)
-      toast.success('Your transaction was confirmed on-chain')
+    async (txHashes: string[]) => {
+      removeUnconfirmedInteractions(txHashes)
+      txHashes.forEach(() => {
+        toast.success('Your transaction was confirmed on-chain')
+      })
 
       // give the wallet some time to update before we refetch wallet data
       await new Promise((resolve) =>
@@ -95,7 +105,7 @@ const useHandleTxAddedToBlock = () => {
       )
       invalidateWalletQueries(queryClient)
     },
-    [removeUnconfirmedInteraction, queryClient],
+    [removeUnconfirmedInteractions, queryClient],
   )
 }
 

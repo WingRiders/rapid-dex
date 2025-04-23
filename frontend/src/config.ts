@@ -11,7 +11,9 @@ const envSchemas = {
   SERVER_URL: z.string(),
   // public network, used in the browser
   NEXT_PUBLIC_SERVER_URL: z.string(),
-  NEXT_PUBLIC_SUBMIT_TX_METHOD: z.enum(['wallet', 'backend']).default('wallet'),
+  NEXT_PUBLIC_SUBMIT_TX_METHOD: z
+    .enum(['wallet', 'backend', 'both'])
+    .default('wallet'),
 }
 
 type Env = {

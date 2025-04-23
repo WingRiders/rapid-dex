@@ -5,8 +5,6 @@ import type {Unit} from '@meshsdk/core'
 import {parseUnit} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {uniq} from 'lodash'
-import {} from 'next/navigation'
-import {} from 'react'
 
 const isSwapUnitValid = (
   rawUnit: string | null,

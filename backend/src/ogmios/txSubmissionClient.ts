@@ -17,6 +17,8 @@ export const initializeTxSubmissionClient = async () => {
   )
 }
 
+export const isTxSubmissionClientInitialized = () => txSubmissionClient != null
+
 export const submitTx = (signedTxBody: string) => {
   if (txSubmissionClient === null) {
     throw new Error('TxSubmission client not initialized')

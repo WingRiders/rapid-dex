@@ -8,28 +8,26 @@ import {
 } from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {
-  dbPoolOutputToPool,
-  dbPoolOutputToPoolState,
-  dbPoolOutputToUtxo,
-} from '../db/helpers'
-import {
   type Block,
   type PoolOutput,
   type Prisma,
   prisma,
 } from '../db/prismaClient'
 import {originPoint} from '../helpers'
+import {handleNewPoolOutputEvents} from '../helpers/pool'
+import {txOutRefToUtxoInput} from '../helpers/utxo'
 import {logger} from '../logger'
-import {
-  emitPoolCreated,
-  emitPoolStateUpdated,
-  emitPoolUpdatesOnRollback,
-  emitPoolUtxoUpdated,
-} from '../poolsUpdates'
+import {emitPoolUpdatesOnRollback} from '../poolsUpdates'
 import {handleCrossServiceEvent} from '../redis/helpers'
 import {PubSubChannel} from '../redis/pubsub'
-import {emitTxAddedToBlock} from '../txsListener'
+import {emitTxsAddedToBlock} from '../txsListener'
+import {updateChainSyncStatus} from './chainSyncStatus'
 import {isPoolOutput} from './helpers'
+import {
+  clearMempoolCache,
+  deleteMempoolPoolOutput,
+  getLatestMempoolPoolOutput,
+} from './mempool'
 import {getOgmiosContext} from './ogmios'
 import {ogmiosMetadataToJson} from './ogmiosMetadataToJson'
 import {ogmiosValueToMeshAssets} from './ogmiosValueToMeshAssets'
@@ -55,23 +53,21 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
     height: block.height,
   })
 
+  if (block.transactions)
+    handleCrossServiceEvent(
+      PubSubChannel.TXS_ADDED_TO_BLOCK,
+      {txHashes: block.transactions?.map((tx) => tx.id)},
+      emitTxsAddedToBlock,
+    )
   // For each transaction in the block
   // - Check for any inputs spending tracked PoolOutputs
   // - Handle pool outputs
   block.transactions?.forEach((tx) => {
-    handleCrossServiceEvent(
-      PubSubChannel.TX_ADDED_TO_BLOCK,
-      {txHash: tx.id},
-      emitTxAddedToBlock,
-    )
-
     const hasPoolInInputsIfFullySynced =
       isFullySynced &&
       // do this loop only if isFullySynced is true because that's only when we need it
       tx.inputs.some((input) =>
-        poolOutputExists(
-          getUtxoId({txHash: input.transaction.id, outputIndex: input.index}),
-        ),
+        poolOutputExists(getUtxoId(txOutRefToUtxoInput(input))),
       )
     tx.outputs.forEach((output, outputIndex) => {
       // Handle pool output
@@ -115,50 +111,28 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
           scriptCBOR: script?.cbor ?? null,
         }
 
-        if (isFullySynced) {
-          const validAt = new Date()
-          if (hasPoolInInputsIfFullySynced) {
-            handleCrossServiceEvent(
-              PubSubChannel.POOL_STATE_UPDATED,
-              {
-                shareAssetName: poolDatum.sharesAssetName,
-                poolState: dbPoolOutputToPoolState(poolOutput),
-                validAt,
-              },
-              emitPoolStateUpdated,
-            )
-            handleCrossServiceEvent(
-              PubSubChannel.POOL_UTXO_UPDATED,
-              {
-                shareAssetName: poolDatum.sharesAssetName,
-                utxo: dbPoolOutputToUtxo(poolOutput),
-                validAt,
-              },
-              emitPoolUtxoUpdated,
-            )
-          } else {
-            handleCrossServiceEvent(
-              PubSubChannel.POOL_CREATED,
-              {
-                pool: {
-                  ...dbPoolOutputToPool(poolOutput),
-                  validAt,
-                },
-              },
-              emitPoolCreated,
-            )
-          }
+        if (
+          isFullySynced &&
+          // emit pools updates only there isn't a newer pool output in the mempool
+          getLatestMempoolPoolOutput(poolDatum.sharesAssetName, poolUtxoId) ==
+            null
+        ) {
+          handleNewPoolOutputEvents({
+            poolOutput,
+            poolDatum,
+            hasSpentPoolInput: hasPoolInInputsIfFullySynced,
+          })
         }
 
+        // pool output is confirmed on chain, we can remove it from the mempool pool outputs
+        deleteMempoolPoolOutput(poolDatum.sharesAssetName, poolUtxoId)
         poolOutputBuffer.push(poolOutput)
       }
     })
 
     // Mark spent pool outputs
     tx.inputs
-      .map((input) =>
-        getUtxoId({txHash: input.transaction.id, outputIndex: input.index}),
-      )
+      .map((input) => getUtxoId(txOutRefToUtxoInput(input)))
       .filter(poolOutputExists)
       .forEach((utxoId) => {
         const shareAssetName = getShareAssetNameByPoolUtxoId(utxoId)
@@ -189,6 +163,7 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
 const processRollback = async (point: 'origin' | Point) => {
   logger.info(point, 'Rollback')
   const rollbackSlot = point === 'origin' ? originPoint.slot : point.slot
+  clearMempoolCache()
   await emitPoolUpdatesOnRollback(rollbackSlot)
   await prisma.$transaction((prismaTx) =>
     prismaTx.block.deleteMany({where: {slot: {gt: rollbackSlot}}}),
@@ -329,6 +304,8 @@ export const startChainSyncClient = async () => {
             ? 1
             : BUFFER_SIZE
         await writeBuffersIfNecessary({latestLedgerHeight, threshold})
+
+        updateChainSyncStatus(response.tip, response.block.height)
       }
       nextBlock()
     },

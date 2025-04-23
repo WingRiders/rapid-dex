@@ -83,15 +83,19 @@ export const createServerRouter = () =>
         yield payload
       }
     }),
-    onTxAddedToBlock: publicProcedure
+    onTxsAddedToBlock: publicProcedure
       .input(z.object({txHashes: z.array(z.string())}))
       .subscription(async function* (opts) {
-        for await (const [{txHash}] of txsListenerEmitterIterable(
-          'txAddedToBlock',
+        for await (const [{txHashes}] of txsListenerEmitterIterable(
+          'txsAddedToBlock',
           {signal: opts.signal},
         )) {
-          if (opts.input.txHashes.includes(txHash)) {
-            yield txHash
+          const filteredTxHashes = txHashes.filter((txHash) =>
+            opts.input.txHashes.includes(txHash),
+          )
+
+          if (filteredTxHashes.length > 0) {
+            yield filteredTxHashes
           }
         }
       }),

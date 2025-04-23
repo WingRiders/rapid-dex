@@ -1,15 +1,17 @@
 import {dbPoolOutputToUtxo} from '../db/helpers'
 import {prisma} from '../db/prismaClient'
+import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
 
 export const getPoolUtxo = async (shareAssetName: string) => {
   const validAt = new Date()
 
-  const poolOutput = await prisma.poolOutput.findFirstOrThrow({
+  const dbPoolOutput = await prisma.poolOutput.findFirstOrThrow({
     where: {
       spendSlot: null,
       shareAssetName,
     },
     select: {
+      shareAssetName: true,
       utxoId: true,
       assets: true,
       coins: true,
@@ -18,5 +20,10 @@ export const getPoolUtxo = async (shareAssetName: string) => {
     },
   })
 
-  return {utxo: dbPoolOutputToUtxo(poolOutput), validAt}
+  const mempoolPoolOutput = getLatestMempoolPoolOutput(
+    dbPoolOutput.shareAssetName,
+    dbPoolOutput.utxoId,
+  )
+
+  return {utxo: dbPoolOutputToUtxo(mempoolPoolOutput ?? dbPoolOutput), validAt}
 }

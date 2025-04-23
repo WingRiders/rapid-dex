@@ -9,6 +9,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import BigNumber from 'bignumber.js'
+import {partition} from 'lodash'
 import {useCallback} from 'react'
 import {useShallow} from 'zustand/shallow'
 import {prefetchTokensMetadata} from '../metadata/queries'
@@ -92,17 +93,60 @@ export const useSubmitTxMutation = () => {
     useShallow((state) => state.connectedWallet?.wallet),
   )
 
-  return useMutation(
-    env('NEXT_PUBLIC_SUBMIT_TX_METHOD') === 'backend'
-      ? trpc.submitTx.mutationOptions()
-      : {
-          mutationKey: queryKeyFactory.submitTx(),
-          mutationFn: async (tx: string) => {
-            if (!wallet) throw new Error('Wallet not connected')
-            return wallet.submitTx(tx)
-          },
-        },
-  )
+  const submitThroughBackend = (tx: string) => {
+    const submitFn = trpc.submitTx.mutationOptions().mutationFn
+    if (!submitFn) throw new Error('Submit function not found')
+    return submitFn(tx)
+  }
+
+  const submitThroughWallet = (tx: string) => {
+    if (!wallet) throw new Error('Wallet not connected')
+    return wallet.submitTx(tx)
+  }
+
+  return useMutation({
+    mutationKey: queryKeyFactory.submitTx(),
+    mutationFn: async (tx: string) => {
+      const submitMethod = env('NEXT_PUBLIC_SUBMIT_TX_METHOD')
+      const submitPromises: Promise<
+        {success: true; txHash: string} | {success: false; error: any}
+      >[] = []
+
+      if (['backend', 'both'].includes(submitMethod))
+        submitPromises.push(
+          submitThroughBackend(tx)
+            .then((txHash) => ({success: true, txHash}) as const)
+            .catch((error) => ({success: false, error})),
+        )
+
+      if (['wallet', 'both'].includes(submitMethod)) {
+        submitPromises.push(
+          submitThroughWallet(tx)
+            .then((txHash) => ({success: true, txHash}) as const)
+            .catch((error) => ({success: false, error})),
+        )
+      }
+
+      const results = await Promise.all(submitPromises)
+      if (results.length === 0) throw new Error('No submit method selected')
+
+      const [successful, failed] = partition(
+        results,
+        (result) => result.success,
+      )
+      if (successful.length > 0) {
+        if (failed.length > 0) {
+          console.error('Failed to submit transaction', failed)
+        }
+        return successful[0]!.txHash // assuming all successful results are the same
+      }
+
+      const errorMessages = failed
+        .map((f) => f.error?.message || 'Unknown error')
+        .join('; ')
+      throw new Error(`Failed to submit transaction: ${errorMessages}`)
+    },
+  })
 }
 
 export const useSignAndSubmitTxMutation = () => {
