@@ -1,0 +1,244 @@
+[13:06:23.388] INFO (rapid-dex-backend/14183): Inserting mempool pool output
+    poolOutput: {
+        "address": "addr_test1wr7cuylfmlthp5q7k6wp32syg68fclr6myzkwgv3ch953us0wkq4y",
+        "assetAName": "",
+        "assetAPolicy": "",
+        "assetBName": "57696e67526964657273",
+        "assetBPolicy": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a7",
+        "assets": [
+            {
+                "quantity": "378823438",
+                "unit": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273"
+            },
+            {
+                "quantity": "1",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f250"
+            },
+            {
+                "quantity": "9223372036538548041",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f234055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b"
+            }
+        ],
+        "coins": 266000000,
+        "datumCBOR": "d8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727301192710582034055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5bff",
+        "feeBasis": 10000,
+        "lpts": 9223372036538548000,
+        "qtyA": 264000000,
+        "qtyB": 378823438,
+        "scriptCBOR": null,
+        "scriptVersion": null,
+        "shareAssetName": "34055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b",
+        "spentPoolInputUtxoId": "e2c28e123aa725e8b6d1b7971743a2ec01736e1f575922fd375f1cd2903552fa#0",
+        "swapFeePoints": 1,
+        "utxoId": "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0"
+    }
+
+[13:06:23.389] DEBUG (rapid-dex-backend/14183): Sending WebSocket pool updates to clients
+    utxoId: "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0"
+
+[13:06:29.290] INFO (rapid-dex-backend/14183): Inserting mempool pool output
+    poolOutput: {
+        "address": "addr_test1wr7cuylfmlthp5q7k6wp32syg68fclr6myzkwgv3ch953us0wkq4y",
+        "assetAName": "",
+        "assetAPolicy": "",
+        "assetBName": "57696e67526964657273",
+        "assetBPolicy": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a7",
+        "assets": [
+            {
+                "quantity": "378823438",
+                "unit": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273"
+            },
+            {
+                "quantity": "1",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f250"
+            },
+            {
+                "quantity": "9223372036538548041",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f234055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b"
+            }
+        ],
+        "coins": 266000000,
+        "datumCBOR": "d8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727301192710582034055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5bff",
+        "feeBasis": 10000,
+        "lpts": 9223372036538548000,
+        "qtyA": 264000000,
+        "qtyB": 378823438,
+        "scriptCBOR": null,
+        "scriptVersion": null,
+        "shareAssetName": "34055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b",
+        "spentPoolInputUtxoId": "e2c28e123aa725e8b6d1b7971743a2ec01736e1f575922fd375f1cd2903552fa#0",
+        "swapFeePoints": 1,
+        "utxoId": "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0"
+    }
+
+[13:06:29.291] DEBUG (rapid-dex-backend/14183): Sending WebSocket pool updates to clients
+    utxoId: "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0"
+
+[13:06:29.295] INFO (rapid-dex-backend/14183): Inserting mempool pool output
+    poolOutput: {
+        "address": "addr_test1wr7cuylfmlthp5q7k6wp32syg68fclr6myzkwgv3ch953us0wkq4y",
+        "assetAName": "",
+        "assetAPolicy": "",
+        "assetBName": "57696e67526964657273",
+        "assetBPolicy": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a7",
+        "assets": [
+            {
+                "quantity": "363671956",
+                "unit": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273"
+            },
+            {
+                "quantity": "1",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f250"
+            },
+            {
+                "quantity": "9223372036538548041",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f234055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b"
+            }
+        ],
+        "coins": 277000000,
+        "datumCBOR": "d8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727301192710582034055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5bff",
+        "feeBasis": 10000,
+        "lpts": 9223372036538548000,
+        "qtyA": 275000000,
+        "qtyB": 363671956,
+        "scriptCBOR": null,
+        "scriptVersion": null,
+        "shareAssetName": "34055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b",
+        "spentPoolInputUtxoId": "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0",
+        "swapFeePoints": 1,
+        "utxoId": "56a34cd26d1e12084e6789adfed102ebf7a986374741d3cf3ae034ff4086e5a6#0"
+    }
+
+[13:06:29.295] DEBUG (rapid-dex-backend/14183): Sending WebSocket pool updates to clients
+    utxoId: "56a34cd26d1e12084e6789adfed102ebf7a986374741d3cf3ae034ff4086e5a6#0"
+
+[13:06:35.854] INFO (rapid-dex-backend/14183): Inserting mempool pool output
+    poolOutput: {
+        "address": "addr_test1wr7cuylfmlthp5q7k6wp32syg68fclr6myzkwgv3ch953us0wkq4y",
+        "assetAName": "",
+        "assetAPolicy": "",
+        "assetBName": "57696e67526964657273",
+        "assetBPolicy": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a7",
+        "assets": [
+            {
+                "quantity": "378823438",
+                "unit": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273"
+            },
+            {
+                "quantity": "1",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f250"
+            },
+            {
+                "quantity": "9223372036538548041",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f234055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b"
+            }
+        ],
+        "coins": 266000000,
+        "datumCBOR": "d8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727301192710582034055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5bff",
+        "feeBasis": 10000,
+        "lpts": 9223372036538548000,
+        "qtyA": 264000000,
+        "qtyB": 378823438,
+        "scriptCBOR": null,
+        "scriptVersion": null,
+        "shareAssetName": "34055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b",
+        "spentPoolInputUtxoId": "e2c28e123aa725e8b6d1b7971743a2ec01736e1f575922fd375f1cd2903552fa#0",
+        "swapFeePoints": 1,
+        "utxoId": "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0"
+    }
+
+[13:06:35.854] DEBUG (rapid-dex-backend/14183): Sending WebSocket pool updates to clients
+    utxoId: "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0"
+
+[13:06:35.855] INFO (rapid-dex-backend/14183): Inserting mempool pool output
+    poolOutput: {
+        "address": "addr_test1wr7cuylfmlthp5q7k6wp32syg68fclr6myzkwgv3ch953us0wkq4y",
+        "assetAName": "",
+        "assetAPolicy": "",
+        "assetBName": "57696e67526964657273",
+        "assetBPolicy": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a7",
+        "assets": [
+            {
+                "quantity": "363671956",
+                "unit": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273"
+            },
+            {
+                "quantity": "1",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f250"
+            },
+            {
+                "quantity": "9223372036538548041",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f234055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b"
+            }
+        ],
+        "coins": 277000000,
+        "datumCBOR": "d8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727301192710582034055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5bff",
+        "feeBasis": 10000,
+        "lpts": 9223372036538548000,
+        "qtyA": 275000000,
+        "qtyB": 363671956,
+        "scriptCBOR": null,
+        "scriptVersion": null,
+        "shareAssetName": "34055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b",
+        "spentPoolInputUtxoId": "723cf66b82fe694c92b53d45e89ebebb0b79b9791eeb27f29a7b0b2fad2f7860#0",
+        "swapFeePoints": 1,
+        "utxoId": "56a34cd26d1e12084e6789adfed102ebf7a986374741d3cf3ae034ff4086e5a6#0"
+    }
+
+[13:06:35.856] DEBUG (rapid-dex-backend/14183): Sending WebSocket pool updates to clients
+    utxoId: "56a34cd26d1e12084e6789adfed102ebf7a986374741d3cf3ae034ff4086e5a6#0"
+
+[13:06:35.856] INFO (rapid-dex-backend/14183): Inserting mempool pool output
+    poolOutput: {
+        "address": "addr_test1wr7cuylfmlthp5q7k6wp32syg68fclr6myzkwgv3ch953us0wkq4y",
+        "assetAName": "",
+        "assetAPolicy": "",
+        "assetBName": "57696e67526964657273",
+        "assetBPolicy": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a7",
+        "assets": [
+            {
+                "quantity": "349685919",
+                "unit": "659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a757696e67526964657273"
+            },
+            {
+                "quantity": "1",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f250"
+            },
+            {
+                "quantity": "9223372036538548041",
+                "unit": "fd8e13e9dfd770d01eb69c18aa04468e9c7c7ad905672191c5cb48f234055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b"
+            }
+        ],
+        "coins": 288000000,
+        "datumCBOR": "d8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727301192710582034055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5bff",
+        "feeBasis": 10000,
+        "lpts": 9223372036538548000,
+        "qtyA": 286000000,
+        "qtyB": 349685919,
+        "scriptCBOR": null,
+        "scriptVersion": null,
+        "shareAssetName": "34055935882308a96857f8af4dde755e6abdba4f23c1fcc73b65e8bd5dfc9f5b",
+        "spentPoolInputUtxoId": "56a34cd26d1e12084e6789adfed102ebf7a986374741d3cf3ae034ff4086e5a6#0",
+        "swapFeePoints": 1,
+        "utxoId": "57616682aa6782b67e2c928447313de3c41b316b8c6afafa8e1317ced7f4d455#0"
+    }
+
+[13:06:35.856] DEBUG (rapid-dex-backend/14183): Sending WebSocket pool updates to clients
+    utxoId: "57616682aa6782b67e2c928447313de3c41b316b8c6afafa8e1317ced7f4d455#0"
+
+[13:06:53.042] DEBUG (rapid-dex-backend/14183): Sending WebSocket pool updates to clients
+    utxoId: "57616682aa6782b67e2c928447313de3c41b316b8c6afafa8e1317ced7f4d455#0"
+
+[13:06:53.042] DEBUG (rapid-dex-backend/14183): Start writing buffers to DB
+    blocks: 1
+    poolOutputs: 3
+    spentPoolOutputs: 3
+    latestSlot: 88513610
+    progress: 1
+
+[13:06:53.057] INFO (rapid-dex-backend/14183): Wrote buffers to DB
+    blocks: 1
+    poolOutputs: 3
+    spentPoolOutputs: 3
+    latestSlot: 88513610
+    progress: 1
