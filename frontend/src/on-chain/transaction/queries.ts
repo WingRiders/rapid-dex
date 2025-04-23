@@ -24,6 +24,7 @@ export const useBuildCreatePoolTxQuery = (
     queryKey: queryKeyFactory.buildCreatePoolTx(args),
     queryFn:
       wallet && args ? () => buildCreatePoolTx({...args, wallet}) : skipToken,
+    staleTime: 0,
   })
 }
 
@@ -37,6 +38,7 @@ export const useBuildSwapTxQuery = (
   return useQuery({
     queryKey: queryKeyFactory.buildSwapTx(args),
     queryFn: wallet && args ? () => buildSwapTx({...args, wallet}) : skipToken,
+    staleTime: 0,
   })
 }
 
@@ -51,6 +53,7 @@ export const useBuildAddLiquidityTxQuery = (
     queryKey: queryKeyFactory.buildAddLiquidityTx(args),
     queryFn:
       wallet && args ? () => buildAddLiquidityTx({...args, wallet}) : skipToken,
+    staleTime: 0,
   })
 }
 
@@ -67,5 +70,6 @@ export const useBuildWithdrawLiquidityTxQuery = (
       wallet && args
         ? () => buildWithdrawLiquidityTx({...args, wallet})
         : skipToken,
+    staleTime: 0,
   })
 }

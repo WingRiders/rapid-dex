@@ -1,5 +1,6 @@
 import {mock} from 'bun:test'
 import type {IWallet} from '@meshsdk/core'
+import {NetworkId} from '@wingriders/rapid-dex-common'
 
 export const mockWallet: IWallet = {
   getAssets: mock(),
@@ -7,7 +8,7 @@ export const mockWallet: IWallet = {
   getExtensions: mock(),
   getUsedAddresses: mock(),
   getLovelace: mock(),
-  getNetworkId: mock(),
+  getNetworkId: mock(() => Promise.resolve(NetworkId.TESTNET)),
   getRewardAddresses: mock(),
   getDRep: mock(),
   getUnusedAddresses: mock(),
@@ -16,7 +17,7 @@ export const mockWallet: IWallet = {
   getRegisteredPubStakeKeys: mock(),
   getUnregisteredPubStakeKeys: mock(),
   getChangeAddress: mock(),
-  getCollateral: mock(),
+  getCollateral: mock(() => Promise.resolve([])),
   getUtxos: mock(),
   signData: mock(),
   signTx: mock(),

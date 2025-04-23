@@ -14,6 +14,10 @@ const envSchemas = {
   NEXT_PUBLIC_SUBMIT_TX_METHOD: z
     .enum(['wallet', 'backend', 'both'])
     .default('wallet'),
+  NEXT_PUBLIC_ENABLE_REACT_QUERY_DEVTOOLS: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
 }
 
 type Env = {

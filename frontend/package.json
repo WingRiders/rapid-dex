@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@tanstack/react-query-devtools": "^5.72.0",
     "@types/bun": "^1.2.8",
     "@types/pluralize": "^0.0.33",
     "@types/react": "^19",

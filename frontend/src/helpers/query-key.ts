@@ -19,17 +19,19 @@ const f = {
     balance: Dictionary<BigNumber> | undefined
   }) => [...f.wallet(), 'portfolio', deps] as const,
 
+  walletMutation: () => [...f.wallet(), 'mutation'] as const,
   buildCreatePoolTx: (
     args: Omit<BuildCreatePoolTxArgs, 'wallet'> | undefined,
-  ) => [...f.wallet(), 'build-create-pool-tx', args] as const,
-  buildSwapTx: (args: Omit<BuildSwapTxArgs, 'wallet'> | undefined) =>
-    [...f.wallet(), 'build-swap-tx', args] as const,
+  ) => [...f.walletMutation(), 'build-create-pool-tx', args] as const,
+  buildSwapTx: (
+    args: Omit<BuildSwapTxArgs, 'wallet' | 'walletUtxos'> | undefined,
+  ) => [...f.walletMutation(), 'build-swap-tx', args] as const,
   buildAddLiquidityTx: (
     args: Omit<BuildAddLiquidityTxArgs, 'wallet'> | undefined,
-  ) => [...f.wallet(), 'build-add-liquidity-tx', args] as const,
+  ) => [...f.walletMutation(), 'build-add-liquidity-tx', args] as const,
   buildWithdrawLiquidityTx: (
     args: Omit<BuildWithdrawLiquidityTxArgs, 'wallet'> | undefined,
-  ) => [...f.wallet(), 'build-withdraw-liquidity-tx', args] as const,
+  ) => [...f.walletMutation(), 'build-withdraw-liquidity-tx', args] as const,
 }
 
 export {f as queryKeyFactory}

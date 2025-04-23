@@ -3,7 +3,6 @@ import type {PoolInteractionTxPool} from '@/on-chain/transaction/types'
 import type {IWallet, UTxO} from '@meshsdk/core'
 import {
   LOVELACE_UNIT,
-  NetworkId,
   burnedShareTokens,
   createUnit,
   maxShareTokens,
@@ -12,28 +11,11 @@ import {
   poolValidityAssetNameHex,
 } from '@wingriders/rapid-dex-common'
 import {BigNumber} from 'bignumber.js'
+import {mockWallet as commonMockWallet} from '../../common'
 
 export const mockWallet: IWallet = {
-  getAssets: mock(),
-  getBalance: mock(),
-  getExtensions: mock(),
-  getUsedAddresses: mock(),
-  getLovelace: mock(),
-  getNetworkId: mock(() => Promise.resolve(NetworkId.TESTNET)),
-  getRewardAddresses: mock(),
-  getDRep: mock(),
-  getUnusedAddresses: mock(),
-  getPolicyIdAssets: mock(),
-  getPolicyIds: mock(),
-  getRegisteredPubStakeKeys: mock(),
-  getUnregisteredPubStakeKeys: mock(),
+  ...commonMockWallet,
   getChangeAddress: mock(() => Promise.resolve(address)),
-  getCollateral: mock(),
-  getUtxos: mock(),
-  signData: mock(),
-  signTx: mock(),
-  signTxs: mock(),
-  submitTx: mock(),
 }
 
 export const mockWalletUtxos = (utxos: UTxO[]) => {

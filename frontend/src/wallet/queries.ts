@@ -18,6 +18,7 @@ import {useTRPC} from '../trpc/client'
 
 export const invalidateWalletQueries = (queryClient: QueryClient) => {
   queryClient.invalidateQueries({queryKey: queryKeyFactory.wallet()})
+  queryClient.resetQueries({queryKey: queryKeyFactory.walletMutation()})
 }
 
 export const useInstalledWalletsIdsQuery = () =>

@@ -6,6 +6,7 @@ import {
   QueryClientProvider,
   isServer,
 } from '@tanstack/react-query'
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {
   createTRPCClient,
   createWSClient,
@@ -63,6 +64,7 @@ export const QueryProvider = ({children}: {children: React.ReactNode}) => {
       <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
         {children}
       </TRPCProvider>
+      {env('NEXT_PUBLIC_ENABLE_REACT_QUERY_DEVTOOLS') && <ReactQueryDevtools />}
     </QueryClientProvider>
   )
 }

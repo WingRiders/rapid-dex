@@ -1,4 +1,3 @@
-import {isCollateralUtxo} from '@/on-chain/collateral'
 import {calculateTtl} from '@/on-chain/transaction/ttl'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import {
@@ -8,6 +7,7 @@ import {
   deserializeAddress,
 } from '@meshsdk/core'
 import {matchUtxo, walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
+import {getWalletCollateralUtxo} from '../collateral'
 
 type InitTxBuilderArgs = {
   wallet: IWallet
@@ -26,7 +26,7 @@ export const initTxBuilder = async ({
 }: InitTxBuilderArgs) => {
   const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
   const walletUtxos = await wallet.getUtxos()
-  const collateralUtxo = walletUtxos.find(isCollateralUtxo)
+  const collateralUtxo = await getWalletCollateralUtxo(wallet, walletUtxos)
   if (!collateralUtxo) {
     throw new Error('No collateral UTxO found')
   }
@@ -45,7 +45,11 @@ export const initTxBuilder = async ({
 
   if (fetcher == null) {
     const offlineFetcher = new OfflineFetcher()
-    offlineFetcher.addUTxOs([...walletUtxos, ...(additionalUtxos ?? [])])
+    offlineFetcher.addUTxOs([
+      ...walletUtxos,
+      ...(additionalUtxos ?? []),
+      collateralUtxo,
+    ])
     fetcher = offlineFetcher
   }
   const coreCsl = await import('@meshsdk/core-csl')
