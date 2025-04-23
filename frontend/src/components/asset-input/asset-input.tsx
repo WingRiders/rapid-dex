@@ -1,9 +1,11 @@
+import type {WalletBalanceState} from '@/wallet/queries'
 import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {WalletIcon} from 'lucide-react'
 import {useMemo} from 'react'
 import {AssetQuantity} from '../asset-quantity'
 import {Button} from '../ui/button'
+import {Skeleton} from '../ui/skeleton'
 import {Tooltip, TooltipContent, TooltipTrigger} from '../ui/tooltip'
 import {UnitDisplay} from '../unit-display'
 import {QuantityInput} from './quantity-input'
@@ -22,6 +24,7 @@ export type AssetInputProps = {
   noItemsMessage?: string
   emptyItemsMessage?: string
   showMaxButton?: boolean
+  balanceState?: WalletBalanceState
 }
 
 export const AssetInput = ({
@@ -33,6 +36,7 @@ export const AssetInput = ({
   noItemsMessage,
   emptyItemsMessage,
   showMaxButton,
+  balanceState = 'has-data',
 }: AssetInputProps) => {
   const selectedUnitBalance = useMemo(
     () =>
@@ -66,6 +70,7 @@ export const AssetInput = ({
             disabled={disabled}
             noItemsMessage={noItemsMessage}
             emptyItemsMessage={emptyItemsMessage}
+            balanceState={balanceState}
           />
         )}
 
@@ -88,17 +93,23 @@ export const AssetInput = ({
                 <WalletIcon className="size-4" />
 
                 <p className="text-sm">
-                  <AssetQuantity
-                    unit={value.unit}
-                    quantity={selectedUnitBalance ?? new BigNumber(0)}
-                    showTicker={false}
-                  />
+                  {balanceState === 'loading' ? (
+                    <Skeleton className="h-5 w-28" />
+                  ) : balanceState === 'has-data' ? (
+                    <AssetQuantity
+                      unit={value.unit}
+                      quantity={selectedUnitBalance ?? new BigNumber(0)}
+                      showTicker={false}
+                    />
+                  ) : (
+                    '-'
+                  )}
                 </p>
               </div>
             </TooltipTrigger>
             <TooltipContent>Your balance</TooltipContent>
           </Tooltip>
-          {showMaxButton && (
+          {showMaxButton && balanceState === 'has-data' && (
             <Button
               variant="ghost"
               size="sm"

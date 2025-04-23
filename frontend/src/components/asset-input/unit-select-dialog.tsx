@@ -1,3 +1,4 @@
+import type {WalletBalanceState} from '@/wallet/queries'
 import {useVirtualizer} from '@tanstack/react-virtual'
 import {useRef} from 'react'
 import {AssetQuantity} from '../asset-quantity'
@@ -8,6 +9,7 @@ import {
   type DialogProps,
   DialogTitle,
 } from '../ui/dialog'
+import {Skeleton} from '../ui/skeleton'
 import {UnitDisplay} from '../unit-display'
 import type {AssetInputItem} from './types'
 
@@ -16,6 +18,7 @@ type UnitSelectDialogProps = {
   onItemClick: (item: AssetInputItem) => void
   noItemsMessage?: string
   emptyItemsMessage?: string
+  balanceState?: WalletBalanceState
 } & Pick<DialogProps, 'open' | 'onOpenChange'>
 
 export const UnitSelectDialog = ({
@@ -25,6 +28,7 @@ export const UnitSelectDialog = ({
   onItemClick,
   noItemsMessage,
   emptyItemsMessage,
+  balanceState = 'has-data',
 }: UnitSelectDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -34,6 +38,7 @@ export const UnitSelectDialog = ({
           onItemClick={onItemClick}
           noItemsMessage={noItemsMessage}
           emptyItemsMessage={emptyItemsMessage}
+          balanceState={balanceState}
         />
       </DialogContent>
     </Dialog>
@@ -42,13 +47,18 @@ export const UnitSelectDialog = ({
 
 type UniSelectDialogContentProps = Pick<
   UnitSelectDialogProps,
-  'items' | 'onItemClick' | 'noItemsMessage' | 'emptyItemsMessage'
+  | 'items'
+  | 'onItemClick'
+  | 'noItemsMessage'
+  | 'emptyItemsMessage'
+  | 'balanceState'
 >
 const UnitSelectDialogContent = ({
   items,
   onItemClick,
   noItemsMessage,
   emptyItemsMessage,
+  balanceState,
 }: UniSelectDialogContentProps) => {
   const parentRef = useRef(null)
 
@@ -92,11 +102,17 @@ const UnitSelectDialogContent = ({
                 >
                   <UnitDisplay unit={unit} />
                   <p className="text-gray-300 text-sm">
-                    <AssetQuantity
-                      unit={unit}
-                      quantity={balance}
-                      showTicker={false}
-                    />
+                    {balanceState === 'loading' ? (
+                      <Skeleton className="h-5 w-28" />
+                    ) : balanceState === 'has-data' ? (
+                      <AssetQuantity
+                        unit={unit}
+                        quantity={balance}
+                        showTicker={false}
+                      />
+                    ) : (
+                      '-'
+                    )}
                   </p>
                 </button>
               )

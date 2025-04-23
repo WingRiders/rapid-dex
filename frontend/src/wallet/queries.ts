@@ -30,14 +30,19 @@ export const useInstalledWalletsIdsQuery = () =>
     },
   })
 
+export type WalletBalanceState = 'loading' | 'has-data' | 'no-data'
+
 export const useWalletBalanceQuery = () => {
-  const wallet = useConnectedWalletStore(
-    useShallow((state) => state.connectedWallet?.wallet),
+  const {wallet, isWalletConnecting} = useConnectedWalletStore(
+    useShallow((state) => ({
+      wallet: state.connectedWallet?.wallet,
+      isWalletConnecting: state.isWalletConnecting,
+    })),
   )
   const queryClient = useQueryClient()
   const trpc = useTRPC()
 
-  return useQuery({
+  const queryResult = useQuery({
     queryKey: queryKeyFactory.walletBalance(),
     queryFn: wallet
       ? async () => {
@@ -56,6 +61,18 @@ export const useWalletBalanceQuery = () => {
         }
       : skipToken,
   })
+
+  const balanceState: WalletBalanceState = queryResult.isLoading
+    ? 'loading'
+    : queryResult.data != null
+      ? 'has-data'
+      : 'no-data'
+
+  return {
+    ...queryResult,
+    isLoading: queryResult.isLoading || isWalletConnecting,
+    balanceState,
+  }
 }
 
 export type WalletBalance = Exclude<

@@ -1,3 +1,4 @@
+import type {WalletBalanceState} from '@/wallet/queries'
 import type {Unit} from '@meshsdk/core'
 import {ChevronDownIcon} from 'lucide-react'
 import {useState} from 'react'
@@ -13,6 +14,7 @@ type UnitSelectProps = {
   disabled?: boolean
   noItemsMessage?: string
   emptyItemsMessage?: string
+  balanceState?: WalletBalanceState
 }
 
 export const UnitSelect = ({
@@ -22,6 +24,7 @@ export const UnitSelect = ({
   disabled,
   noItemsMessage,
   emptyItemsMessage,
+  balanceState = 'has-data',
 }: UnitSelectProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -52,6 +55,7 @@ export const UnitSelect = ({
         }}
         noItemsMessage={noItemsMessage}
         emptyItemsMessage={emptyItemsMessage}
+        balanceState={balanceState}
       />
     </>
   )

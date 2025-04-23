@@ -28,7 +28,11 @@ import {useSwapForm, useValidateSwapForm} from './swap-form'
 const SwapPage = () => {
   const queryClient = useQueryClient()
 
-  const {data: balance} = useWalletBalanceQuery()
+  const {
+    data: balance,
+    isLoading: isLoadingBalance,
+    balanceState,
+  } = useWalletBalanceQuery()
   const {data: pools} = usePoolsQuery()
   const addUnconfirmedInteraction = useLocalInteractionsStore(
     (state) => state.addUnconfirmedInteraction,
@@ -153,6 +157,7 @@ const SwapPage = () => {
             onChange={onFromValueChange}
             disabled={isSigningAndSubmittingTx}
             showMaxButton
+            balanceState={balanceState}
           />
 
           <AssetInput
@@ -160,6 +165,7 @@ const SwapPage = () => {
             value={to}
             onChange={onToValueChange}
             disabled={isSigningAndSubmittingTx}
+            balanceState={balanceState}
           />
 
           <Button
@@ -185,14 +191,16 @@ const SwapPage = () => {
                 loading={
                   isLoadingBuildTx ||
                   isSigningAndSubmittingTx ||
-                  isLoadingSelectedPoolUtxo
+                  isLoadingSelectedPoolUtxo ||
+                  isLoadingBalance
                 }
                 disabled={
                   isLoadingBuildTx ||
                   isLoadingSelectedPoolUtxo ||
                   !isValid ||
                   !buildSwapTxResult ||
-                  isSigningAndSubmittingTx
+                  isSigningAndSubmittingTx ||
+                  isLoadingBalance
                 }
                 onClick={handleSwap}
               >

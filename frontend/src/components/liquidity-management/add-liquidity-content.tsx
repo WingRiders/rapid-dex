@@ -34,7 +34,7 @@ type AddLiquidityContentProps = {
 export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
   const queryClient = useQueryClient()
 
-  const {data: balance} = useWalletBalanceQuery()
+  const {data: balance, balanceState} = useWalletBalanceQuery()
 
   const addUnconfirmedInteraction = useLocalInteractionsStore(
     (state) => state.addUnconfirmedInteraction,
@@ -146,6 +146,7 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
             disabled={isSigningAndSubmittingTx}
             singleItem
             showMaxButton
+            balanceState={balanceState}
           />
           <AssetInput
             items={[
@@ -162,6 +163,7 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
             disabled={isSigningAndSubmittingTx}
             singleItem
             showMaxButton
+            balanceState={balanceState}
           />
         </div>
 
