@@ -1,3 +1,7 @@
+Notes:
+You can see that the backend receives and aggregates new liquidity pools UTxOs from the mempool with the "Inserting mempool pool output" log message.
+After aggregating a new UTxO, the update is sent to the clients using WebSockets with the "Sending WebSocket pool updates to clients" log message (for the same id of the UTxO).
+
 [13:06:23.388] INFO (rapid-dex-backend/14183): Inserting mempool pool output
     poolOutput: {
         "address": "addr_test1wr7cuylfmlthp5q7k6wp32syg68fclr6myzkwgv3ch953us0wkq4y",
