@@ -3,9 +3,11 @@ import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import type {PortfolioItem} from '@/helpers/portfolio'
+import {invalidateTotalTvlQuery} from '@/helpers/tvl'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildWithdrawLiquidityTxQuery} from '@/on-chain/transaction/queries'
+import {useTRPC} from '@/trpc/client'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   invalidateWalletQueries,
@@ -39,6 +41,7 @@ type WithdrawLiquidityContentProps = {
 export const WithdrawLiquidityContent = ({
   portfolioItem,
 }: WithdrawLiquidityContentProps) => {
+  const trpc = useTRPC()
   const queryClient = useQueryClient()
 
   const {pool, ownedShares} = portfolioItem
@@ -144,6 +147,7 @@ export const WithdrawLiquidityContent = ({
     const res = await signAndSubmitTx(buildWithdrawLiquidityTxResult.builtTx)
     if (res) {
       invalidateWalletQueries(queryClient)
+      invalidateTotalTvlQuery(trpc, queryClient)
     }
   }
 

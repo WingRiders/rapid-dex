@@ -2,7 +2,6 @@ import {computeNewReserves} from '@/amm/swap'
 import {EMPTY_ASSET_INPUT_VALUE} from '@/components/asset-input/constants'
 import {isAssetInputValueNonEmpty} from '@/components/asset-input/helpers'
 import type {AssetInputValue} from '@/components/asset-input/types'
-import {compareMaybeBigNumbers} from '@/helpers/number'
 import {matchPoolForUnits} from '@/helpers/pool'
 import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
@@ -12,6 +11,7 @@ import type {PoolsListItem} from '@/types'
 import {useWalletBalanceQuery} from '@/wallet/queries'
 import type {Unit} from '@meshsdk/core'
 import {useQueryClient} from '@tanstack/react-query'
+import {compareMaybeBigNumbers} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import {useSwapFormUrlValues} from './search-params'
@@ -73,8 +73,8 @@ const appendSwapQuantitiesToAvailableRoutes = (
       basedOn.type === 'lockX'
         ? compareMaybeBigNumbers(b.swapQuantities?.outY, a.swapQuantities?.outY)
         : -compareMaybeBigNumbers(
-            b.swapQuantities?.lockX,
             a.swapQuantities?.lockX,
+            b.swapQuantities?.lockX,
           ),
     )
 

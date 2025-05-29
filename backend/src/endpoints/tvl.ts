@@ -1,13 +1,16 @@
-import {isLovelaceUnit, sortPools} from '@wingriders/rapid-dex-common'
-import {dbPoolOutputToPool} from '../db/helpers'
+import {
+  bigintToBigNumber,
+  createUnit,
+  isLovelaceUnit,
+  sumBigNumbers,
+} from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
 import {prisma} from '../db/prismaClient'
 import {getAdaValueFactory} from '../helpers/adaValue'
 import {calculateAssetsAdaExchangeRates} from '../helpers/exchangeRates'
 import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
 
-export const getPools = async () => {
-  const validAt = new Date()
-
+export const getTvl = async () => {
   const poolOutputs = await prisma.poolOutput.findMany({
     where: {
       spendSlot: null,
@@ -19,11 +22,8 @@ export const getPools = async () => {
       assetAName: true,
       assetBPolicy: true,
       assetBName: true,
-      lpts: true,
       qtyA: true,
       qtyB: true,
-      swapFeePoints: true,
-      feeBasis: true,
     },
   })
 
@@ -32,24 +32,31 @@ export const getPools = async () => {
       dbPoolOutput.shareAssetName,
       dbPoolOutput.utxoId,
     )
+    const poolOutput = mempoolPoolOutput ?? dbPoolOutput
+
     return {
-      validAt,
-      ...dbPoolOutputToPool(mempoolPoolOutput ?? dbPoolOutput),
+      unitA: createUnit(poolOutput.assetAPolicy, poolOutput.assetAName),
+      unitB: createUnit(poolOutput.assetBPolicy, poolOutput.assetBName),
+      shareAssetName: poolOutput.shareAssetName,
+      poolState: {
+        qtyA: bigintToBigNumber(poolOutput.qtyA),
+        qtyB: bigintToBigNumber(poolOutput.qtyB),
+      },
     }
   })
 
   const getAdaValue = getAdaValueFactory(calculateAssetsAdaExchangeRates(pools))
 
-  return pools
-    .map((pool) => ({
-      ...pool,
-      tvlInAda: getAdaValue(
+  const tvls = pools.map(
+    (pool) =>
+      getAdaValue(
         [
           {unit: pool.unitA, quantity: pool.poolState.qtyA.toString()},
           {unit: pool.unitB, quantity: pool.poolState.qtyB.toString()},
         ],
         isLovelaceUnit(pool.unitA) ? pool.shareAssetName : undefined,
-      ),
-    }))
-    .sort(sortPools)
+      ) ?? new BigNumber(0),
+  )
+
+  return sumBigNumbers(tvls)
 }

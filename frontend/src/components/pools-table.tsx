@@ -6,6 +6,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import type {Dictionary} from 'lodash'
 import {ArrowDownUp} from 'lucide-react'
 import Link from 'next/link'
@@ -51,6 +52,22 @@ export const PoolsTable = ({pools, portfolioItems}: PoolsTableProps) => {
           <Link href={`/pools/${shareAssetName}`}>
             <UnitPairDisplay unitA={unitA} unitB={unitB} />
           </Link>
+        ),
+      },
+      {
+        header: 'TVL',
+        cell: ({
+          row: {
+            original: {tvlInAda},
+          },
+        }) => (
+          <p>
+            {tvlInAda ? (
+              <AssetQuantity unit={LOVELACE_UNIT} quantity={tvlInAda} />
+            ) : (
+              '-'
+            )}
+          </p>
         ),
       },
       {

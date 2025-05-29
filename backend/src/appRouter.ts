@@ -16,6 +16,7 @@ import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
 import {isPoolTxInBlock} from './endpoints/transaction'
+import {getTvl} from './endpoints/tvl'
 import {interactionsUpdatesEventEmitterIterable} from './interactionsUpdates'
 import {submitTx} from './ogmios/txSubmissionClient'
 import {poolsUpdatesEventEmitterIterable} from './poolsUpdates'
@@ -64,6 +65,7 @@ export const createServerRouter = () =>
     poolInteractions: publicProcedure
       .input(z.object({shareAssetName: z.string()}))
       .query(({input}) => getPoolInteractions(input.shareAssetName)),
+    tvl: publicProcedure.query(getTvl),
     onPoolStateUpdated: publicProcedure.subscription(async function* (opts) {
       for await (const [payload] of poolsUpdatesEventEmitterIterable(
         'poolStateUpdated',

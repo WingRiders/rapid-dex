@@ -1,15 +1,23 @@
 import EventEmitter, {on} from 'node:events'
 import type {UTxO} from '@meshsdk/core'
-import type {PoolState} from '@wingriders/rapid-dex-common'
+import {
+  type PoolState,
+  createUnit,
+  isLovelaceUnit,
+} from '@wingriders/rapid-dex-common'
+import type BigNumber from 'bignumber.js'
 import {dbPoolOutputToPoolState, dbPoolOutputToUtxo} from './db/helpers'
 import {prisma} from './db/prismaClient'
 import type {getPools} from './endpoints/pools'
+import {getAdaValueFactory} from './helpers/adaValue'
+import {getAssetsAdaExchangeRatesCache} from './ogmios/exchangeRatesCache'
 import {handleCrossServiceEvent} from './redis/helpers'
 import {PubSubChannel} from './redis/pubsub'
 
 export type PoolStateUpdatedPayload = {
   shareAssetName: string
   poolState: PoolState
+  tvlInAda: BigNumber | undefined
   validAt: Date
 }
 
@@ -62,37 +70,17 @@ export const poolsUpdatesEventEmitterIterable = <
 ): AsyncIterable<PoolsUpdatesEvents[TEventName]> =>
   on(poolsUpdatesEventEmitter, eventName, options) as any
 
-export const emitPoolUpdatesOnRollback = async (rollbackSlot: number) => {
-  const affectedPoolOutputs = await prisma.poolOutput.findMany({
-    select: {
-      shareAssetName: true,
-    },
-    distinct: ['shareAssetName'],
-    where: {
-      slot: {
-        gt: rollbackSlot,
-      },
-    },
-  })
-
+export const emitPoolUpdatesOnRollback = async (
+  affectedPoolOutputs: {shareAssetName: string}[],
+) => {
   for (const affectedPoolOutput of affectedPoolOutputs) {
     const validAt = new Date()
 
     const lastValidPoolOutput = await prisma.poolOutput.findFirst({
       where: {
         shareAssetName: affectedPoolOutput.shareAssetName,
-        slot: {
-          lte: rollbackSlot,
-        },
+        spendSlot: null,
       },
-      orderBy: [
-        {
-          slot: 'desc',
-        },
-        {
-          spendSlot: 'desc',
-        },
-      ],
       select: {
         shareAssetName: true,
         assetAPolicy: true,
@@ -113,11 +101,32 @@ export const emitPoolUpdatesOnRollback = async (rollbackSlot: number) => {
     })
 
     if (lastValidPoolOutput) {
+      const getAdaValue = getAdaValueFactory(getAssetsAdaExchangeRatesCache())
+
+      const poolState = dbPoolOutputToPoolState(lastValidPoolOutput)
+      const unitA = createUnit(
+        lastValidPoolOutput.assetAPolicy,
+        lastValidPoolOutput.assetAName,
+      )
+      const unitB = createUnit(
+        lastValidPoolOutput.assetBPolicy,
+        lastValidPoolOutput.assetBName,
+      )
+
       await handleCrossServiceEvent(
         PubSubChannel.POOL_STATE_UPDATED,
         {
           shareAssetName: affectedPoolOutput.shareAssetName,
           poolState: dbPoolOutputToPoolState(lastValidPoolOutput),
+          tvlInAda: getAdaValue(
+            [
+              {unit: unitA, quantity: poolState.qtyA.toString()},
+              {unit: unitB, quantity: poolState.qtyB.toString()},
+            ],
+            isLovelaceUnit(unitA)
+              ? affectedPoolOutput.shareAssetName
+              : undefined,
+          ),
           validAt,
         },
         emitPoolStateUpdated,

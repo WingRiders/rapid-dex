@@ -3,6 +3,8 @@ import type {BlockPraos, Origin, Point, Tip} from '@cardano-ogmios/schema'
 import {deserializeAddress} from '@meshsdk/core'
 import {
   bigNumberToBigInt,
+  bigintToBigNumber,
+  createUnit,
   getUtxoId,
   poolDatumFromCbor,
   poolOil,
@@ -26,6 +28,11 @@ import {emitPoolUpdatesOnRollback} from '../poolsUpdates'
 import {handleCrossServiceEvent} from '../redis/helpers'
 import {PubSubChannel} from '../redis/pubsub'
 import {updateChainSyncStatus} from './chainSyncStatus'
+import {
+  clearAssetsAdaExchangeRatesCache,
+  initAssetAdaExchangeRatesCache,
+  updateAdaExchangeRateForPool,
+} from './exchangeRatesCache'
 import {getSpentPoolInteractionType, isPoolOutput} from './helpers'
 import {
   clearMempoolCache,
@@ -174,6 +181,15 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
         )
       }
 
+      updateAdaExchangeRateForPool({
+        unitA: createUnit(dbPoolOutput.assetAPolicy, dbPoolOutput.assetAName),
+        unitB: createUnit(dbPoolOutput.assetBPolicy, dbPoolOutput.assetBName),
+        shareAssetName: dbPoolOutput.shareAssetName,
+        poolState: {
+          qtyA: bigintToBigNumber(dbPoolOutput.qtyA),
+          qtyB: bigintToBigNumber(dbPoolOutput.qtyB),
+        },
+      })
       // pool output is confirmed on chain, we can remove it from the mempool pool outputs
       deleteMempoolPoolOutput(poolDatum.sharesAssetName, poolUtxoId)
       poolOutputBuffer.push(dbPoolOutput)
@@ -215,13 +231,29 @@ const processRollback = async (point: 'origin' | Point) => {
   logger.info(point, 'Rollback')
   const rollbackSlot = point === 'origin' ? originPoint.slot : point.slot
   clearMempoolCache()
-  await emitPoolUpdatesOnRollback(rollbackSlot)
+  clearAssetsAdaExchangeRatesCache()
+
+  const affectedPoolOutputs = await prisma.poolOutput.findMany({
+    select: {
+      shareAssetName: true,
+    },
+    distinct: ['shareAssetName'],
+    where: {
+      slot: {
+        gt: rollbackSlot,
+      },
+    },
+  })
+
   await prisma.$transaction((prismaTx) =>
     prismaTx.block.deleteMany({where: {slot: {gt: rollbackSlot}}}),
   )
 
   // (Re-)Initialize the cache
   await initPoolOutputCache()
+  await initAssetAdaExchangeRatesCache()
+
+  await emitPoolUpdatesOnRollback(affectedPoolOutputs)
 }
 
 // Aggregation framework below

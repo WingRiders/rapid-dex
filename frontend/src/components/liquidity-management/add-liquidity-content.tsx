@@ -1,7 +1,9 @@
 import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
+import {invalidateTotalTvlQuery} from '@/helpers/tvl'
 import {useBuildAddLiquidityTxQuery} from '@/on-chain/transaction/queries'
+import {useTRPC} from '@/trpc/client'
 import type {PoolsListItem} from '@/types'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
@@ -31,6 +33,7 @@ type AddLiquidityContentProps = {
 }
 
 export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
+  const trpc = useTRPC()
   const queryClient = useQueryClient()
 
   const {data: balance, balanceState} = useWalletBalanceQuery()
@@ -109,6 +112,7 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
     const res = await signAndSubmitTx(buildAddLiquidityTxResult.builtTx)
     if (res) {
       invalidateWalletQueries(queryClient)
+      invalidateTotalTvlQuery(trpc, queryClient)
     }
   }
 

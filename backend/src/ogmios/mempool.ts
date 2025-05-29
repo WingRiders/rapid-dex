@@ -6,6 +6,8 @@ import type {
 import {deserializeAddress} from '@meshsdk/core'
 import {
   bigNumberToBigInt,
+  bigintToBigNumber,
+  createUnit,
   getUtxoId,
   poolDatumFromCbor,
   poolOil,
@@ -21,6 +23,7 @@ import {logger} from '../logger'
 import {handleCrossServiceEvent} from '../redis/helpers'
 import {PubSubChannel} from '../redis/pubsub'
 import {waitUntilChainSynced} from './chainSyncStatus'
+import {updateAdaExchangeRateForPool} from './exchangeRatesCache'
 import {getSpentPoolInteractionType, isPoolOutput} from './helpers'
 import {
   type MempoolPoolOutput,
@@ -172,6 +175,22 @@ const processMempoolTransaction = async (tx: Transaction) => {
 
   logger.info({mempoolPoolOutput}, 'Inserting mempool pool output')
   insertMempoolPoolOutput(poolDatum.sharesAssetName, mempoolPoolOutput)
+
+  updateAdaExchangeRateForPool({
+    unitA: createUnit(
+      mempoolPoolOutput.assetAPolicy,
+      mempoolPoolOutput.assetAName,
+    ),
+    unitB: createUnit(
+      mempoolPoolOutput.assetBPolicy,
+      mempoolPoolOutput.assetBName,
+    ),
+    shareAssetName: mempoolPoolOutput.shareAssetName,
+    poolState: {
+      qtyA: bigintToBigNumber(mempoolPoolOutput.qtyA),
+      qtyB: bigintToBigNumber(mempoolPoolOutput.qtyB),
+    },
+  })
 
   handleNewPoolOutputEvents({
     poolOutput: mempoolPoolOutput,

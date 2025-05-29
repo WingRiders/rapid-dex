@@ -1,5 +1,6 @@
 import SuperJSON from 'superjson'
 import type {TaggedUnion} from 'type-fest'
+import type {AssetsAdaExchangeRates} from '../helpers/exchangeRates'
 import type {InteractionUpdatedPayload} from '../interactionsUpdates'
 import {logger} from '../logger'
 import type {MempoolPoolOutputs} from '../ogmios/mempoolCache'
@@ -18,6 +19,7 @@ export enum PubSubChannel {
   POOL_ROLLED_BACK = 'poolRolledBack',
   MEMPOOL_POOL_OUTPUTS_UPDATED = 'mempoolPoolOutputsUpdated',
   INTERACTION_UPDATED = 'interactionUpdated',
+  ASSETS_ADA_EXCHANGE_RATES_UPDATED = 'assetsAdaExchangeRatesUpdated',
 }
 
 export type PubSubPayloads = {
@@ -32,6 +34,9 @@ export type PubSubPayloads = {
     poolOutputs: MempoolPoolOutputs
   }
   [PubSubChannel.INTERACTION_UPDATED]: InteractionUpdatedPayload
+  [PubSubChannel.ASSETS_ADA_EXCHANGE_RATES_UPDATED]: {
+    assetsAdaExchangeRates: AssetsAdaExchangeRates
+  }
 }
 
 export const publishToPubSub = async <TChannel extends PubSubChannel>(

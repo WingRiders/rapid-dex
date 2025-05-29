@@ -1,6 +1,7 @@
 import {Button} from '@/components/ui/button'
 
 import Link from 'next/link'
+import {PoolsInfo} from './pools-info'
 import {PoolsList} from './pools-list'
 
 const PoolsPage = () => {
@@ -12,6 +13,10 @@ const PoolsPage = () => {
         <Button asChild variant="secondary" size="lg">
           <Link href="/pools/create">Create new pool</Link>
         </Button>
+      </div>
+
+      <div className="mt-4">
+        <PoolsInfo />
       </div>
 
       <div className="mt-4">
