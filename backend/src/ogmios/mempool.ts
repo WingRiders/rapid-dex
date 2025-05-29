@@ -18,6 +18,7 @@ import {PoolInteractionType} from '../db/prismaClient'
 import {poolOutputToInteraction} from '../endpoints/interactions'
 import {handleNewPoolOutputEvents} from '../helpers/pool'
 import {txOutRefToUtxoInput} from '../helpers/utxo'
+import {calculatePoolOutputVolume} from '../helpers/volume'
 import {emitInteractionUpdated} from '../interactionsUpdates'
 import {logger} from '../logger'
 import {handleCrossServiceEvent} from '../redis/helpers'
@@ -143,6 +144,13 @@ const processMempoolTransaction = async (tx: Transaction) => {
     )
   }
 
+  const interactionType = spentPoolInput
+    ? getSpentPoolInteractionType(tx.redeemers)
+    : PoolInteractionType.Create
+
+  const qtyADiff = spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA
+  const qtyBDiff = spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB
+
   const mempoolPoolOutput: MempoolPoolOutput = {
     utxoId: poolUtxoId,
     shareAssetName: poolDatum.sharesAssetName,
@@ -164,13 +172,16 @@ const processMempoolTransaction = async (tx: Transaction) => {
     spentPoolInputUtxoId: spentPoolInput
       ? getUtxoId(txOutRefToUtxoInput(spentPoolInput.ref))
       : undefined,
-    interactionType: spentPoolInput
-      ? getSpentPoolInteractionType(tx.redeemers)
-      : PoolInteractionType.Create,
+    interactionType,
     createdByStakeKeyHash,
     lptsDiff: spentPoolInput ? lpts - spentPoolInput.lpts : lpts,
-    qtyADiff: spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA,
-    qtyBDiff: spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB,
+    qtyADiff,
+    qtyBDiff,
+    ...calculatePoolOutputVolume({
+      interactionType,
+      qtyADiff,
+      qtyBDiff,
+    }),
   }
 
   logger.info({mempoolPoolOutput}, 'Inserting mempool pool output')

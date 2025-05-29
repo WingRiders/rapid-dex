@@ -65,6 +65,11 @@ model PoolOutput {
   qtyADiff BigInt
   qtyBDiff BigInt
 
+  volumeA       BigInt
+  volumeB       BigInt
+  outputVolumeA BigInt
+  outputVolumeB BigInt
+
   block              Block       @relation(fields: [slot], references: [slot], onDelete: Cascade)
   spendBlock         Block?      @relation("SpendBlock", fields: [spendSlot], references: [slot], onDelete: SetNull)
   nextPoolOutput     PoolOutput? @relation("SpendPoolOutput", fields: [spendUtxoId], references: [utxoId], onDelete: SetNull)

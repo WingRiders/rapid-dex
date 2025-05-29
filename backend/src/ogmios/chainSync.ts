@@ -22,6 +22,7 @@ import {poolOutputToInteraction} from '../endpoints/interactions'
 import {originPoint} from '../helpers'
 import {handleNewPoolOutputEvents} from '../helpers/pool'
 import {txOutRefToUtxoInput} from '../helpers/utxo'
+import {calculatePoolOutputVolume} from '../helpers/volume'
 import {emitInteractionUpdated} from '../interactionsUpdates'
 import {logger} from '../logger'
 import {emitPoolUpdatesOnRollback} from '../poolsUpdates'
@@ -119,6 +120,13 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
           'Found compensation output on an address without staking part',
         )
       }
+      const interactionType = spentPoolInput
+        ? getSpentPoolInteractionType(tx.redeemers)
+        : PoolInteractionType.Create
+
+      const qtyADiff = spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA
+      const qtyBDiff = spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB
+
       const dbPoolOutput: PoolOutput = {
         utxoId: poolUtxoId,
         spendUtxoId: null,
@@ -141,13 +149,16 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
         txMetadata: ogmiosMetadataToJson(tx) ?? null,
         scriptVersion: script?.version ?? null,
         scriptCBOR: script?.cbor ?? null,
-        interactionType: spentPoolInput
-          ? getSpentPoolInteractionType(tx.redeemers)
-          : PoolInteractionType.Create,
+        interactionType,
         createdByStakeKeyHash,
         lptsDiff: spentPoolInput ? lpts - spentPoolInput.lpts : lpts,
-        qtyADiff: spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA,
-        qtyBDiff: spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB,
+        qtyADiff,
+        qtyBDiff,
+        ...calculatePoolOutputVolume({
+          interactionType,
+          qtyADiff,
+          qtyBDiff,
+        }),
       }
 
       addPoolOutputToCache(poolUtxoId, {

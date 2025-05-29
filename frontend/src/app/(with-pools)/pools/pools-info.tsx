@@ -13,6 +13,7 @@ export const PoolsInfo = () => {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <TvlInfoItem />
+      <VolumeInfoItem />
     </div>
   )
 }
@@ -38,6 +39,30 @@ const TvlInfoItem = () => {
         )
       }
       tooltip="Total Value Locked (TVL) includes only pools that are either ADA pools or their assets have an ADA pool"
+    />
+  )
+}
+
+const VolumeInfoItem = () => {
+  const trpc = useTRPC()
+  const {data: volume, isLoading} = useQuery(
+    trpc.volume.queryOptions({hoursOffset: 24}, {refetchOnMount: true}),
+  )
+
+  return (
+    <InfoItem
+      label="Volume 24h"
+      value={
+        volume ? (
+          <p>
+            <AssetQuantity unit={LOVELACE_UNIT} quantity={volume} />
+          </p>
+        ) : isLoading ? (
+          <Skeleton className="h-6 w-full" />
+        ) : (
+          '-'
+        )
+      }
     />
   )
 }

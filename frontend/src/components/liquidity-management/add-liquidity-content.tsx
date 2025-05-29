@@ -1,7 +1,7 @@
 import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
+import {invalidateTotalTvlQuery} from '@/helpers/invalidation'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
-import {invalidateTotalTvlQuery} from '@/helpers/tvl'
 import {useBuildAddLiquidityTxQuery} from '@/on-chain/transaction/queries'
 import {useTRPC} from '@/trpc/client'
 import type {PoolsListItem} from '@/types'

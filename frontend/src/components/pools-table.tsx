@@ -1,5 +1,6 @@
 'use client'
 
+import type {TRPC} from '@/trpc/client'
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -7,6 +8,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
 import type {Dictionary} from 'lodash'
 import {ArrowDownUp} from 'lucide-react'
 import Link from 'next/link'
@@ -20,18 +22,28 @@ import {LiquidityManagementDialog} from './liquidity-management/liquidity-manage
 import {PoolPrice} from './pool-price'
 import {Button} from './ui/button'
 import {DataTable} from './ui/data-table'
+import {Skeleton} from './ui/skeleton'
 import {UnitPairDisplay} from './unit-pair-display'
 
 type PoolsTableProps = {
   pools: PoolsListItem[]
   portfolioItems?: Dictionary<PortfolioItem>
+  poolsVolume24h?: TRPC['poolsVolume']['~types']['output']
+  isLoadingPoolsVolume24h?: boolean
 }
 
 type PoolsTableMeta = {
   portfolioItems?: Dictionary<PortfolioItem>
+  poolsVolume24h?: TRPC['poolsVolume']['~types']['output']
+  isLoadingPoolsVolume24h?: boolean
 }
 
-export const PoolsTable = ({pools, portfolioItems}: PoolsTableProps) => {
+export const PoolsTable = ({
+  pools,
+  portfolioItems,
+  poolsVolume24h,
+  isLoadingPoolsVolume24h,
+}: PoolsTableProps) => {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -103,6 +115,28 @@ export const PoolsTable = ({pools, portfolioItems}: PoolsTableProps) => {
         ),
       },
       {
+        header: 'Volume 24h',
+        cell: ({
+          row: {
+            original: {shareAssetName},
+          },
+          table,
+        }) => {
+          const {poolsVolume24h, isLoadingPoolsVolume24h} = table.options
+            .meta as PoolsTableMeta
+
+          const volume24h = poolsVolume24h?.[shareAssetName] ?? new BigNumber(0)
+
+          return isLoadingPoolsVolume24h ? (
+            <Skeleton className="h-4 w-16" />
+          ) : (
+            <p>
+              <AssetQuantity unit={LOVELACE_UNIT} quantity={volume24h} />
+            </p>
+          )
+        },
+      },
+      {
         id: 'actions',
         cell: ({row: {original: pool}, table}) => {
           const {portfolioItems} = table.options.meta as PoolsTableMeta
@@ -137,8 +171,10 @@ export const PoolsTable = ({pools, portfolioItems}: PoolsTableProps) => {
   const meta = useMemo<PoolsTableMeta>(
     () => ({
       portfolioItems,
+      poolsVolume24h,
+      isLoadingPoolsVolume24h,
     }),
-    [portfolioItems],
+    [portfolioItems, poolsVolume24h, isLoadingPoolsVolume24h],
   )
 
   const table = useReactTable({
