@@ -50,7 +50,8 @@ export const LivePoolsUpdate = () => {
             (pool) => pool.shareAssetName === payload.pool.shareAssetName,
           )
           // if the pool is not in the list, add it
-          if (!existingPool) return [...existingPools, payload.pool]
+          if (!existingPool)
+            return [...existingPools, payload.pool].sort(sortPools)
 
           return payload.pool.validAt.getTime() > existingPool.validAt.getTime()
             ? // if the pool is in the list, update it if the new pool is newer

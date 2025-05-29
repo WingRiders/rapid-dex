@@ -6,13 +6,11 @@ import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import {uniq} from 'lodash'
 import type {ReactNode} from 'react'
 
-export const dynamic = 'force-dynamic'
+type WithPoolsProps = {
+  children?: ReactNode
+}
 
-const RootLayout = async ({
-  children,
-}: Readonly<{
-  children: ReactNode
-}>) => {
+export const WithPools = async ({children}: WithPoolsProps) => {
   const queryClient = getQueryClient()
   const trpc = getServerTrpc()
 
@@ -37,5 +35,3 @@ const RootLayout = async ({
     </HydrateClient>
   )
 }
-
-export default RootLayout

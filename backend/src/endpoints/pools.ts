@@ -4,11 +4,12 @@ import {prisma} from '../db/prismaClient'
 import {getAdaValueFactory} from '../helpers/adaValue'
 import {calculateAssetsAdaExchangeRates} from '../helpers/exchangeRates'
 import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
+import {getMempoolPoolOutputs} from '../ogmios/mempoolCache'
 
 export const getPools = async () => {
   const validAt = new Date()
 
-  const poolOutputs = await prisma.poolOutput.findMany({
+  const dbPoolOutputs = await prisma.poolOutput.findMany({
     where: {
       spendSlot: null,
     },
@@ -27,7 +28,7 @@ export const getPools = async () => {
     },
   })
 
-  const pools = poolOutputs.map((dbPoolOutput) => {
+  const dbPools = dbPoolOutputs.map((dbPoolOutput) => {
     const mempoolPoolOutput = getLatestMempoolPoolOutput(
       dbPoolOutput.shareAssetName,
       dbPoolOutput.utxoId,
@@ -37,6 +38,22 @@ export const getPools = async () => {
       ...dbPoolOutputToPool(mempoolPoolOutput ?? dbPoolOutput),
     }
   })
+  const dbPoolsShareAssetNames = new Set<string>(
+    dbPools.map((p) => p.shareAssetName),
+  )
+
+  const mempoolPoolOutputs = getMempoolPoolOutputs()
+  // newly created pools that are only in the mempool
+  const mempoolOnlyPoolOutputs = mempoolPoolOutputs.filter(
+    (o) => !dbPoolsShareAssetNames.has(o.shareAssetName),
+  )
+
+  const onlyMempoolPools = mempoolOnlyPoolOutputs.map((mempoolPoolOutput) => ({
+    validAt,
+    ...dbPoolOutputToPool(mempoolPoolOutput),
+  }))
+
+  const pools = [...dbPools, ...onlyMempoolPools]
 
   const getAdaValue = getAdaValueFactory(calculateAssetsAdaExchangeRates(pools))
 

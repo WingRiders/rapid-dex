@@ -3,6 +3,7 @@
 import {AssetQuantity} from '@/components/asset-quantity'
 import {Skeleton} from '@/components/ui/skeleton'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
+import {usePoolsQuery} from '@/helpers/pool'
 import {useTRPC} from '@/trpc/client'
 import {useQuery} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
@@ -93,17 +94,14 @@ const DailyActiveUsersInfoItem = () => {
 }
 
 const PoolsCountInfoItem = () => {
-  const trpc = useTRPC()
-  const {data: poolsCount, isLoading} = useQuery(
-    trpc.pools.queryOptions(undefined, {select: (pools) => pools.length}),
-  )
+  const {data: pools, isLoading} = usePoolsQuery()
 
   return (
     <InfoItem
       label="Pools"
       value={
-        poolsCount != null ? (
-          <p>{poolsCount}</p>
+        pools != null ? (
+          <p>{pools.length}</p>
         ) : isLoading ? (
           <Skeleton className="h-6 w-full" />
         ) : (

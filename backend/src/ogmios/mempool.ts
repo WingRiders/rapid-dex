@@ -251,7 +251,7 @@ export const deleteMempoolPoolOutput = (
  */
 export const getLatestMempoolPoolOutput = (
   poolShareAssetName: string,
-  dbPoolOutputUtxoId: string,
+  dbPoolOutputUtxoId: string | undefined,
 ): MempoolPoolOutput | undefined => {
   const poolOutputs = getMempoolPoolOutputsForPool(poolShareAssetName)
   if (poolOutputs == null) return undefined
@@ -261,7 +261,7 @@ export const getLatestMempoolPoolOutput = (
 
 const getLatestMempoolPoolOutputRec = (
   poolOutputs: MempoolPoolOutput[],
-  lastOutputId: string,
+  lastOutputId: string | undefined,
 ): MempoolPoolOutput | undefined => {
   const foundMempoolPoolOutput = poolOutputs.find(
     (mempoolPoolOutput) =>

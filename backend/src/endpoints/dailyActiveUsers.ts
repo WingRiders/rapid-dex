@@ -31,11 +31,10 @@ export const getDailyActiveUsers = async () => {
   // taking all mempool pool outputs into account
   const mempoolPoolOutputs = getMempoolPoolOutputs()
 
-  Object.values(mempoolPoolOutputs).forEach((outputs) =>
-    outputs.forEach((o) => {
-      if (o.createdByStakeKeyHash) stakeKeyHashes.add(o.createdByStakeKeyHash)
-    }),
-  )
+  mempoolPoolOutputs.forEach((output) => {
+    if (output.createdByStakeKeyHash)
+      stakeKeyHashes.add(output.createdByStakeKeyHash)
+  })
 
   return stakeKeyHashes.size
 }

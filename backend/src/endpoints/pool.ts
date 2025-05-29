@@ -1,3 +1,4 @@
+import {TRPCError} from '@trpc/server'
 import {dbPoolOutputToUtxo} from '../db/helpers'
 import {prisma} from '../db/prismaClient'
 import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
@@ -5,7 +6,7 @@ import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
 export const getPoolUtxo = async (shareAssetName: string) => {
   const validAt = new Date()
 
-  const dbPoolOutput = await prisma.poolOutput.findFirstOrThrow({
+  const dbPoolOutput = await prisma.poolOutput.findFirst({
     where: {
       spendSlot: null,
       shareAssetName,
@@ -21,9 +22,18 @@ export const getPoolUtxo = async (shareAssetName: string) => {
   })
 
   const mempoolPoolOutput = getLatestMempoolPoolOutput(
-    dbPoolOutput.shareAssetName,
-    dbPoolOutput.utxoId,
+    shareAssetName,
+    dbPoolOutput?.utxoId,
   )
 
-  return {utxo: dbPoolOutputToUtxo(mempoolPoolOutput ?? dbPoolOutput), validAt}
+  const poolOutput = mempoolPoolOutput ?? dbPoolOutput
+
+  if (!poolOutput) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `UTxO for pool ${shareAssetName} not found`,
+    })
+  }
+
+  return {utxo: dbPoolOutputToUtxo(poolOutput), validAt}
 }

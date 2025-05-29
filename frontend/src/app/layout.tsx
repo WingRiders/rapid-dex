@@ -2,6 +2,7 @@ import type {Metadata} from 'next'
 import {Geist, Geist_Mono} from 'next/font/google'
 import './globals.css'
 import {LiveUserInteractionsUpdates} from '@/components/live-user-interactions-updates'
+import {WithPools} from '@/components/with-pools'
 import {PublicEnvScript} from 'next-runtime-env'
 import {Suspense} from 'react'
 import {WalletStateHandler} from '../components/connect-wallet/wallet-state-handler'
@@ -26,6 +27,8 @@ export const metadata: Metadata = {
   description: 'DEX on Cardano built without batcher',
 }
 
+export const dynamic = 'force-dynamic'
+
 const RootLayout = ({
   children,
 }: Readonly<{
@@ -47,7 +50,9 @@ const RootLayout = ({
           <QueryProvider>
             <TooltipProvider>
               <AppMenu />
-              <Suspense>{children}</Suspense>
+              <Suspense>
+                <WithPools>{children}</WithPools>
+              </Suspense>
               <Toaster />
               <WalletStateHandler />
               <LiveUserInteractionsUpdates />
