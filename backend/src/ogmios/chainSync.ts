@@ -1,6 +1,8 @@
 import {createChainSynchronizationClient} from '@cardano-ogmios/client'
 import type {BlockPraos, Origin, Point, Tip} from '@cardano-ogmios/schema'
+import {deserializeAddress} from '@meshsdk/core'
 import {
+  bigNumberToBigInt,
   getUtxoId,
   poolDatumFromCbor,
   poolOil,
@@ -9,20 +11,22 @@ import {
 import BigNumber from 'bignumber.js'
 import {
   type Block,
+  PoolInteractionType,
   type PoolOutput,
   type Prisma,
   prisma,
 } from '../db/prismaClient'
+import {poolOutputToInteraction} from '../endpoints/interactions'
 import {originPoint} from '../helpers'
 import {handleNewPoolOutputEvents} from '../helpers/pool'
 import {txOutRefToUtxoInput} from '../helpers/utxo'
+import {emitInteractionUpdated} from '../interactionsUpdates'
 import {logger} from '../logger'
 import {emitPoolUpdatesOnRollback} from '../poolsUpdates'
 import {handleCrossServiceEvent} from '../redis/helpers'
 import {PubSubChannel} from '../redis/pubsub'
-import {emitTxsAddedToBlock} from '../txsListener'
 import {updateChainSyncStatus} from './chainSyncStatus'
-import {isPoolOutput} from './helpers'
+import {getSpentPoolInteractionType, isPoolOutput} from './helpers'
 import {
   clearMempoolCache,
   deleteMempoolPoolOutput,
@@ -34,7 +38,7 @@ import {ogmiosValueToMeshAssets} from './ogmiosValueToMeshAssets'
 import {parseOgmiosScript} from './parseOgmiosScript'
 import {
   addPoolOutputToCache,
-  getShareAssetNameByPoolUtxoId,
+  getPoolOutputCacheEntry,
   initPoolOutputCache,
   poolOutputExists,
   removePoolOutputFromCache,
@@ -54,110 +58,157 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
   })
 
   if (block.transactions)
-    handleCrossServiceEvent(
-      PubSubChannel.TXS_ADDED_TO_BLOCK,
-      {txHashes: block.transactions?.map((tx) => tx.id)},
-      emitTxsAddedToBlock,
-    )
-  // For each transaction in the block
-  // - Check for any inputs spending tracked PoolOutputs
-  // - Handle pool outputs
-  block.transactions?.forEach((tx) => {
-    const hasPoolInInputsIfFullySynced =
-      isFullySynced &&
-      // do this loop only if isFullySynced is true because that's only when we need it
-      tx.inputs.some((input) =>
+    block.transactions?.forEach((tx) => {
+      const spentPoolInputRef = tx.inputs.find((input) =>
         poolOutputExists(getUtxoId(txOutRefToUtxoInput(input))),
       )
-    tx.outputs.forEach((output, outputIndex) => {
-      // Handle pool output
-      if (isPoolOutput(output)) {
-        // since it's a valid pool output it must have datum
-        const datum = output.datum!
-        const poolDatum = poolDatumFromCbor(datum)
-        const isAdaPool = poolDatum.aAssetName === ''
+      const spentPoolInput = spentPoolInputRef
+        ? getPoolOutputCacheEntry(
+            getUtxoId(txOutRefToUtxoInput(spentPoolInputRef)),
+          )
+        : null
 
-        const poolUtxoId = getUtxoId({txHash: tx.id, outputIndex})
-        addPoolOutputToCache(poolUtxoId, poolDatum.sharesAssetName)
-        const script = parseOgmiosScript(output.script)
-
-        const poolOutput: PoolOutput = {
-          utxoId: poolUtxoId,
-          spendUtxoId: null,
-          slot: block.slot,
-          spendSlot: null,
-          shareAssetName: poolDatum.sharesAssetName,
-          assetAPolicy: poolDatum.aPolicyId,
-          assetAName: poolDatum.aAssetName,
-          assetBPolicy: poolDatum.bPolicyId,
-          assetBName: poolDatum.bAssetName,
-          lpts: output.value[poolValidatorHash]![poolDatum.sharesAssetName]!,
-          qtyA: isAdaPool
-            ? BigInt(
-                new BigNumber(output.value.ada.lovelace.toString())
-                  .minus(poolOil)
-                  .toString(),
-              )
-            : output.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!,
-          qtyB: output.value[poolDatum.bPolicyId]![poolDatum.bAssetName]!,
-          swapFeePoints: poolDatum.swapFeePoints,
-          feeBasis: poolDatum.feeBasis,
-          address: output.address,
-          assets: ogmiosValueToMeshAssets(output.value),
-          coins: output.value.ada.lovelace,
-          datumCBOR: datum,
-          txMetadata: ogmiosMetadataToJson(tx) ?? null,
-          scriptVersion: script?.version ?? null,
-          scriptCBOR: script?.cbor ?? null,
-        }
-
-        if (
-          isFullySynced &&
-          // emit pools updates only there isn't a newer pool output in the mempool
-          getLatestMempoolPoolOutput(poolDatum.sharesAssetName, poolUtxoId) ==
-            null
-        ) {
-          handleNewPoolOutputEvents({
-            poolOutput,
-            poolDatum,
-            hasSpentPoolInput: hasPoolInInputsIfFullySynced,
-          })
-        }
-
-        // pool output is confirmed on chain, we can remove it from the mempool pool outputs
-        deleteMempoolPoolOutput(poolDatum.sharesAssetName, poolUtxoId)
-        poolOutputBuffer.push(poolOutput)
+      const poolOutputIndex = tx.outputs.findIndex(isPoolOutput)
+      if (poolOutputIndex === -1) return
+      const poolOutput = tx.outputs[poolOutputIndex]!
+      const compensationOutput = tx.outputs.find(
+        (_, index) => index !== poolOutputIndex,
+      )
+      if (!compensationOutput) {
+        logger.error({txHash: tx.id}, 'Compensation output not found')
+        return
       }
-    })
 
-    // Mark spent pool outputs
-    tx.inputs
-      .map((input) => getUtxoId(txOutRefToUtxoInput(input)))
-      .filter(poolOutputExists)
-      .forEach((utxoId) => {
-        const shareAssetName = getShareAssetNameByPoolUtxoId(utxoId)
-        // findLast because the last aggregate pool output is the one that was spent
-        const spendUtxoId = poolOutputBuffer.findLast(
-          (poolOutput) => poolOutput.shareAssetName === shareAssetName,
-        )?.utxoId
-        if (spendUtxoId == null) {
-          // should never happen because if the pool output was spent
-          // a new pool output must be aggregated in the same tx
-          const msg = `Spend UTxO not found: utxoId = ${utxoId}, shareAssetName = ${shareAssetName} `
-          logger.error({utxoId, shareAssetName}, msg)
-          throw new Error(msg)
-        }
+      // since it's a valid pool output it must have datum
+      const datum = poolOutput.datum!
+      const poolDatum = poolDatumFromCbor(datum)
+      const isAdaPool = poolDatum.aAssetName === ''
 
-        removePoolOutputFromCache(utxoId)
-        spentPoolOutputBuffer.push({
-          utxoId,
-          // transaction can have only one pool input and one pool output,
-          // so we can safely assume that spendUtxoId in the last element in the poolOutputBuffer
-          spendUtxoId,
-          spendSlot: block.slot,
-        })
+      const poolUtxoId = getUtxoId({
+        txHash: tx.id,
+        outputIndex: poolOutputIndex,
       })
-  })
+      const script = parseOgmiosScript(poolOutput.script)
+
+      const lpts =
+        poolOutput.value[poolValidatorHash]![poolDatum.sharesAssetName]!
+      const qtyA = isAdaPool
+        ? bigNumberToBigInt(
+            new BigNumber(poolOutput.value.ada.lovelace.toString()).minus(
+              poolOil,
+            ),
+          )
+        : poolOutput.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!
+      const qtyB = poolOutput.value[poolDatum.bPolicyId]![poolDatum.bAssetName]!
+
+      let createdByStakeKeyHash: string | null = null
+      try {
+        createdByStakeKeyHash =
+          deserializeAddress(compensationOutput.address).stakeCredentialHash ||
+          null
+      } catch {
+        logger.error(
+          {txHash: tx.id},
+          'Found compensation output on an address without staking part',
+        )
+      }
+      const dbPoolOutput: PoolOutput = {
+        utxoId: poolUtxoId,
+        spendUtxoId: null,
+        slot: block.slot,
+        spendSlot: null,
+        shareAssetName: poolDatum.sharesAssetName,
+        assetAPolicy: poolDatum.aPolicyId,
+        assetAName: poolDatum.aAssetName,
+        assetBPolicy: poolDatum.bPolicyId,
+        assetBName: poolDatum.bAssetName,
+        lpts,
+        qtyA,
+        qtyB,
+        swapFeePoints: poolDatum.swapFeePoints,
+        feeBasis: poolDatum.feeBasis,
+        address: poolOutput.address,
+        assets: ogmiosValueToMeshAssets(poolOutput.value),
+        coins: poolOutput.value.ada.lovelace,
+        datumCBOR: datum,
+        txMetadata: ogmiosMetadataToJson(tx) ?? null,
+        scriptVersion: script?.version ?? null,
+        scriptCBOR: script?.cbor ?? null,
+        interactionType: spentPoolInput
+          ? getSpentPoolInteractionType(tx.redeemers)
+          : PoolInteractionType.Create,
+        createdByStakeKeyHash,
+        lptsDiff: spentPoolInput ? lpts - spentPoolInput.lpts : lpts,
+        qtyADiff: spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA,
+        qtyBDiff: spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB,
+      }
+
+      addPoolOutputToCache(poolUtxoId, {
+        shareAssetName: poolDatum.sharesAssetName,
+        qtyA: dbPoolOutput.qtyA,
+        qtyB: dbPoolOutput.qtyB,
+        lpts: dbPoolOutput.lpts,
+      })
+
+      if (
+        isFullySynced &&
+        // emit pools updates only there isn't a newer pool output in the mempool
+        getLatestMempoolPoolOutput(poolDatum.sharesAssetName, poolUtxoId) ==
+          null
+      ) {
+        handleNewPoolOutputEvents({
+          poolOutput: dbPoolOutput,
+          poolDatum,
+          hasSpentPoolInput: spentPoolInput != null,
+        })
+      }
+
+      if (isFullySynced && dbPoolOutput.createdByStakeKeyHash) {
+        handleCrossServiceEvent(
+          PubSubChannel.INTERACTION_UPDATED,
+          {
+            interaction: poolOutputToInteraction(dbPoolOutput),
+            stakeKeyHash: dbPoolOutput.createdByStakeKeyHash,
+          },
+          emitInteractionUpdated,
+        )
+      }
+
+      // pool output is confirmed on chain, we can remove it from the mempool pool outputs
+      deleteMempoolPoolOutput(poolDatum.sharesAssetName, poolUtxoId)
+      poolOutputBuffer.push(dbPoolOutput)
+
+      // Mark spent pool outputs
+      tx.inputs
+        .map((input) => getUtxoId(txOutRefToUtxoInput(input)))
+        .filter(poolOutputExists)
+        .forEach((utxoId) => {
+          const entry = getPoolOutputCacheEntry(utxoId)
+          if (!entry) {
+            return
+          }
+          // findLast because the last aggregate pool output is the one that was spent
+          const spendUtxoId = poolOutputBuffer.findLast(
+            (poolOutput) => poolOutput.shareAssetName === entry.shareAssetName,
+          )?.utxoId
+          if (spendUtxoId == null) {
+            // should never happen because if the pool output was spent
+            // a new pool output must be aggregated in the same tx
+            const msg = `Spend UTxO not found: utxoId = ${utxoId}, shareAssetName = ${entry.shareAssetName} `
+            logger.error({utxoId, entry}, msg)
+            throw new Error(msg)
+          }
+
+          removePoolOutputFromCache(utxoId)
+          spentPoolOutputBuffer.push({
+            utxoId,
+            // transaction can have only one pool input and one pool output,
+            // so we can safely assume that spendUtxoId in the last element in the poolOutputBuffer
+            spendUtxoId,
+            spendSlot: block.slot,
+          })
+        })
+    })
 }
 
 const processRollback = async (point: 'origin' | Point) => {

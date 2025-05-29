@@ -2,7 +2,6 @@ import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import {useBuildAddLiquidityTxQuery} from '@/on-chain/transaction/queries'
-import {useLocalInteractionsStore} from '@/store/local-interactions'
 import type {PoolsListItem} from '@/types'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
@@ -35,10 +34,6 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
   const queryClient = useQueryClient()
 
   const {data: balance, balanceState} = useWalletBalanceQuery()
-
-  const addUnconfirmedInteraction = useLocalInteractionsStore(
-    (state) => state.addUnconfirmedInteraction,
-  )
 
   const {
     addLiquidityFormValues,
@@ -113,9 +108,6 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
     if (!buildAddLiquidityTxResult) return
     const res = await signAndSubmitTx(buildAddLiquidityTxResult.builtTx)
     if (res) {
-      addUnconfirmedInteraction({
-        txHash: res.txHash,
-      })
       invalidateWalletQueries(queryClient)
     }
   }

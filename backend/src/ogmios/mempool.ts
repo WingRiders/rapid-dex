@@ -3,18 +3,25 @@ import type {
   Transaction,
   TransactionOutputReference,
 } from '@cardano-ogmios/schema'
+import {deserializeAddress} from '@meshsdk/core'
 import {
+  bigNumberToBigInt,
   getUtxoId,
   poolDatumFromCbor,
   poolOil,
   poolValidatorHash,
 } from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
+import {PoolInteractionType} from '../db/prismaClient'
+import {poolOutputToInteraction} from '../endpoints/interactions'
 import {handleNewPoolOutputEvents} from '../helpers/pool'
 import {txOutRefToUtxoInput} from '../helpers/utxo'
+import {emitInteractionUpdated} from '../interactionsUpdates'
 import {logger} from '../logger'
+import {handleCrossServiceEvent} from '../redis/helpers'
+import {PubSubChannel} from '../redis/pubsub'
 import {waitUntilChainSynced} from './chainSyncStatus'
-import {isPoolOutput} from './helpers'
+import {getSpentPoolInteractionType, isPoolOutput} from './helpers'
 import {
   type MempoolPoolOutput,
   clearMempoolPoolOutputs,
@@ -24,11 +31,19 @@ import {
 import {getOgmiosContext} from './ogmios'
 import {ogmiosValueToMeshAssets} from './ogmiosValueToMeshAssets'
 import {parseOgmiosScript} from './parseOgmiosScript'
-import {poolOutputExists} from './poolOutputCache'
+import {getPoolOutputCacheEntry} from './poolOutputCache'
 
 const MAX_MEMPOOL_TXS = 10_000
 
-const mempoolPooOutputsUtxoIds = new Set<string>()
+// different from mempoolPoolOutputs in mempoolCache.ts, this is used only for aggregation and is grouped by utxoId
+const mempoolPooOutputs = new Map<
+  string,
+  {
+    qtyA: bigint
+    qtyB: bigint
+    lpts: bigint
+  }
+>()
 
 export const startMempoolMonitoring = async () => {
   logger.info('Starting mempool monitoring')
@@ -62,64 +77,118 @@ export const startMempoolMonitoring = async () => {
   }
 }
 
-const isPoolInput = (input: TransactionOutputReference) => {
-  const inputUtxoId = getUtxoId(txOutRefToUtxoInput(input))
-  return (
-    poolOutputExists(inputUtxoId) || mempoolPooOutputsUtxoIds.has(inputUtxoId)
-  )
+const getSpentPoolInput = (txInputs: TransactionOutputReference[]) => {
+  for (const input of txInputs) {
+    const inputUtxoId = getUtxoId(txOutRefToUtxoInput(input))
+
+    const dbPoolOutput = getPoolOutputCacheEntry(inputUtxoId)
+    if (dbPoolOutput != null) {
+      return {
+        ...dbPoolOutput,
+        ref: input,
+      }
+    }
+
+    const mempoolPoolOutput = mempoolPooOutputs.get(inputUtxoId)
+    if (mempoolPoolOutput != null) {
+      return {
+        ...mempoolPoolOutput,
+        ref: input,
+      }
+    }
+  }
 }
 
 const processMempoolTransaction = async (tx: Transaction) => {
-  tx.outputs.forEach((output, outputIndex) => {
-    if (isPoolOutput(output)) {
-      const spentPoolInput = tx.inputs.find(isPoolInput)
-      // since it's a valid pool output it must have datum
-      const datum = output.datum!
-      const poolDatum = poolDatumFromCbor(datum)
-      const isAdaPool = poolDatum.aAssetName === ''
+  const spentPoolInput = getSpentPoolInput(tx.inputs)
 
-      const poolUtxoId = getUtxoId({txHash: tx.id, outputIndex})
-      const script = parseOgmiosScript(output.script)
+  const poolOutputIndex = tx.outputs.findIndex(isPoolOutput)
+  if (poolOutputIndex === -1) return
+  const poolOutput = tx.outputs[poolOutputIndex]!
+  const compensationOutput = tx.outputs.find(
+    (_, index) => index !== poolOutputIndex,
+  )
+  if (!compensationOutput) {
+    logger.error({txHash: tx.id}, 'Compensation output not found')
+    return
+  }
 
-      const poolOutput: MempoolPoolOutput = {
-        utxoId: poolUtxoId,
-        shareAssetName: poolDatum.sharesAssetName,
-        assetAPolicy: poolDatum.aPolicyId,
-        assetAName: poolDatum.aAssetName,
-        assetBPolicy: poolDatum.bPolicyId,
-        assetBName: poolDatum.bAssetName,
-        lpts: output.value[poolValidatorHash]![poolDatum.sharesAssetName]!,
-        qtyA: isAdaPool
-          ? BigInt(
-              new BigNumber(output.value.ada.lovelace.toString())
-                .minus(poolOil)
-                .toString(),
-            )
-          : output.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!,
-        qtyB: output.value[poolDatum.bPolicyId]![poolDatum.bAssetName]!,
-        swapFeePoints: poolDatum.swapFeePoints,
-        feeBasis: poolDatum.feeBasis,
-        address: output.address,
-        assets: ogmiosValueToMeshAssets(output.value),
-        coins: output.value.ada.lovelace,
-        datumCBOR: datum,
-        scriptVersion: script?.version ?? null,
-        scriptCBOR: script?.cbor ?? null,
-        spentPoolInputUtxoId: spentPoolInput
-          ? getUtxoId(txOutRefToUtxoInput(spentPoolInput))
-          : undefined,
-      }
+  // since it's a valid pool output it must have datum
+  const datum = poolOutput.datum!
+  const poolDatum = poolDatumFromCbor(datum)
+  const isAdaPool = poolDatum.aAssetName === ''
 
-      logger.info({poolOutput}, 'Inserting mempool pool output')
-      insertMempoolPoolOutput(poolDatum.sharesAssetName, poolOutput)
+  const poolUtxoId = getUtxoId({txHash: tx.id, outputIndex: poolOutputIndex})
+  const script = parseOgmiosScript(poolOutput.script)
 
-      handleNewPoolOutputEvents({
-        poolOutput,
-        poolDatum,
-        hasSpentPoolInput: spentPoolInput != null,
-      })
-    }
+  const lpts = poolOutput.value[poolValidatorHash]![poolDatum.sharesAssetName]!
+  const qtyA = isAdaPool
+    ? bigNumberToBigInt(
+        new BigNumber(poolOutput.value.ada.lovelace.toString()).minus(poolOil),
+      )
+    : poolOutput.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!
+  const qtyB = poolOutput.value[poolDatum.bPolicyId]![poolDatum.bAssetName]!
+
+  let createdByStakeKeyHash: string | null = null
+  try {
+    createdByStakeKeyHash =
+      deserializeAddress(compensationOutput.address).stakeCredentialHash || null
+  } catch {
+    logger.error(
+      {txHash: tx.id},
+      'Found compensation output on an address without staking part',
+    )
+  }
+
+  const mempoolPoolOutput: MempoolPoolOutput = {
+    utxoId: poolUtxoId,
+    shareAssetName: poolDatum.sharesAssetName,
+    assetAPolicy: poolDatum.aPolicyId,
+    assetAName: poolDatum.aAssetName,
+    assetBPolicy: poolDatum.bPolicyId,
+    assetBName: poolDatum.bAssetName,
+    lpts,
+    qtyA,
+    qtyB,
+    swapFeePoints: poolDatum.swapFeePoints,
+    feeBasis: poolDatum.feeBasis,
+    address: poolOutput.address,
+    assets: ogmiosValueToMeshAssets(poolOutput.value),
+    coins: poolOutput.value.ada.lovelace,
+    datumCBOR: datum,
+    scriptVersion: script?.version ?? null,
+    scriptCBOR: script?.cbor ?? null,
+    spentPoolInputUtxoId: spentPoolInput
+      ? getUtxoId(txOutRefToUtxoInput(spentPoolInput.ref))
+      : undefined,
+    interactionType: spentPoolInput
+      ? getSpentPoolInteractionType(tx.redeemers)
+      : PoolInteractionType.Create,
+    createdByStakeKeyHash,
+    lptsDiff: spentPoolInput ? lpts - spentPoolInput.lpts : lpts,
+    qtyADiff: spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA,
+    qtyBDiff: spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB,
+  }
+
+  logger.info({mempoolPoolOutput}, 'Inserting mempool pool output')
+  insertMempoolPoolOutput(poolDatum.sharesAssetName, mempoolPoolOutput)
+
+  handleNewPoolOutputEvents({
+    poolOutput: mempoolPoolOutput,
+    poolDatum,
+    hasSpentPoolInput: spentPoolInput != null,
   })
+
+  if (mempoolPoolOutput.createdByStakeKeyHash) {
+    handleCrossServiceEvent(
+      PubSubChannel.INTERACTION_UPDATED,
+      {
+        interaction: poolOutputToInteraction(mempoolPoolOutput),
+        stakeKeyHash: mempoolPoolOutput.createdByStakeKeyHash,
+      },
+      emitInteractionUpdated,
+    )
+  }
 }
 
 const insertMempoolPoolOutput = (
@@ -130,7 +199,11 @@ const insertMempoolPoolOutput = (
     ...(current ?? []),
     poolOutput,
   ])
-  mempoolPooOutputsUtxoIds.add(poolOutput.utxoId)
+  mempoolPooOutputs.set(poolOutput.utxoId, {
+    qtyA: poolOutput.qtyA,
+    qtyB: poolOutput.qtyB,
+    lpts: poolOutput.lpts,
+  })
 }
 
 export const deleteMempoolPoolOutput = (
@@ -140,7 +213,7 @@ export const deleteMempoolPoolOutput = (
   updateMempoolPoolOutputsForPool(poolShareAssetName, (current) =>
     current?.filter((o) => o.utxoId !== poolUtxoId),
   )
-  mempoolPooOutputsUtxoIds.delete(poolUtxoId)
+  mempoolPooOutputs.delete(poolUtxoId)
 }
 
 /**
@@ -173,5 +246,5 @@ const getLatestMempoolPoolOutputRec = (
 
 export const clearMempoolCache = () => {
   clearMempoolPoolOutputs()
-  mempoolPooOutputsUtxoIds.clear()
+  mempoolPooOutputs.clear()
 }

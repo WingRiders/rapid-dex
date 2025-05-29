@@ -9,7 +9,6 @@ import {Button} from '@/components/ui/button'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
 import {useLivePoolUtxoQuery, usePoolsQuery} from '@/helpers/pool'
 import {useBuildSwapTxQuery} from '@/on-chain/transaction/queries'
-import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   invalidateWalletQueries,
@@ -34,9 +33,6 @@ const SwapPage = () => {
     balanceState,
   } = useWalletBalanceQuery()
   const {data: pools} = usePoolsQuery()
-  const addUnconfirmedInteraction = useLocalInteractionsStore(
-    (state) => state.addUnconfirmedInteraction,
-  )
 
   const {swapUnits, shareAssetNames} = useMemo(() => {
     if (!pools) return {swapUnits: undefined, shareAssetNames: undefined}
@@ -131,9 +127,6 @@ const SwapPage = () => {
     if (!buildSwapTxResult) return
     const res = await signAndSubmitTx(buildSwapTxResult.builtTx)
     if (res) {
-      addUnconfirmedInteraction({
-        txHash: res.txHash,
-      })
       invalidateWalletQueries(queryClient)
     }
   }

@@ -1,4 +1,4 @@
-import {initTRPC} from '@trpc/server'
+import {initTRPC, tracked} from '@trpc/server'
 import type {RouterRecord} from '@trpc/server/unstable-core-do-not-import'
 import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
 import superjson from 'superjson'
@@ -8,13 +8,17 @@ import {
   getBothModeHealthcheck,
   getServerHealthcheck,
 } from './endpoints/healthcheck'
+import {
+  getPoolInteractions,
+  getUserInteractions,
+} from './endpoints/interactions'
 import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
 import {isPoolTxInBlock} from './endpoints/transaction'
+import {interactionsUpdatesEventEmitterIterable} from './interactionsUpdates'
 import {submitTx} from './ogmios/txSubmissionClient'
 import {poolsUpdatesEventEmitterIterable} from './poolsUpdates'
-import {txsListenerEmitterIterable} from './txsListener'
 
 augmentSuperJSON()
 
@@ -47,6 +51,19 @@ export const createServerRouter = () =>
     isPoolTxInBlock: publicProcedure
       .input(z.object({txHash: z.string()}))
       .query(({input}) => isPoolTxInBlock(input.txHash)),
+    userInteractions: publicProcedure
+      .input(
+        z.object({
+          stakeKeyHash: z.string(),
+          onlyUnconfirmed: z.boolean().optional(),
+        }),
+      )
+      .query(({input}) =>
+        getUserInteractions(input.stakeKeyHash, input.onlyUnconfirmed),
+      ),
+    poolInteractions: publicProcedure
+      .input(z.object({shareAssetName: z.string()}))
+      .query(({input}) => getPoolInteractions(input.shareAssetName)),
     onPoolStateUpdated: publicProcedure.subscription(async function* (opts) {
       for await (const [payload] of poolsUpdatesEventEmitterIterable(
         'poolStateUpdated',
@@ -83,19 +100,30 @@ export const createServerRouter = () =>
         yield payload
       }
     }),
-    onTxsAddedToBlock: publicProcedure
-      .input(z.object({txHashes: z.array(z.string())}))
+    onUserInteractionsUpdate: publicProcedure
+      .input(z.object({stakeKeyHash: z.string()}))
       .subscription(async function* (opts) {
-        for await (const [{txHashes}] of txsListenerEmitterIterable(
-          'txsAddedToBlock',
+        for await (const [payload] of interactionsUpdatesEventEmitterIterable(
+          'interactionUpdated',
           {signal: opts.signal},
         )) {
-          const filteredTxHashes = txHashes.filter((txHash) =>
-            opts.input.txHashes.includes(txHash),
-          )
-
-          if (filteredTxHashes.length > 0) {
-            yield filteredTxHashes
+          if (payload.stakeKeyHash === opts.input.stakeKeyHash) {
+            yield tracked(payload.interaction.txHash, payload.interaction)
+          }
+        }
+      }),
+    onPoolInteractionsUpdate: publicProcedure
+      .input(z.object({poolShareAssetName: z.string()}))
+      .subscription(async function* (opts) {
+        for await (const [payload] of interactionsUpdatesEventEmitterIterable(
+          'interactionUpdated',
+          {signal: opts.signal},
+        )) {
+          if (
+            payload.interaction.pool.shareAssetName ===
+            opts.input.poolShareAssetName
+          ) {
+            yield tracked(payload.interaction.txHash, payload.interaction)
           }
         }
       }),

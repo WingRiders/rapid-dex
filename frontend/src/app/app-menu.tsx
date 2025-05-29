@@ -4,6 +4,8 @@ import {ConnectWalletButton} from '@/components/connect-wallet/connect-wallet-bu
 import {Badge} from '@/components/ui/badge'
 import {UnconfirmedTxsCounter} from '@/components/unconfirmed-txs-counter'
 import {env} from '@/config'
+import {useConnectedWalletStore} from '@/store/connected-wallet'
+import {deserializeAddress} from '@meshsdk/core'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {cn} from '../lib/utils'
@@ -24,7 +26,7 @@ export const AppMenu = () => {
       </div>
 
       <div className="ml-auto flex flex-row items-center gap-5">
-        <UnconfirmedTxsCounter />
+        <TransactionsItem />
         <ConnectWalletButton />
       </div>
     </div>
@@ -34,9 +36,10 @@ export const AppMenu = () => {
 type MenuItemProps = {
   label: string
   href: string
+  linkClassName?: string
 }
 
-const MenuItem = ({label, href}: MenuItemProps) => {
+const MenuItem = ({label, href, linkClassName}: MenuItemProps) => {
   const pathname = usePathname()
   const isActive = pathname === href
 
@@ -47,9 +50,31 @@ const MenuItem = ({label, href}: MenuItemProps) => {
         isActive && 'text-white',
       )}
     >
-      <Link href={href} className="text-xl">
+      <Link href={href} className={cn('text-xl', linkClassName)}>
         {label}
       </Link>
+    </div>
+  )
+}
+
+const TransactionsItem = () => {
+  const connectedWallet = useConnectedWalletStore(
+    (state) => state.connectedWallet,
+  )
+
+  if (!connectedWallet) return null
+
+  const stakeKeyHash =
+    deserializeAddress(connectedWallet.address).stakeCredentialHash || null
+
+  return (
+    <div className="flex flex-row items-center gap-4">
+      {stakeKeyHash && <UnconfirmedTxsCounter stakeKeyHash={stakeKeyHash} />}
+      <MenuItem
+        label="Transactions"
+        href="/transactions"
+        linkClassName="text-lg"
+      />
     </div>
   )
 }

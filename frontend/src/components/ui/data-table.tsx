@@ -1,4 +1,8 @@
-import {type Table as ReactTable, flexRender} from '@tanstack/react-table'
+import {
+  type Table as ReactTable,
+  type RowData,
+  flexRender,
+} from '@tanstack/react-table'
 import {DataTablePagination} from './data-table-pagination'
 import {
   Table,
@@ -8,6 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from './table'
+
+declare module '@tanstack/table-core' {
+  // biome-ignore lint/correctness/noUnusedVariables: <explanation>
+  interface ColumnMeta<TData extends RowData, TValue> {
+    width?: string
+  }
+}
 
 type DataTableProps<TData> = {
   table: ReactTable<TData>
@@ -23,7 +34,10 @@ export const DataTable = <TData,>({table}: DataTableProps<TData>) => {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      style={{width: header.column.columnDef.meta?.width}}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -44,7 +58,10 @@ export const DataTable = <TData,>({table}: DataTableProps<TData>) => {
                   data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      style={{width: cell.column.columnDef.meta?.width}}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

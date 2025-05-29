@@ -45,9 +45,13 @@ export const PoolsTable = ({pools, portfolioItems}: PoolsTableProps) => {
         header: 'Pool',
         cell: ({
           row: {
-            original: {unitA, unitB},
+            original: {unitA, unitB, shareAssetName},
           },
-        }) => <UnitPairDisplay unitA={unitA} unitB={unitB} />,
+        }) => (
+          <Link href={`/pools/${shareAssetName}`}>
+            <UnitPairDisplay unitA={unitA} unitB={unitB} />
+          </Link>
+        ),
       },
       {
         header: 'Price',

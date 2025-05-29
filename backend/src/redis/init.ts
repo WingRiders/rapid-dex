@@ -5,13 +5,11 @@ import {
   emitPoolStateUpdated,
   emitPoolUtxoUpdated,
 } from '../poolsUpdates'
-import {emitTxsAddedToBlock} from '../txsListener'
 import {PubSubChannel, subscribeToPubSub} from './pubsub'
 
 export const initRedisSubscriptions = async () => {
   await subscribeToPubSub(
     [
-      PubSubChannel.TXS_ADDED_TO_BLOCK,
       PubSubChannel.POOL_STATE_UPDATED,
       PubSubChannel.POOL_UTXO_UPDATED,
       PubSubChannel.POOL_CREATED,
@@ -19,9 +17,6 @@ export const initRedisSubscriptions = async () => {
       PubSubChannel.MEMPOOL_POOL_OUTPUTS_UPDATED,
     ],
     (payload) => {
-      if (payload.channel === PubSubChannel.TXS_ADDED_TO_BLOCK) {
-        emitTxsAddedToBlock(payload)
-      }
       if (payload.channel === PubSubChannel.POOL_CREATED) {
         emitPoolCreated(payload)
       }

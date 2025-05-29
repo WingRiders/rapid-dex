@@ -4,6 +4,7 @@ import {skipToken, useQuery, useQueryClient} from '@tanstack/react-query'
 import {useSubscription} from '@trpc/tanstack-react-query'
 import {keyBy} from 'lodash'
 import type {PoolsListItem} from '../types'
+import {getInteractionsQueryDataUpdater} from './interactions'
 import {wsOnDataDebugLog} from './logger'
 
 export const usePoolsQuery = (options?: {enabled?: boolean}) => {
@@ -111,6 +112,37 @@ export const useLivePoolUtxoQuery = (
       : undefined,
     enabled: !!hasInput,
   })
+}
+
+export const useLivePoolInteractionsQuery = (
+  input: Parameters<TRPC['poolInteractions']['queryOptions']>[0],
+) => {
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+
+  const queryResult = useQuery(trpc.poolInteractions.queryOptions(input))
+
+  useSubscription(
+    trpc.onPoolInteractionsUpdate.subscriptionOptions(
+      typeof input === 'symbol'
+        ? input
+        : {poolShareAssetName: input.shareAssetName},
+      {
+        onData: ({data: updatedInteraction}) => {
+          wsOnDataDebugLog('pool interactions updated', updatedInteraction)
+
+          if (typeof input === 'symbol') return
+
+          queryClient.setQueryData(
+            trpc.poolInteractions.queryKey(input),
+            getInteractionsQueryDataUpdater(updatedInteraction),
+          )
+        },
+      },
+    ),
+  )
+
+  return queryResult
 }
 
 export const matchPoolForUnits =

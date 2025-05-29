@@ -1,5 +1,6 @@
 import SuperJSON from 'superjson'
 import type {TaggedUnion} from 'type-fest'
+import type {InteractionUpdatedPayload} from '../interactionsUpdates'
 import {logger} from '../logger'
 import type {MempoolPoolOutputs} from '../ogmios/mempoolCache'
 import type {
@@ -8,20 +9,18 @@ import type {
   PoolStateUpdatedPayload,
   PoolUtxoUpdatedPayload,
 } from '../poolsUpdates'
-import type {TxsAddedToBlockPayload} from '../txsListener'
 import {getRedisClient} from './client'
 
 export enum PubSubChannel {
-  TXS_ADDED_TO_BLOCK = 'txsAddedToBlock',
   POOL_STATE_UPDATED = 'poolStateUpdated',
   POOL_UTXO_UPDATED = 'poolUtxoUpdated',
   POOL_CREATED = 'poolCreated',
   POOL_ROLLED_BACK = 'poolRolledBack',
   MEMPOOL_POOL_OUTPUTS_UPDATED = 'mempoolPoolOutputsUpdated',
+  INTERACTION_UPDATED = 'interactionUpdated',
 }
 
 export type PubSubPayloads = {
-  [PubSubChannel.TXS_ADDED_TO_BLOCK]: TxsAddedToBlockPayload
   [PubSubChannel.POOL_STATE_UPDATED]: PoolStateUpdatedPayload
   [PubSubChannel.POOL_UTXO_UPDATED]: PoolUtxoUpdatedPayload
   [PubSubChannel.POOL_CREATED]: PoolCreatedPayload
@@ -32,6 +31,7 @@ export type PubSubPayloads = {
     // But it's faster to just send the data instead of server having to read it from Redis upon receiving the message.
     poolOutputs: MempoolPoolOutputs
   }
+  [PubSubChannel.INTERACTION_UPDATED]: InteractionUpdatedPayload
 }
 
 export const publishToPubSub = async <TChannel extends PubSubChannel>(

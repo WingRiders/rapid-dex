@@ -23,6 +23,14 @@ enum ScriptVersion {
   V3
 }
 
+enum PoolInteractionType {
+  Create
+  Swap
+  AddLiquidity
+  WithdrawLiquidity
+  Donate
+}
+
 model PoolOutput {
   utxoId      String  @id
   spendUtxoId String? @unique
@@ -48,6 +56,14 @@ model PoolOutput {
   txMetadata    Json?
   scriptCBOR    String?
   scriptVersion ScriptVersion?
+
+  interactionType       PoolInteractionType
+  createdByStakeKeyHash String?
+
+  // difference between this pool output and the previous one
+  lptsDiff BigInt
+  qtyADiff BigInt
+  qtyBDiff BigInt
 
   block              Block       @relation(fields: [slot], references: [slot], onDelete: Cascade)
   spendBlock         Block?      @relation("SpendBlock", fields: [spendSlot], references: [slot], onDelete: SetNull)

@@ -52,6 +52,13 @@ export const getMempoolPoolOutputsForPool = (
   poolShareAssetName: string,
 ): MempoolPoolOutput[] | undefined => mempoolPoolOutputs[poolShareAssetName]
 
+export const getMempoolPoolOutputsForStakeKeyHash = (
+  stakeKeyHash: string,
+): MempoolPoolOutput[] | undefined =>
+  Object.values(mempoolPoolOutputs).flatMap((poolOutputs) =>
+    poolOutputs.filter((o) => o.createdByStakeKeyHash === stakeKeyHash),
+  )
+
 export const updateMempoolPoolOutputsForPool = (
   poolShareAssetName: string,
   // if the function returns undefined, the pool outputs for the given poolShareAssetName will be deleted

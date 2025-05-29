@@ -6,7 +6,6 @@ import type {PortfolioItem} from '@/helpers/portfolio'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildWithdrawLiquidityTxQuery} from '@/on-chain/transaction/queries'
-import {useLocalInteractionsStore} from '@/store/local-interactions'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   invalidateWalletQueries,
@@ -41,10 +40,6 @@ export const WithdrawLiquidityContent = ({
   portfolioItem,
 }: WithdrawLiquidityContentProps) => {
   const queryClient = useQueryClient()
-
-  const addUnconfirmedInteraction = useLocalInteractionsStore(
-    (state) => state.addUnconfirmedInteraction,
-  )
 
   const {pool, ownedShares} = portfolioItem
 
@@ -148,9 +143,6 @@ export const WithdrawLiquidityContent = ({
     if (!buildWithdrawLiquidityTxResult) return
     const res = await signAndSubmitTx(buildWithdrawLiquidityTxResult.builtTx)
     if (res) {
-      addUnconfirmedInteraction({
-        txHash: res.txHash,
-      })
       invalidateWalletQueries(queryClient)
     }
   }

@@ -13,7 +13,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "composite": true
+    "composite": true,
+    "noErrorTruncation": true
   },
   "references": [
     {
