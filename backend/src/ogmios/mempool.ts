@@ -28,8 +28,10 @@ import {updateAdaExchangeRateForPool} from './exchangeRatesCache'
 import {getSpentPoolInteractionType, isPoolOutput} from './helpers'
 import {
   type MempoolPoolOutput,
+  type MempoolPoolOutputs,
   clearMempoolPoolOutputs,
   getMempoolPoolOutputsForPool,
+  updateMempoolPoolOutputs,
   updateMempoolPoolOutputsForPool,
 } from './mempoolCache'
 import {getOgmiosContext} from './ogmios'
@@ -40,7 +42,7 @@ import {getPoolOutputCacheEntry} from './poolOutputCache'
 const MAX_MEMPOOL_TXS = 10_000
 
 // different from mempoolPoolOutputs in mempoolCache.ts, this is used only for aggregation and is grouped by utxoId
-const mempoolPooOutputs = new Map<
+const mempoolPoolOutputs = new Map<
   string,
   {
     qtyA: bigint
@@ -75,9 +77,75 @@ export const startMempoolMonitoring = async () => {
     // so we again wait until db is synced in case there was a rollback while acquiring the mempool
     await waitUntilChainSynced()
     const transactions = await flushMempool()
+
+    const newMempoolPoolOutputs: MempoolPoolOutputs = {}
+    mempoolPoolOutputs.clear()
     for (const transaction of transactions) {
-      await processMempoolTransaction(transaction)
+      const newPoolOutput = processMempoolTransaction(transaction)
+
+      if (newPoolOutput) {
+        logger.info({newPoolOutput}, 'Found mempool pool output')
+
+        if (!newMempoolPoolOutputs[newPoolOutput.shareAssetName]) {
+          newMempoolPoolOutputs[newPoolOutput.shareAssetName] = []
+        }
+        newMempoolPoolOutputs[newPoolOutput.shareAssetName]!.push(newPoolOutput)
+
+        mempoolPoolOutputs.set(newPoolOutput.utxoId, {
+          qtyA: newPoolOutput.qtyA,
+          qtyB: newPoolOutput.qtyB,
+          lpts: newPoolOutput.lpts,
+        })
+      }
     }
+
+    updateMempoolPoolOutputs(newMempoolPoolOutputs)
+
+    Object.keys(newMempoolPoolOutputs).map((shareAssetName) => {
+      const poolOutputsForPool = newMempoolPoolOutputs[shareAssetName]
+      if (!poolOutputsForPool || poolOutputsForPool.length === 0) return
+
+      // Push updates only for the latest pool output
+      const latestPoolOutput =
+        getLatestMempoolPoolOutputRec(
+          poolOutputsForPool,
+          poolOutputsForPool[0]!.utxoId,
+        ) ?? poolOutputsForPool[0]!
+
+      if (latestPoolOutput) {
+        updateAdaExchangeRateForPool({
+          unitA: createUnit(
+            latestPoolOutput.assetAPolicy,
+            latestPoolOutput.assetAName,
+          ),
+          unitB: createUnit(
+            latestPoolOutput.assetBPolicy,
+            latestPoolOutput.assetBName,
+          ),
+          shareAssetName: latestPoolOutput.shareAssetName,
+          poolState: {
+            qtyA: bigintToBigNumber(latestPoolOutput.qtyA),
+            qtyB: bigintToBigNumber(latestPoolOutput.qtyB),
+          },
+        })
+
+        handleNewPoolOutputEvents({
+          poolOutput: latestPoolOutput,
+          hasSpentPoolInput: latestPoolOutput.spentPoolInputUtxoId != null,
+        })
+
+        if (latestPoolOutput.createdByStakeKeyHash) {
+          handleCrossServiceEvent(
+            PubSubChannel.INTERACTION_UPDATED,
+            {
+              interaction: poolOutputToInteraction(latestPoolOutput),
+              stakeKeyHash: latestPoolOutput.createdByStakeKeyHash,
+            },
+            emitInteractionUpdated,
+          )
+        }
+      }
+    })
   }
 }
 
@@ -93,7 +161,7 @@ const getSpentPoolInput = (txInputs: TransactionOutputReference[]) => {
       }
     }
 
-    const mempoolPoolOutput = mempoolPooOutputs.get(inputUtxoId)
+    const mempoolPoolOutput = mempoolPoolOutputs.get(inputUtxoId)
     if (mempoolPoolOutput != null) {
       return {
         ...mempoolPoolOutput,
@@ -103,18 +171,20 @@ const getSpentPoolInput = (txInputs: TransactionOutputReference[]) => {
   }
 }
 
-const processMempoolTransaction = async (tx: Transaction) => {
+const processMempoolTransaction = (
+  tx: Transaction,
+): MempoolPoolOutput | undefined => {
   const spentPoolInput = getSpentPoolInput(tx.inputs)
 
   const poolOutputIndex = tx.outputs.findIndex(isPoolOutput)
-  if (poolOutputIndex === -1) return
+  if (poolOutputIndex === -1) return undefined
   const poolOutput = tx.outputs[poolOutputIndex]!
   const compensationOutput = tx.outputs.find(
     (_, index) => index !== poolOutputIndex,
   )
   if (!compensationOutput) {
     logger.error({txHash: tx.id}, 'Compensation output not found')
-    return
+    return undefined
   }
 
   // since it's a valid pool output it must have datum
@@ -184,56 +254,7 @@ const processMempoolTransaction = async (tx: Transaction) => {
     }),
   }
 
-  logger.info({mempoolPoolOutput}, 'Inserting mempool pool output')
-  insertMempoolPoolOutput(poolDatum.sharesAssetName, mempoolPoolOutput)
-
-  updateAdaExchangeRateForPool({
-    unitA: createUnit(
-      mempoolPoolOutput.assetAPolicy,
-      mempoolPoolOutput.assetAName,
-    ),
-    unitB: createUnit(
-      mempoolPoolOutput.assetBPolicy,
-      mempoolPoolOutput.assetBName,
-    ),
-    shareAssetName: mempoolPoolOutput.shareAssetName,
-    poolState: {
-      qtyA: bigintToBigNumber(mempoolPoolOutput.qtyA),
-      qtyB: bigintToBigNumber(mempoolPoolOutput.qtyB),
-    },
-  })
-
-  handleNewPoolOutputEvents({
-    poolOutput: mempoolPoolOutput,
-    poolDatum,
-    hasSpentPoolInput: spentPoolInput != null,
-  })
-
-  if (mempoolPoolOutput.createdByStakeKeyHash) {
-    handleCrossServiceEvent(
-      PubSubChannel.INTERACTION_UPDATED,
-      {
-        interaction: poolOutputToInteraction(mempoolPoolOutput),
-        stakeKeyHash: mempoolPoolOutput.createdByStakeKeyHash,
-      },
-      emitInteractionUpdated,
-    )
-  }
-}
-
-const insertMempoolPoolOutput = (
-  poolShareAssetName: string,
-  poolOutput: MempoolPoolOutput,
-) => {
-  updateMempoolPoolOutputsForPool(poolShareAssetName, (current) => [
-    ...(current ?? []),
-    poolOutput,
-  ])
-  mempoolPooOutputs.set(poolOutput.utxoId, {
-    qtyA: poolOutput.qtyA,
-    qtyB: poolOutput.qtyB,
-    lpts: poolOutput.lpts,
-  })
+  return mempoolPoolOutput
 }
 
 export const deleteMempoolPoolOutput = (
@@ -243,7 +264,7 @@ export const deleteMempoolPoolOutput = (
   updateMempoolPoolOutputsForPool(poolShareAssetName, (current) =>
     current?.filter((o) => o.utxoId !== poolUtxoId),
   )
-  mempoolPooOutputs.delete(poolUtxoId)
+  mempoolPoolOutputs.delete(poolUtxoId)
 }
 
 /**
@@ -276,5 +297,5 @@ const getLatestMempoolPoolOutputRec = (
 
 export const clearMempoolCache = () => {
   clearMempoolPoolOutputs()
-  mempoolPooOutputs.clear()
+  mempoolPoolOutputs.clear()
 }

@@ -176,7 +176,6 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
       ) {
         handleNewPoolOutputEvents({
           poolOutput: dbPoolOutput,
-          poolDatum,
           hasSpentPoolInput: spentPoolInput != null,
         })
       }

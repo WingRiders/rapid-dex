@@ -1,9 +1,5 @@
 import type {PoolOutput} from '@prisma/client'
-import {
-  type PoolDatum,
-  createUnit,
-  isLovelaceUnit,
-} from '@wingriders/rapid-dex-common'
+import {createUnit, isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import {
   dbPoolOutputToPool,
   dbPoolOutputToPoolState,
@@ -39,12 +35,10 @@ type HandleNewPoolOutputEventsArgs = {
     | 'coins'
     | 'datumCBOR'
   >
-  poolDatum: PoolDatum
   hasSpentPoolInput: boolean
 }
 export const handleNewPoolOutputEvents = ({
   poolOutput,
-  poolDatum,
   hasSpentPoolInput,
 }: HandleNewPoolOutputEventsArgs) => {
   logger.debug(
@@ -58,20 +52,20 @@ export const handleNewPoolOutputEvents = ({
 
   if (hasSpentPoolInput) {
     const poolState = dbPoolOutputToPoolState(poolOutput)
-    const unitA = createUnit(poolDatum.aPolicyId, poolDatum.aAssetName)
-    const unitB = createUnit(poolDatum.bPolicyId, poolDatum.bAssetName)
+    const unitA = createUnit(poolOutput.assetAPolicy, poolOutput.assetAName)
+    const unitB = createUnit(poolOutput.assetBPolicy, poolOutput.assetBName)
 
     handleCrossServiceEvent(
       PubSubChannel.POOL_STATE_UPDATED,
       {
-        shareAssetName: poolDatum.sharesAssetName,
+        shareAssetName: poolOutput.shareAssetName,
         poolState,
         tvlInAda: getAdaValue(
           [
             {unit: unitA, quantity: poolState.qtyA.toString()},
             {unit: unitB, quantity: poolState.qtyB.toString()},
           ],
-          isLovelaceUnit(unitA) ? poolDatum.sharesAssetName : undefined,
+          isLovelaceUnit(unitA) ? poolOutput.shareAssetName : undefined,
         ),
         validAt,
       },
@@ -80,7 +74,7 @@ export const handleNewPoolOutputEvents = ({
     handleCrossServiceEvent(
       PubSubChannel.POOL_UTXO_UPDATED,
       {
-        shareAssetName: poolDatum.sharesAssetName,
+        shareAssetName: poolOutput.shareAssetName,
         utxo: dbPoolOutputToUtxo(poolOutput),
         validAt,
       },

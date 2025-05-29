@@ -48,6 +48,11 @@ export const setMempoolPoolOutputs = (poolOutputs: MempoolPoolOutputs) => {
   mempoolPoolOutputs = poolOutputs
 }
 
+export const updateMempoolPoolOutputs = (poolOutputs: MempoolPoolOutputs) => {
+  mempoolPoolOutputs = poolOutputs
+  handleCacheChanged()
+}
+
 export const getMempoolPoolOutputs = () =>
   Object.values(mempoolPoolOutputs).flat()
 
