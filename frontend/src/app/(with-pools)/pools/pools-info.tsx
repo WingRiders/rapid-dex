@@ -14,6 +14,8 @@ export const PoolsInfo = () => {
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <TvlInfoItem />
       <VolumeInfoItem />
+      <DailyActiveUsersInfoItem />
+      <PoolsCountInfoItem />
     </div>
   )
 }
@@ -57,6 +59,51 @@ const VolumeInfoItem = () => {
           <p>
             <AssetQuantity unit={LOVELACE_UNIT} quantity={volume} />
           </p>
+        ) : isLoading ? (
+          <Skeleton className="h-6 w-full" />
+        ) : (
+          '-'
+        )
+      }
+    />
+  )
+}
+
+const DailyActiveUsersInfoItem = () => {
+  const trpc = useTRPC()
+  const {data: dailyActiveUsers, isLoading} = useQuery(
+    trpc.dailyActiveUsers.queryOptions(undefined, {refetchOnMount: true}),
+  )
+
+  return (
+    <InfoItem
+      label="Daily active users"
+      value={
+        dailyActiveUsers != null ? (
+          <p>{dailyActiveUsers}</p>
+        ) : isLoading ? (
+          <Skeleton className="h-6 w-full" />
+        ) : (
+          '-'
+        )
+      }
+      tooltip="Number of unique addresses that have interacted with the DEX in the last 24 hours"
+    />
+  )
+}
+
+const PoolsCountInfoItem = () => {
+  const trpc = useTRPC()
+  const {data: poolsCount, isLoading} = useQuery(
+    trpc.pools.queryOptions(undefined, {select: (pools) => pools.length}),
+  )
+
+  return (
+    <InfoItem
+      label="Pools"
+      value={
+        poolsCount != null ? (
+          <p>{poolsCount}</p>
         ) : isLoading ? (
           <Skeleton className="h-6 w-full" />
         ) : (

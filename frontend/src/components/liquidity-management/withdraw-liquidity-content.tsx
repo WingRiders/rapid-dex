@@ -1,7 +1,10 @@
 import {computeReturnedTokens} from '@/amm/withdraw-liquidity'
 import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
 import {formatPercentage} from '@/helpers/format-percentage'
-import {invalidateTotalTvlQuery} from '@/helpers/invalidation'
+import {
+  invalidateDailyActiveUsersQuery,
+  invalidateTotalTvlQuery,
+} from '@/helpers/invalidation'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import type {PortfolioItem} from '@/helpers/portfolio'
 import {cn} from '@/lib/utils'
@@ -148,6 +151,7 @@ export const WithdrawLiquidityContent = ({
     if (res) {
       invalidateWalletQueries(queryClient)
       invalidateTotalTvlQuery(trpc, queryClient)
+      invalidateDailyActiveUsersQuery(trpc, queryClient)
     }
   }
 

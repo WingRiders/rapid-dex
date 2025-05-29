@@ -3,6 +3,7 @@ import type {RouterRecord} from '@trpc/server/unstable-core-do-not-import'
 import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
 import superjson from 'superjson'
 import {z} from 'zod'
+import {getDailyActiveUsers} from './endpoints/dailyActiveUsers'
 import {
   getAggregatorHealthcheck,
   getBothModeHealthcheck,
@@ -73,6 +74,7 @@ export const createServerRouter = () =>
     poolsVolume: publicProcedure
       .input(z.object({hoursOffset: z.number()}))
       .query(({input}) => getPoolsVolume(input.hoursOffset)),
+    dailyActiveUsers: publicProcedure.query(getDailyActiveUsers),
     onPoolStateUpdated: publicProcedure.subscription(async function* (opts) {
       for await (const [payload] of poolsUpdatesEventEmitterIterable(
         'poolStateUpdated',

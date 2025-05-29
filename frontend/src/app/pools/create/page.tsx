@@ -27,6 +27,10 @@ import {Input} from '@/components/ui/input'
 import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
 import {computeFee, encodeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
+import {
+  invalidateDailyActiveUsersQuery,
+  invalidateTotalTvlQuery,
+} from '@/helpers/invalidation'
 import {matchPoolForUnits, usePoolsQuery} from '@/helpers/pool'
 import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
 import {useBuildCreatePoolTxQuery} from '@/on-chain/transaction/queries'
@@ -178,6 +182,8 @@ const CreatePoolPage = () => {
     const res = await signAndSubmitTx(buildCreatePoolTxResult.builtTx)
     if (res) {
       invalidateWalletQueries(queryClient)
+      invalidateTotalTvlQuery(trpc, queryClient)
+      invalidateDailyActiveUsersQuery(trpc, queryClient)
     }
   }
 

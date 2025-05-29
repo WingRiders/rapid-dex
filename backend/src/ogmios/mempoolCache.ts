@@ -48,6 +48,8 @@ export const setMempoolPoolOutputs = (poolOutputs: MempoolPoolOutputs) => {
   mempoolPoolOutputs = poolOutputs
 }
 
+export const getMempoolPoolOutputs = () => mempoolPoolOutputs
+
 export const getMempoolPoolOutputsForPool = (
   poolShareAssetName: string,
 ): MempoolPoolOutput[] | undefined => mempoolPoolOutputs[poolShareAssetName]

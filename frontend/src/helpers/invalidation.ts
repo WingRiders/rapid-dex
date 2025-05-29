@@ -28,3 +28,13 @@ export const invalidateVolumeQueries = async (
     queryKey: trpc.volume.queryKey({hoursOffset: 24}),
   })
 }
+
+export const invalidateDailyActiveUsersQuery = async (
+  trpc: TRPC,
+  queryClient: QueryClient,
+) => {
+  await new Promise((resolve) =>
+    setTimeout(resolve, INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY),
+  )
+  queryClient.invalidateQueries({queryKey: trpc.dailyActiveUsers.queryKey()})
+}

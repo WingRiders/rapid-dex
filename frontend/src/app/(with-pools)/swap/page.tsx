@@ -7,7 +7,10 @@ import {ErrorAlert} from '@/components/error-alert'
 import {TxSubmittedDialog} from '@/components/tx-submitted-dialog'
 import {Button} from '@/components/ui/button'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
-import {invalidateVolumeQueries} from '@/helpers/invalidation'
+import {
+  invalidateDailyActiveUsersQuery,
+  invalidateVolumeQueries,
+} from '@/helpers/invalidation'
 import {useLivePoolUtxoQuery, usePoolsQuery} from '@/helpers/pool'
 import {useBuildSwapTxQuery} from '@/on-chain/transaction/queries'
 import {useTRPC} from '@/trpc/client'
@@ -132,6 +135,7 @@ const SwapPage = () => {
     if (res) {
       invalidateWalletQueries(queryClient)
       invalidateVolumeQueries(trpc, queryClient)
+      invalidateDailyActiveUsersQuery(trpc, queryClient)
     }
   }
 

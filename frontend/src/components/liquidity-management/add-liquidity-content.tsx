@@ -1,6 +1,9 @@
 import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
-import {invalidateTotalTvlQuery} from '@/helpers/invalidation'
+import {
+  invalidateDailyActiveUsersQuery,
+  invalidateTotalTvlQuery,
+} from '@/helpers/invalidation'
 import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import {useBuildAddLiquidityTxQuery} from '@/on-chain/transaction/queries'
 import {useTRPC} from '@/trpc/client'
@@ -113,6 +116,7 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
     if (res) {
       invalidateWalletQueries(queryClient)
       invalidateTotalTvlQuery(trpc, queryClient)
+      invalidateDailyActiveUsersQuery(trpc, queryClient)
     }
   }
 
