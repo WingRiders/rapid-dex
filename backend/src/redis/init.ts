@@ -1,3 +1,4 @@
+import {emitInteractionUpdated} from '../interactionsUpdates'
 import {setAssetsAdaExchangeRates} from '../ogmios/exchangeRatesCache'
 import {setMempoolPoolOutputs} from '../ogmios/mempoolCache'
 import {
@@ -16,6 +17,7 @@ export const initRedisSubscriptions = async () => {
       PubSubChannel.POOL_CREATED,
       PubSubChannel.POOL_ROLLED_BACK,
       PubSubChannel.MEMPOOL_POOL_OUTPUTS_UPDATED,
+      PubSubChannel.INTERACTION_UPDATED,
       PubSubChannel.ASSETS_ADA_EXCHANGE_RATES_UPDATED,
     ],
     (payload) => {
@@ -33,6 +35,9 @@ export const initRedisSubscriptions = async () => {
       }
       if (payload.channel === PubSubChannel.MEMPOOL_POOL_OUTPUTS_UPDATED) {
         setMempoolPoolOutputs(payload.poolOutputs)
+      }
+      if (payload.channel === PubSubChannel.INTERACTION_UPDATED) {
+        emitInteractionUpdated(payload)
       }
       if (payload.channel === PubSubChannel.ASSETS_ADA_EXCHANGE_RATES_UPDATED) {
         setAssetsAdaExchangeRates(payload.assetsAdaExchangeRates)

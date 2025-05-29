@@ -80,6 +80,7 @@ services:
       - LOG_LEVEL=${BACKEND_LOG_LEVEL:-info}
       - MODE=${BACKEND_MODE:-both}
       - SERVER_PORT=${BACKEND_SERVER_PORT}
+      - NETWORK=${NETWORK:-mainnet}
       - DB=${DB:-wingriders}
       - DB_SCHEMA=${DB_SCHEMA:-rapid-dex}
       - DB_USER=${DB_USER:-wr}
@@ -103,8 +104,10 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=${FRONTEND_SERVER_PORT}
+      - NEXT_PUBLIC_NETWORK=${NETWORK:-mainnet}
       - SERVER_URL=${BACKEND_SERVER_URL}
       - NEXT_PUBLIC_SERVER_URL=${BACKEND_SERVER_PUBLIC_URL}
+      - NEXT_PUBLIC_SUBMIT_TX_METHOD=${NEXT_PUBLIC_SUBMIT_TX_METHOD}
 
 volumes:
   postgres:

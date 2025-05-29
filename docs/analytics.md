@@ -69,7 +69,7 @@ Each `PoolOutput` database entry has a `createdByStakeKeyHash` field, which is t
 When calculating the daily active users in the last 24 hours, we simply count the number of unique `createdByStakeKeyHash`es in the `PoolOutput` entries created in the last 24 hours:
 
 $$
-\text{DAU}(t) = | \{ \text{entry.createdByStakeKeyHash} \mid \text{entry} \in \text{PoolOutput}, t - 24h \leq \text{entry.createdAt} \leq t \} |
+\text{DAU}(t) = | \set{ \text{entry.createdByStakeKeyHash} \mid \text{entry} \in \text{PoolOutput}, t - 24h \leq \text{entry.createdAt} \leq t } |
 $$
 
 Where:
@@ -83,7 +83,7 @@ Where:
 The number of pools is calculated as the number of `PoolOutput` entries that are not spent (their `spendSlot` is set to `null`):
 
 $$
-\text{numberOfPools} = | \{ \text{entry} \mid \text{entry} \in \text{PoolOutput}, \text{entry.spendSlot} = \text{null} \} |
+\text{numberOfPools} = | \set{ \text{entry} \mid \text{entry} \in \text{PoolOutput}, \text{entry.spendSlot} = \text{null} } |
 $$
 
 Where:

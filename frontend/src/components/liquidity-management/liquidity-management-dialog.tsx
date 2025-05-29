@@ -47,6 +47,7 @@ export const LiquidityManagementDialog = ({
           <LiquidityManagementDialogContent
             pool={pool}
             portfolioItem={portfolioItem}
+            onOpenChange={onOpenChange}
           />
         )}
       </DialogContent>
@@ -57,11 +58,13 @@ export const LiquidityManagementDialog = ({
 type LiquidityManagementDialogContentProps = {
   pool: PoolsListItem
   portfolioItem?: PortfolioItem
+  onOpenChange?: (open: boolean) => void
 }
 
 const LiquidityManagementDialogContent = ({
   pool,
   portfolioItem,
+  onOpenChange,
 }: LiquidityManagementDialogContentProps) => {
   const isWalletConnected = useConnectedWalletStore(
     (state) => state.connectedWallet != null,
@@ -79,6 +82,10 @@ const LiquidityManagementDialogContent = ({
   const poolLabel = `${unitATicker} / ${unitBTicker}`
 
   const isInPortfolio = portfolioItem != null
+
+  const handleTxSubmittedModalClosed = () => {
+    onOpenChange?.(false)
+  }
 
   return (
     <DialogHeader>
@@ -158,11 +165,17 @@ const LiquidityManagementDialogContent = ({
           </TabsList>
 
           <TabsContent value={LiquidityManagementTab.ADD_LIQUIDITY}>
-            <AddLiquidityContent pool={pool} />
+            <AddLiquidityContent
+              pool={pool}
+              onTxSubmittedModalClosed={handleTxSubmittedModalClosed}
+            />
           </TabsContent>
           {isInPortfolio && (
             <TabsContent value={LiquidityManagementTab.WITHDRAW_LIQUIDITY}>
-              <WithdrawLiquidityContent portfolioItem={portfolioItem} />
+              <WithdrawLiquidityContent
+                portfolioItem={portfolioItem}
+                onTxSubmittedModalClosed={handleTxSubmittedModalClosed}
+              />
             </TabsContent>
           )}
         </Tabs>

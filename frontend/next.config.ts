@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
     config.experiments.asyncWebAssembly = true
     config.experiments.layers = true
     config.experiments.topLevelAwait = true
+    config.output = {
+      ...config.output,
+      environment: {
+        ...config.output?.environment,
+        asyncFunction: true,
+      },
+    }
     return config
   },
   images: {

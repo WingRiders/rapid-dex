@@ -4,6 +4,7 @@ import {isAssetInputValueNonEmpty} from '@/components/asset-input/helpers'
 import {AssetQuantity} from '@/components/asset-quantity'
 import {DataRows} from '@/components/data-rows'
 import {ErrorAlert} from '@/components/error-alert'
+import {PageContainer} from '@/components/page-container'
 import {TxSubmittedDialog} from '@/components/tx-submitted-dialog'
 import {Button} from '@/components/ui/button'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
@@ -131,7 +132,7 @@ const SwapPage = () => {
 
   const handleSwap = async () => {
     if (!buildSwapTxResult) return
-    const res = await signAndSubmitTx(buildSwapTxResult.builtTx)
+    const res = await signAndSubmitTx(buildSwapTxResult.builtTx, true)
     if (res) {
       invalidateWalletQueries(queryClient)
       invalidateVolumeQueries(trpc, queryClient)
@@ -148,7 +149,7 @@ const SwapPage = () => {
 
   return (
     <>
-      <div className="mx-auto mt-4 max-w-2xl px-4">
+      <PageContainer width="small">
         <h2 className="font-bold text-2xl">Swap</h2>
 
         <div className="relative mt-4 flex flex-col gap-1">
@@ -284,7 +285,7 @@ const SwapPage = () => {
             className="mt-2"
           />
         )}
-      </div>
+      </PageContainer>
 
       <TxSubmittedDialog
         txHash={submitTxMutationResult.data}

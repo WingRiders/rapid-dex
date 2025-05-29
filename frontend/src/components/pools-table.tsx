@@ -49,8 +49,10 @@ export const PoolsTable = ({
     pageSize: DEFAULT_PAGE_SIZE,
   })
 
-  const [liquidityManagementPool, setLiquidityManagementPool] =
-    useState<PoolsListItem | null>(null)
+  const [liquidityManagementItem, setLiquidityManagementItem] = useState<{
+    pool: PoolsListItem
+    portfolioItem?: PortfolioItem
+  } | null>(null)
 
   const columns: ColumnDef<PoolsListItem>[] = useMemo(
     () => [
@@ -148,7 +150,9 @@ export const PoolsTable = ({
               <Button
                 variant="outline"
                 size="default"
-                onClick={() => setLiquidityManagementPool(pool)}
+                onClick={() =>
+                  setLiquidityManagementItem({pool, portfolioItem})
+                }
               >
                 {isInPortfolio ? 'Manage liquidity' : 'Add liquidity'}{' '}
               </Button>
@@ -193,14 +197,10 @@ export const PoolsTable = ({
     <>
       <DataTable table={table} />
       <LiquidityManagementDialog
-        pool={liquidityManagementPool}
-        portfolioItem={
-          liquidityManagementPool
-            ? portfolioItems?.[liquidityManagementPool.shareAssetName]
-            : undefined
-        }
+        pool={liquidityManagementItem?.pool ?? null}
+        portfolioItem={liquidityManagementItem?.portfolioItem}
         onOpenChange={(open) => {
-          if (!open) setLiquidityManagementPool(null)
+          if (!open) setLiquidityManagementItem(null)
         }}
       />
     </>

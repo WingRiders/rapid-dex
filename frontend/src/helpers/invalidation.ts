@@ -1,5 +1,6 @@
 import type {TRPC} from '@/trpc/client'
 import type {QueryClient} from '@tanstack/react-query'
+import {sleep} from '@wingriders/rapid-dex-common'
 
 // Give BE some time to update the mempool/db
 const INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY = 1000
@@ -8,9 +9,7 @@ export const invalidateTotalTvlQuery = async (
   trpc: TRPC,
   queryClient: QueryClient,
 ) => {
-  await new Promise((resolve) =>
-    setTimeout(resolve, INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY),
-  )
+  await sleep(INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY)
   queryClient.invalidateQueries({queryKey: trpc.tvl.queryKey()})
 }
 
@@ -18,9 +17,7 @@ export const invalidateVolumeQueries = async (
   trpc: TRPC,
   queryClient: QueryClient,
 ) => {
-  await new Promise((resolve) =>
-    setTimeout(resolve, INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY),
-  )
+  await sleep(INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY)
   queryClient.invalidateQueries({
     queryKey: trpc.poolsVolume.queryKey({hoursOffset: 24}),
   })
@@ -33,8 +30,6 @@ export const invalidateDailyActiveUsersQuery = async (
   trpc: TRPC,
   queryClient: QueryClient,
 ) => {
-  await new Promise((resolve) =>
-    setTimeout(resolve, INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY),
-  )
+  await sleep(INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY)
   queryClient.invalidateQueries({queryKey: trpc.dailyActiveUsers.queryKey()})
 }

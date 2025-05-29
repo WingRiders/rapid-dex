@@ -17,7 +17,7 @@ import {
   useSignAndSubmitTxMutation,
 } from '@/wallet/queries'
 import {useQueryClient} from '@tanstack/react-query'
-import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import {LOVELACE_UNIT, sleep} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
 import {useEffect, useMemo, useState} from 'react'
@@ -39,10 +39,12 @@ const PERCENTAGES_PRESETS = [25, 50, 75, 100]
 
 type WithdrawLiquidityContentProps = {
   portfolioItem: PortfolioItem
+  onTxSubmittedModalClosed?: () => void
 }
 
 export const WithdrawLiquidityContent = ({
   portfolioItem,
+  onTxSubmittedModalClosed,
 }: WithdrawLiquidityContentProps) => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
@@ -147,8 +149,14 @@ export const WithdrawLiquidityContent = ({
 
   const handleWithdrawLiquidity = async () => {
     if (!buildWithdrawLiquidityTxResult) return
-    const res = await signAndSubmitTx(buildWithdrawLiquidityTxResult.builtTx)
+    const res = await signAndSubmitTx(
+      buildWithdrawLiquidityTxResult.builtTx,
+      true,
+    )
     if (res) {
+      setWithdrawingShares(new BigNumber(0))
+      // empty sleep so that the invalidations are triggered after the withdrawingShares update
+      await sleep(0)
       invalidateWalletQueries(queryClient)
       invalidateTotalTvlQuery(trpc, queryClient)
       invalidateDailyActiveUsersQuery(trpc, queryClient)
@@ -158,7 +166,7 @@ export const WithdrawLiquidityContent = ({
   const handleTxSubmittedDialogOpenChange = (open: boolean) => {
     if (!open) {
       resetSignAndSubmitTx()
-      setWithdrawingShares(new BigNumber(0))
+      onTxSubmittedModalClosed?.()
     }
   }
 

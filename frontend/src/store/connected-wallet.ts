@@ -2,7 +2,7 @@ import {env} from '@/config'
 import {queryKeyFactory} from '@/helpers/query-key'
 import {BrowserWallet} from '@meshsdk/core'
 import type {QueryClient} from '@tanstack/react-query'
-import {walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
+import {sleep, walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
 import {create} from 'zustand'
 import {persist} from 'zustand/middleware'
 import {
@@ -16,9 +16,7 @@ const WAIT_FOR_WALLET_EXTENSION_DELAY_MS = 300
 const waitForWalletExtension = async (walletId: string) => {
   for (let i = 0; i < WAIT_FOR_WALLET_EXTENSION_MAX_ATTEMPTS; i++) {
     if (window.cardano?.[walletId] != null) return true
-    await new Promise((resolve) =>
-      setTimeout(resolve, WAIT_FOR_WALLET_EXTENSION_DELAY_MS),
-    )
+    await sleep(WAIT_FOR_WALLET_EXTENSION_DELAY_MS)
   }
   return false
 }

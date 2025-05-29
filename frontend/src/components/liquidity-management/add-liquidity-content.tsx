@@ -33,9 +33,13 @@ import {
 
 type AddLiquidityContentProps = {
   pool: PoolsListItem
+  onTxSubmittedModalClosed?: () => void
 }
 
-export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
+export const AddLiquidityContent = ({
+  pool,
+  onTxSubmittedModalClosed,
+}: AddLiquidityContentProps) => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
 
@@ -112,8 +116,9 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
 
   const handleAddLiquidity = async () => {
     if (!buildAddLiquidityTxResult) return
-    const res = await signAndSubmitTx(buildAddLiquidityTxResult.builtTx)
+    const res = await signAndSubmitTx(buildAddLiquidityTxResult.builtTx, true)
     if (res) {
+      resetAddLiquidityForm()
       invalidateWalletQueries(queryClient)
       invalidateTotalTvlQuery(trpc, queryClient)
       invalidateDailyActiveUsersQuery(trpc, queryClient)
@@ -123,7 +128,7 @@ export const AddLiquidityContent = ({pool}: AddLiquidityContentProps) => {
   const handleTxSubmittedDialogOpenChange = (open: boolean) => {
     if (!open) {
       resetSignAndSubmitTx()
-      resetAddLiquidityForm()
+      onTxSubmittedModalClosed?.()
     }
   }
 

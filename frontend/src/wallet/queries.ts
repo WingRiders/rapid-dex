@@ -98,9 +98,9 @@ export const useSignTxMutation = () => {
 
   return useMutation({
     mutationKey: queryKeyFactory.signTx(),
-    mutationFn: async (tx: string) => {
+    mutationFn: async (args: {tx: string; partialSign?: boolean}) => {
       if (!wallet) throw new Error('Wallet not connected')
-      return wallet.signTx(tx)
+      return wallet.signTx(args.tx, args.partialSign)
     },
   })
 }
@@ -181,9 +181,9 @@ export const useSignAndSubmitTxMutation = () => {
   } = useSubmitTxMutation()
 
   const signAndSubmitTx = useCallback(
-    async (tx: string) => {
+    async (tx: string, partialSign?: boolean) => {
       try {
-        const signedTx = await signTx(tx)
+        const signedTx = await signTx({tx, partialSign})
         const txHash = await submitTx(signedTx)
         return {txHash}
       } catch {

@@ -1,4 +1,5 @@
 import type {Origin, Tip} from '@cardano-ogmios/schema'
+import {sleep} from '@wingriders/rapid-dex-common'
 import {secondsToMilliseconds} from 'date-fns'
 
 let chainSynced = false
@@ -19,6 +20,6 @@ export const waitUntilChainSynced = async (
   pollingInterval = secondsToMilliseconds(10),
 ) => {
   while (!isChainSynced()) {
-    await new Promise((resolve) => setTimeout(resolve, pollingInterval))
+    await sleep(pollingInterval)
   }
 }

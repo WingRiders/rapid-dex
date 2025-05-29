@@ -1,5 +1,6 @@
 'use client'
 
+import {PageContainer} from '@/components/page-container'
 import {Button} from '@/components/ui/button'
 import {ArrowLeftIcon} from 'lucide-react'
 import {useRouter} from 'next/navigation'
@@ -13,7 +14,7 @@ const PoolDetailsPage = ({
   const router = useRouter()
 
   return (
-    <div className="mx-auto mt-4 max-w-7xl px-4">
+    <PageContainer>
       <div className="flex flex-row flex-wrap items-center gap-3">
         <Button
           variant="outline"
@@ -30,7 +31,7 @@ const PoolDetailsPage = ({
         <h3 className="font-bold text-xl">Pool transactions</h3>
         <PoolInteractionsTable shareAssetName={params.shareAssetName} />
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

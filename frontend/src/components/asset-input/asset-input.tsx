@@ -92,19 +92,19 @@ export const AssetInput = ({
               <div className="flex flex-row items-center gap-2 text-gray-400">
                 <WalletIcon className="size-4" />
 
-                <p className="text-sm">
-                  {balanceState === 'loading' ? (
-                    <Skeleton className="h-5 w-28" />
-                  ) : balanceState === 'has-data' ? (
+                {balanceState === 'loading' ? (
+                  <Skeleton className="h-5 w-28" />
+                ) : balanceState === 'has-data' ? (
+                  <p className="text-sm">
                     <AssetQuantity
                       unit={value.unit}
                       quantity={selectedUnitBalance ?? new BigNumber(0)}
                       showTicker={false}
                     />
-                  ) : (
-                    '-'
-                  )}
-                </p>
+                  </p>
+                ) : (
+                  <p>-</p>
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent>Your balance</TooltipContent>

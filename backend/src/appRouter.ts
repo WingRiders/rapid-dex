@@ -16,7 +16,6 @@ import {
 import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
-import {isPoolTxInBlock} from './endpoints/transaction'
 import {getTvl} from './endpoints/tvl'
 import {getPoolsVolume, getVolume} from './endpoints/volume'
 import {interactionsUpdatesEventEmitterIterable} from './interactionsUpdates'
@@ -51,9 +50,6 @@ export const createServerRouter = () =>
     tokenMetadata: publicProcedure
       .input(z.string())
       .query(({input}) => getTokenMetadata(input)),
-    isPoolTxInBlock: publicProcedure
-      .input(z.object({txHash: z.string()}))
-      .query(({input}) => isPoolTxInBlock(input.txHash)),
     userInteractions: publicProcedure
       .input(
         z.object({

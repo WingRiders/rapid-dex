@@ -1,12 +1,13 @@
 import {Button} from '@/components/ui/button'
 
+import {PageContainer} from '@/components/page-container'
 import Link from 'next/link'
 import {PoolsInfo} from './pools-info'
 import {PoolsList} from './pools-list'
 
 const PoolsPage = () => {
   return (
-    <div className="mx-auto mt-4 max-w-7xl px-4">
+    <PageContainer>
       <div className="flex justify-between gap-2">
         <h2 className="font-bold text-2xl">Liquidity pools</h2>
 
@@ -22,7 +23,7 @@ const PoolsPage = () => {
       <div className="mt-4">
         <PoolsList />
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

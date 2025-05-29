@@ -15,6 +15,7 @@ import {
 } from '@/components/asset-input/helpers'
 import type {AssetInputItem} from '@/components/asset-input/types'
 import {ErrorAlert} from '@/components/error-alert'
+import {PageContainer} from '@/components/page-container'
 import {
   Accordion,
   AccordionContent,
@@ -179,7 +180,7 @@ const CreatePoolPage = () => {
 
   const handleCreatePool = async () => {
     if (!buildCreatePoolTxResult) return
-    const res = await signAndSubmitTx(buildCreatePoolTxResult.builtTx)
+    const res = await signAndSubmitTx(buildCreatePoolTxResult.builtTx, true)
     if (res) {
       invalidateWalletQueries(queryClient)
       invalidateTotalTvlQuery(trpc, queryClient)
@@ -199,7 +200,7 @@ const CreatePoolPage = () => {
 
   return (
     <>
-      <div className="mx-auto mt-4 max-w-2xl px-4">
+      <PageContainer width="small">
         <div className="flex flex-row flex-wrap items-center gap-3">
           <Button
             variant="outline"
@@ -440,7 +441,7 @@ const CreatePoolPage = () => {
             className="mt-2"
           />
         )}
-      </div>
+      </PageContainer>
 
       <TxSubmittedDialog
         txHash={submitTxMutationResult.data}
