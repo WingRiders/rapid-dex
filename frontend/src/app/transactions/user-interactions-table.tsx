@@ -1,8 +1,8 @@
+import {useQuery} from '@tanstack/react-query'
+import {Loader2} from 'lucide-react'
 import {ErrorAlert} from '@/components/error-alert'
 import {InteractionsTable} from '@/components/interactions/interactions-table'
 import {useTRPC} from '@/trpc/client'
-import {useQuery} from '@tanstack/react-query'
-import {Loader2} from 'lucide-react'
 
 type UserInteractionsTableProps = {
   stakeKeyHash: string

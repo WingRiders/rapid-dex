@@ -2,8 +2,8 @@ import {createChainSynchronizationClient} from '@cardano-ogmios/client'
 import type {BlockPraos, Origin, Point, Tip} from '@cardano-ogmios/schema'
 import {deserializeAddress} from '@meshsdk/core'
 import {
-  bigNumberToBigInt,
   bigintToBigNumber,
+  bigNumberToBigInt,
   createUnit,
   getUtxoId,
   poolDatumFromCbor,

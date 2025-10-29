@@ -1,7 +1,7 @@
 import {
+  flexRender,
   type Table as ReactTable,
   type RowData,
-  flexRender,
 } from '@tanstack/react-table'
 import {DataTablePagination} from './data-table-pagination'
 import {
@@ -13,8 +13,8 @@ import {
   TableRow,
 } from './table'
 
-declare module '@tanstack/table-core' {
-  // biome-ignore lint/correctness/noUnusedVariables: <explanation>
+declare module '@tanstack/react-table' {
+  // biome-ignore lint/correctness/noUnusedVariables: TData is not used in the ColumnMeta interface
   interface ColumnMeta<TData extends RowData, TValue> {
     width?: string
   }

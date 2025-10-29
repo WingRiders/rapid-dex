@@ -1,5 +1,18 @@
 'use client'
 
+import {useQueryClient} from '@tanstack/react-query'
+import {
+  isLovelaceUnit,
+  LOVELACE_UNIT,
+  poolOil,
+} from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
+import {ArrowLeftIcon} from 'lucide-react'
+import {useRouter} from 'next/navigation'
+import pluralize from 'pluralize'
+import {useEffect, useMemo} from 'react'
+import {Controller, useForm} from 'react-hook-form'
+import {NumericFormat} from 'react-number-format'
 import {computeSharesCreatePool} from '@//amm/create-pool'
 import {AssetQuantity} from '@//components/asset-quantity'
 import {DataRows} from '@//components/data-rows'
@@ -43,19 +56,6 @@ import {
   useWalletBalanceQuery,
   useWalletUtxosQuery,
 } from '@/wallet/queries'
-import {useQueryClient} from '@tanstack/react-query'
-import {
-  LOVELACE_UNIT,
-  isLovelaceUnit,
-  poolOil,
-} from '@wingriders/rapid-dex-common'
-import BigNumber from 'bignumber.js'
-import {ArrowLeftIcon} from 'lucide-react'
-import {useRouter} from 'next/navigation'
-import pluralize from 'pluralize'
-import {useEffect, useMemo} from 'react'
-import {Controller, useForm} from 'react-hook-form'
-import {NumericFormat} from 'react-number-format'
 import {useValidateCreatePoolForm} from './helpers'
 import type {CreatePoolFormInputs} from './types'
 
@@ -310,7 +310,7 @@ const CreatePoolPage = () => {
             <div>
               <Button
                 size="lg"
-                className=" w-full"
+                className="w-full"
                 loading={isLoadingBuildTx || isSigningAndSubmittingTx}
                 disabled={
                   isLoadingBuildTx ||

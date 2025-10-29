@@ -1,10 +1,10 @@
 'use client'
 
-import {wsOnDataDebugLog} from '@/helpers/logger'
-import {useTRPC} from '@/trpc/client'
 import {useQueryClient} from '@tanstack/react-query'
 import {useSubscription} from '@trpc/tanstack-react-query'
 import {sortPools} from '@wingriders/rapid-dex-common'
+import {wsOnDataDebugLog} from '@/helpers/logger'
+import {useTRPC} from '@/trpc/client'
 
 export const LivePoolsUpdate = () => {
   const trpc = useTRPC()

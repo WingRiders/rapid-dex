@@ -32,7 +32,7 @@ export const useClipboard = (
     [isCopiedTime],
   )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:
+  // biome-ignore lint/correctness/useExhaustiveDependencies: We need text in the dependencies
   useEffect(() => {
     return () => setIsCopied(false)
   }, [setIsCopied, text])

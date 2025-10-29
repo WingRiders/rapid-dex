@@ -1,15 +1,17 @@
 'use client'
 
-import {PageContainer} from '@/components/page-container'
-import {Button} from '@/components/ui/button'
 import {ArrowLeftIcon} from 'lucide-react'
 import {useRouter} from 'next/navigation'
 import {use} from 'react'
+import {PageContainer} from '@/components/page-container'
+import {Button} from '@/components/ui/button'
 import {PoolInteractionsTable} from './pool-interactions-table'
 
 const PoolDetailsPage = ({
   params: paramsPromise,
-}: {params: Promise<{shareAssetName: string}>}) => {
+}: {
+  params: Promise<{shareAssetName: string}>
+}) => {
   const params = use(paramsPromise)
   const router = useRouter()
 

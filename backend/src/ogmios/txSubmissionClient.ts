@@ -1,6 +1,6 @@
 import {
-  type TransactionSubmission,
   createTransactionSubmissionClient,
+  type TransactionSubmission,
 } from '@cardano-ogmios/client'
 import {getOgmiosContext} from './ogmios'
 

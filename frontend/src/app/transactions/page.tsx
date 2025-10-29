@@ -1,11 +1,11 @@
 'use client'
 
-import {ErrorAlert} from '@/components/error-alert'
-import {useConnectedWalletStore} from '@/store/connected-wallet'
 import {deserializeAddress} from '@meshsdk/core'
 import {Loader2} from 'lucide-react'
 import {redirect} from 'next/navigation'
 import {useShallow} from 'zustand/shallow'
+import {ErrorAlert} from '@/components/error-alert'
+import {useConnectedWalletStore} from '@/store/connected-wallet'
 import {UserInteractionsTable} from './user-interactions-table'
 
 const TransactionsPage = () => {

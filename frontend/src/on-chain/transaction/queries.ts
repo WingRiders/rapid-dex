@@ -1,6 +1,6 @@
-import {queryKeyFactory} from '@/helpers/query-key'
 import {skipToken, useQuery} from '@tanstack/react-query'
 import {useShallow} from 'zustand/shallow'
+import {queryKeyFactory} from '@/helpers/query-key'
 import {useConnectedWalletStore} from '../../store/connected-wallet'
 import {
   type BuildAddLiquidityTxArgs,

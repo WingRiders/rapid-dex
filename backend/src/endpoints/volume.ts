@@ -17,6 +17,7 @@ import {getMempoolPoolOutputsForPool} from '../ogmios/mempoolCache'
 export const getPoolsVolume = async (hoursOffset: number) => {
   const fromSlot = Number.parseInt(
     resolveSlotNo(config.NETWORK, addHours(new Date(), -hoursOffset).getTime()),
+    10,
   )
 
   const [allDbPools, dbVolumes] = await Promise.all([

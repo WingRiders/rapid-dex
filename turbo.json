@@ -7,10 +7,12 @@
       "env": ["NODE_ENV"]
     },
     "check": {
-      "dependsOn": ["prisma:generate", "^build"]
+      "dependsOn": ["prisma:generate", "^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/biome.json"]
     },
     "fix": {
-      "dependsOn": ["prisma:generate", "^build"]
+      "dependsOn": ["prisma:generate", "^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/biome.json"]
     },
     "test": {
       "dependsOn": ["prisma:generate", "^build"]

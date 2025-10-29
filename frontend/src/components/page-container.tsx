@@ -1,6 +1,6 @@
-import {cn} from '@/lib/utils'
-import {type VariantProps, cva} from 'class-variance-authority'
+import {cva, type VariantProps} from 'class-variance-authority'
 import type {ReactNode} from 'react'
+import {cn} from '@/lib/utils'
 
 const pageContainerVariants = cva('mx-auto my-4 px-4', {
   variants: {

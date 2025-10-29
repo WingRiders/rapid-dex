@@ -1,7 +1,7 @@
-import type {WalletBalanceState} from '@/wallet/queries'
 import type {Unit} from '@meshsdk/core'
 import {ChevronDownIcon} from 'lucide-react'
 import {useState} from 'react'
+import type {WalletBalanceState} from '@/wallet/queries'
 import {cn} from '../../lib/utils'
 import {UnitDisplay} from '../unit-display'
 import type {AssetInputItem} from './types'

@@ -1,7 +1,7 @@
 import {isEmpty} from 'lodash'
 import {isOnlyAggregatorMode} from '../config'
 import type {PoolOutput} from '../db/prismaClient'
-import {RedisKey, getRedisValue, setRedisValue} from '../redis/kv'
+import {getRedisValue, RedisKey, setRedisValue} from '../redis/kv'
 import {PubSubChannel, publishToPubSub} from '../redis/pubsub'
 
 export type MempoolPoolOutput = Omit<

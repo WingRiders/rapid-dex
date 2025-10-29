@@ -1,9 +1,9 @@
 import {describe, expect, it} from 'bun:test'
+import {BigNumber} from 'bignumber.js'
 import {
   type BuildCreatePoolTxArgs,
   buildCreatePoolTx,
 } from '@/on-chain/transaction/create-pool'
-import {BigNumber} from 'bignumber.js'
 import {
   assetA,
   assetB,

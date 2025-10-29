@@ -1,5 +1,5 @@
 import type {Unit} from '@meshsdk/core'
-import {type PoolState, isLovelaceUnit} from '@wingriders/rapid-dex-common'
+import {isLovelaceUnit, type PoolState} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {ADA_THRESHOLD_TO_IGNORE_EXCHANGE_RATE} from '../constants'
 

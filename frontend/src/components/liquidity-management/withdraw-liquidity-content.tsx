@@ -1,3 +1,10 @@
+import {useQueryClient} from '@tanstack/react-query'
+import {LOVELACE_UNIT, sleep} from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
+import {compact} from 'lodash'
+import {useEffect, useMemo, useState} from 'react'
+import {NumericFormat} from 'react-number-format'
+import {useDebounce} from 'use-debounce'
 import {computeReturnedTokens} from '@/amm/withdraw-liquidity'
 import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
 import {formatPercentage} from '@/helpers/format-percentage'
@@ -16,13 +23,6 @@ import {
   invalidateWalletQueries,
   useSignAndSubmitTxMutation,
 } from '@/wallet/queries'
-import {useQueryClient} from '@tanstack/react-query'
-import {LOVELACE_UNIT, sleep} from '@wingriders/rapid-dex-common'
-import BigNumber from 'bignumber.js'
-import {compact} from 'lodash'
-import {useEffect, useMemo, useState} from 'react'
-import {NumericFormat} from 'react-number-format'
-import {useDebounce} from 'use-debounce'
 import {AssetQuantity} from '../asset-quantity'
 import {DataRows} from '../data-rows'
 import {ErrorAlert} from '../error-alert'
@@ -242,7 +242,7 @@ export const WithdrawLiquidityContent = ({
             <div>
               <Button
                 size="lg"
-                className=" w-full"
+                className="w-full"
                 loading={
                   isLoadingBuildTx ||
                   isSigningAndSubmittingTx ||

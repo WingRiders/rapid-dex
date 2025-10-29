@@ -1,4 +1,9 @@
 'use client'
+import {skipToken, useQueryClient} from '@tanstack/react-query'
+import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import {compact} from 'lodash'
+import {ArrowDownUpIcon} from 'lucide-react'
+import {useEffect, useMemo} from 'react'
 import {AssetInput} from '@/components/asset-input/asset-input'
 import {isAssetInputValueNonEmpty} from '@/components/asset-input/helpers'
 import {AssetQuantity} from '@/components/asset-quantity'
@@ -21,11 +26,6 @@ import {
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
 } from '@/wallet/queries'
-import {skipToken, useQueryClient} from '@tanstack/react-query'
-import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
-import {compact} from 'lodash'
-import {ArrowDownUpIcon} from 'lucide-react'
-import {useEffect, useMemo} from 'react'
 import {getSwapFormInputItems, poolsToUnits} from './helpers'
 import {RouteSelectButton} from './route-select-button'
 import {useSwapForm, useValidateSwapForm} from './swap-form'
@@ -189,7 +189,7 @@ const SwapPage = () => {
             <div>
               <Button
                 size="lg"
-                className=" w-full"
+                className="w-full"
                 loading={
                   isLoadingBuildTx ||
                   isSigningAndSubmittingTx ||

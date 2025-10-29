@@ -1,4 +1,4 @@
-import {type UTxO, deserializeDatum} from '@meshsdk/core'
+import {deserializeDatum, type UTxO} from '@meshsdk/core'
 import {z} from 'zod'
 import type {PoolDatum} from '../onChain'
 

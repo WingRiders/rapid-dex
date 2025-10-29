@@ -1,7 +1,7 @@
-import {useTRPC} from '@/trpc/client'
 import {useQuery} from '@tanstack/react-query'
 import Link from 'next/link'
 import pluralize from 'pluralize'
+import {useTRPC} from '@/trpc/client'
 import {Tooltip, TooltipContent, TooltipTrigger} from './ui/tooltip'
 
 const MAX_TXS_NUMBER_TO_SHOW = 9

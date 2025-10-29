@@ -1,7 +1,7 @@
-import {Button} from '@/components/ui/button'
+import Link from 'next/link'
 
 import {PageContainer} from '@/components/page-container'
-import Link from 'next/link'
+import {Button} from '@/components/ui/button'
 import {PoolsInfo} from './pools-info'
 import {PoolsList} from './pools-list'
 

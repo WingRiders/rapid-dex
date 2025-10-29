@@ -1,10 +1,15 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.3.1/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "files": {
-    "ignore": ["bun.lock", "dist", "node_modules", ".next"]
+    "includes": [
+      "**",
+      "!**/bun.lock",
+      "!**/dist",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/.turbo"
+    ]
   },
   "formatter": {
     "indentStyle": "space"
@@ -22,13 +27,12 @@
           "level": "warn"
         },
         "noUnusedImports": {
-          "level": "warn"
+          "level": "warn",
+          "fix": "safe"
         }
       },
       "suspicious": {
-        "noExplicitAny": {
-          "level": "off"
-        },
+        "noExplicitAny": {},
         "noConsole": {
           "level": "warn",
           "options": {
@@ -61,7 +65,7 @@
   },
   "overrides": [
     {
-      "include": ["cli/createReferenceScriptUtxo.ts"],
+      "includes": ["**/cli/createReferenceScriptUtxo.ts"],
       "linter": {
         "rules": {
           "suspicious": {

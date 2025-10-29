@@ -1,10 +1,9 @@
 'use client'
 
-import {env} from '@/config'
 import {
+  isServer,
   type QueryClient,
   QueryClientProvider,
-  isServer,
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {
@@ -17,10 +16,11 @@ import {
 import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
 import {useState} from 'react'
 import SuperJSON from 'superjson'
+import {env} from '@/config'
 import {TRPCProvider} from '../trpc/client'
 import {makeQueryClient} from '../trpc/query-client'
 
-let browserQueryClient: QueryClient | undefined = undefined
+let browserQueryClient: QueryClient | undefined
 
 const wsClient: ReturnType<typeof createWSClient> | undefined = isServer
   ? undefined

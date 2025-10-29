@@ -1,3 +1,8 @@
+import {useQueryClient} from '@tanstack/react-query'
+import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
+import {compact} from 'lodash'
+import {useEffect, useMemo} from 'react'
 import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
 import {
@@ -14,11 +19,6 @@ import {
   useSignAndSubmitTxMutation,
   useWalletBalanceQuery,
 } from '@/wallet/queries'
-import {useQueryClient} from '@tanstack/react-query'
-import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
-import BigNumber from 'bignumber.js'
-import {compact} from 'lodash'
-import {useEffect, useMemo} from 'react'
 import {AssetInput} from '../asset-input/asset-input'
 import {AssetQuantity} from '../asset-quantity'
 import {DataRows} from '../data-rows'
@@ -181,7 +181,7 @@ export const AddLiquidityContent = ({
             <div>
               <Button
                 size="lg"
-                className=" w-full"
+                className="w-full"
                 loading={
                   isLoadingBuildTx ||
                   isSigningAndSubmittingTx ||

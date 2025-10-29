@@ -1,6 +1,6 @@
-import type {TRPC} from '@/trpc/client'
 import type {QueryClient} from '@tanstack/react-query'
 import {sleep} from '@wingriders/rapid-dex-common'
+import type {TRPC} from '@/trpc/client'
 
 // Give BE some time to update the mempool/db
 const INVALIDATE_QUERY_AFTER_TX_SUBMISSION_DELAY = 1000

@@ -1,6 +1,6 @@
-import type {WalletBalanceState} from '@/wallet/queries'
 import {useVirtualizer} from '@tanstack/react-virtual'
 import {useRef} from 'react'
+import type {WalletBalanceState} from '@/wallet/queries'
 import {AssetQuantity} from '../asset-quantity'
 import {
   Dialog,
@@ -120,7 +120,7 @@ const UnitSelectDialogContent = ({
           </div>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <p className="text-center text-gray-400 ">
+            <p className="text-center text-gray-400">
               {(items == null ? noItemsMessage : emptyItemsMessage) ??
                 'No items'}
             </p>

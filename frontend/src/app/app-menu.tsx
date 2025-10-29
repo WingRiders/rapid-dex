@@ -1,13 +1,13 @@
 'use client'
 
+import {deserializeAddress} from '@meshsdk/core'
+import Link from 'next/link'
+import {usePathname} from 'next/navigation'
 import {ConnectWalletButton} from '@/components/connect-wallet/connect-wallet-button'
 import {Badge} from '@/components/ui/badge'
 import {UnconfirmedTxsCounter} from '@/components/unconfirmed-txs-counter'
 import {env} from '@/config'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
-import {deserializeAddress} from '@meshsdk/core'
-import Link from 'next/link'
-import {usePathname} from 'next/navigation'
 import {cn} from '../lib/utils'
 
 export const AppMenu = () => {

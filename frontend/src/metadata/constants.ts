@@ -1,5 +1,5 @@
-import {env} from '@/config'
 import type {TokenMetadata} from '@wingriders/rapid-dex-common'
+import {env} from '@/config'
 
 export const ADA_METADATA: TokenMetadata = {
   ...(env('NEXT_PUBLIC_NETWORK') === 'preprod'

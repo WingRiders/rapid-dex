@@ -1,5 +1,3 @@
-import {env} from '@/config'
-import {queryKeyFactory} from '@/helpers/query-key'
 import {BrowserWallet} from '@meshsdk/core'
 import {
   type QueryClient,
@@ -12,6 +10,8 @@ import BigNumber from 'bignumber.js'
 import {partition} from 'lodash'
 import {useCallback} from 'react'
 import {useShallow} from 'zustand/shallow'
+import {env} from '@/config'
+import {queryKeyFactory} from '@/helpers/query-key'
 import {prefetchTokensMetadata} from '../metadata/queries'
 import {useConnectedWalletStore} from '../store/connected-wallet'
 import {useTRPC} from '../trpc/client'

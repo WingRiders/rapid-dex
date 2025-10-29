@@ -1,10 +1,10 @@
+import type {PoolState} from '@wingriders/rapid-dex-common'
+import BigNumber from 'bignumber.js'
+import {useCallback, useMemo, useState} from 'react'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
 import type {PoolsListItem} from '@/types'
 import {useWalletBalanceQuery} from '@/wallet/queries'
-import type {PoolState} from '@wingriders/rapid-dex-common'
-import BigNumber from 'bignumber.js'
-import {useCallback, useMemo, useState} from 'react'
 
 const getPoolRatio = (poolState: Pick<PoolState, 'qtyA' | 'qtyB'>) =>
   poolState.qtyA.div(poolState.qtyB)

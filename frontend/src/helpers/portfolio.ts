@@ -1,10 +1,10 @@
-import {useConnectedWalletStore} from '@/store/connected-wallet'
-import type {PoolsListItem} from '@/types'
-import {useWalletBalanceQuery} from '@/wallet/queries'
 import {skipToken, useQuery} from '@tanstack/react-query'
 import {createUnit, poolValidatorHash} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {compact, keyBy} from 'lodash'
+import {useConnectedWalletStore} from '@/store/connected-wallet'
+import type {PoolsListItem} from '@/types'
+import {useWalletBalanceQuery} from '@/wallet/queries'
 import {usePoolsQuery} from './pool'
 import {queryKeyFactory} from './query-key'
 

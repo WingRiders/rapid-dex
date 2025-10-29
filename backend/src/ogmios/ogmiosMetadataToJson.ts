@@ -1,6 +1,6 @@
 import type {MetadatumDetailedSchema, Transaction} from '@cardano-ogmios/schema'
 import {mapValues} from 'lodash'
-import {P, match} from 'ts-pattern'
+import {match, P} from 'ts-pattern'
 
 export const ogmiosMetadataToJson = (transaction: Transaction) => {
   const metadataLabels = transaction.metadata?.labels

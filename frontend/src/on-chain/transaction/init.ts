@@ -1,12 +1,12 @@
-import {calculateTtl} from '@/on-chain/transaction/ttl'
 import type {IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import {
+  deserializeAddress,
   MeshTxBuilder,
   OfflineFetcher,
   type UTxO,
-  deserializeAddress,
 } from '@meshsdk/core'
 import {matchUtxo, walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
+import {calculateTtl} from '@/on-chain/transaction/ttl'
 import {getWalletCollateralUtxo} from '../collateral'
 
 type InitTxBuilderArgs = {

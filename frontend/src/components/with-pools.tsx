@@ -1,10 +1,10 @@
+import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
+import {uniq} from 'lodash'
+import type {ReactNode} from 'react'
 import {HydrateClient} from '@/components/hydrate-client'
 import {LivePoolsUpdate} from '@/components/live-pools-update'
 import {prefetchTokensMetadata} from '@/metadata/queries'
 import {getQueryClient, getServerTrpc} from '@/trpc/server'
-import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
-import {uniq} from 'lodash'
-import type {ReactNode} from 'react'
 
 type WithPoolsProps = {
   children?: ReactNode

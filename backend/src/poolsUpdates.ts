@@ -1,9 +1,9 @@
 import EventEmitter, {on} from 'node:events'
 import type {UTxO} from '@meshsdk/core'
 import {
-  type PoolState,
   createUnit,
   isLovelaceUnit,
+  type PoolState,
 } from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {dbPoolOutputToPoolState, dbPoolOutputToUtxo} from './db/helpers'

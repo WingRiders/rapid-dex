@@ -5,8 +5,8 @@ import type {
 } from '@cardano-ogmios/schema'
 import {deserializeAddress} from '@meshsdk/core'
 import {
-  bigNumberToBigInt,
   bigintToBigNumber,
+  bigNumberToBigInt,
   createUnit,
   getUtxoId,
   poolDatumFromCbor,
@@ -27,10 +27,10 @@ import {waitUntilChainSynced} from './chainSyncStatus'
 import {updateAdaExchangeRateForPool} from './exchangeRatesCache'
 import {getSpentPoolInteractionType, isPoolOutput} from './helpers'
 import {
-  type MempoolPoolOutput,
-  type MempoolPoolOutputs,
   clearMempoolPoolOutputs,
   getMempoolPoolOutputsForPool,
+  type MempoolPoolOutput,
+  type MempoolPoolOutputs,
   updateMempoolPoolOutputs,
   updateMempoolPoolOutputsForPool,
 } from './mempoolCache'
@@ -101,7 +101,7 @@ export const startMempoolMonitoring = async () => {
 
     updateMempoolPoolOutputs(newMempoolPoolOutputs)
 
-    Object.keys(newMempoolPoolOutputs).map((shareAssetName) => {
+    Object.keys(newMempoolPoolOutputs).forEach((shareAssetName) => {
       const poolOutputsForPool = newMempoolPoolOutputs[shareAssetName]
       if (!poolOutputsForPool || poolOutputsForPool.length === 0) return
 

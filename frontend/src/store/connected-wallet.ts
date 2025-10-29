@@ -1,10 +1,10 @@
-import {env} from '@/config'
-import {queryKeyFactory} from '@/helpers/query-key'
 import {BrowserWallet} from '@meshsdk/core'
 import type {QueryClient} from '@tanstack/react-query'
 import {sleep, walletNetworkIdToNetwork} from '@wingriders/rapid-dex-common'
 import {create} from 'zustand'
 import {persist} from 'zustand/middleware'
+import {env} from '@/config'
+import {queryKeyFactory} from '@/helpers/query-key'
 import {
   type SupportedWalletType,
   supportedWalletsInfo,

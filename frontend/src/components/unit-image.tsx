@@ -1,7 +1,7 @@
-import {env} from '@/config'
 import type {Unit} from '@meshsdk/core'
-import {type TokenMetadata, isLovelaceUnit} from '@wingriders/rapid-dex-common'
+import {isLovelaceUnit, type TokenMetadata} from '@wingriders/rapid-dex-common'
 import {CircleHelpIcon} from 'lucide-react'
+import {env} from '@/config'
 import {cn} from '../lib/utils'
 
 type UnitImageProps = {
@@ -35,6 +35,7 @@ export const UnitImage = ({
     )
 
   return (
+    // biome-ignore lint/performance/noImgElement: We don't want to use Next.js Image component here
     <img
       key={unit}
       src={`${env('NEXT_PUBLIC_SERVER_URL')}/token-image/${unit}`}

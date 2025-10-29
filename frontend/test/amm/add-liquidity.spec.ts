@@ -1,9 +1,9 @@
 import {describe, expect, it} from 'bun:test'
+import BigNumber from 'bignumber.js'
 import {
   type ComputeEarnedSharesParams,
   computeEarnedShares,
 } from '@/amm/add-liquidity'
-import BigNumber from 'bignumber.js'
 
 describe('computeEarnedShares', () => {
   const testCases: {

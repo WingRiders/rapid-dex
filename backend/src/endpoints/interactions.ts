@@ -1,11 +1,11 @@
 import {
+  bigintToBigNumber,
+  burnedShareTokens,
+  createUnit,
   type Interaction,
   type InteractionSpecificFields,
   type InteractionSpecificFieldsWithType,
   InteractionType,
-  bigintToBigNumber,
-  burnedShareTokens,
-  createUnit,
   maxShareTokens,
   parseUtxoId,
   sortInteractions,
@@ -17,9 +17,9 @@ import {
   prisma,
 } from '../db/prismaClient'
 import {
-  type MempoolPoolOutput,
   getMempoolPoolOutputsForPool,
   getMempoolPoolOutputsForStakeKeyHash,
+  type MempoolPoolOutput,
 } from '../ogmios/mempoolCache'
 
 export const getUserInteractions = async (

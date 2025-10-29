@@ -1,15 +1,15 @@
 import 'server-only'
 
-import {env} from '@/config'
 import {createTRPCClient, httpBatchLink} from '@trpc/client'
 import {
-  type TRPCQueryOptions,
   createTRPCOptionsProxy,
+  type TRPCQueryOptions,
 } from '@trpc/tanstack-react-query'
 import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
 import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
 import {cache} from 'react'
 import SuperJSON from 'superjson'
+import {env} from '@/config'
 import type {TRPC} from './client'
 import {makeQueryClient} from './query-client'
 

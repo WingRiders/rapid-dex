@@ -1,7 +1,7 @@
+import {Loader2} from 'lucide-react'
 import {ErrorAlert} from '@/components/error-alert'
 import {InteractionsTable} from '@/components/interactions/interactions-table'
 import {useLivePoolInteractionsQuery} from '@/helpers/pool'
-import {Loader2} from 'lucide-react'
 
 type PoolInteractionsTableProps = {
   shareAssetName: string

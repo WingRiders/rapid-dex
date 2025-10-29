@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'bun:test'
-import {computeSharesCreatePool} from '@/amm/create-pool'
-import type {ComputeSharesCreatePoolParams} from '@/amm/create-pool'
 import BigNumber from 'bignumber.js'
+import type {ComputeSharesCreatePoolParams} from '@/amm/create-pool'
+import {computeSharesCreatePool} from '@/amm/create-pool'
 
 describe('computeSharesCreatePool', () => {
   const testCases: {

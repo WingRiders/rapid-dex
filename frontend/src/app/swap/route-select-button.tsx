@@ -1,10 +1,10 @@
+import {ChevronDownIcon} from 'lucide-react'
+import {useState} from 'react'
 import {computeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
-import {ChevronDownIcon} from 'lucide-react'
-import {useState} from 'react'
 import {RouteSelectDialog} from './route-select-dialog'
 import type {AvailableRoute} from './swap-form'
 

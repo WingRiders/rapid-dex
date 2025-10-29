@@ -1,14 +1,13 @@
 'use client'
 
-import {queryKeyFactory} from '@/helpers/query-key'
-import {useConnectedWalletStore} from '@/store/connected-wallet'
 import {BrowserWallet} from '@meshsdk/core'
-
-import {supportedWalletsInfo} from '@/wallet/supported-wallets'
 import {useQueryClient} from '@tanstack/react-query'
 import {useEffect} from 'react'
 import {toast} from 'sonner'
 import {useShallow} from 'zustand/shallow'
+import {queryKeyFactory} from '@/helpers/query-key'
+import {useConnectedWalletStore} from '@/store/connected-wallet'
+import {supportedWalletsInfo} from '@/wallet/supported-wallets'
 
 /**
  * This component:
@@ -107,5 +106,5 @@ export const WalletStateHandler = () => {
     queryClient,
   ])
 
-  return <></>
+  return null
 }

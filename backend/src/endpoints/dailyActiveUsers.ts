@@ -7,6 +7,7 @@ import {getMempoolPoolOutputs} from '../ogmios/mempoolCache'
 export const getDailyActiveUsers = async () => {
   const fromSlot = Number.parseInt(
     resolveSlotNo(config.NETWORK, addDays(new Date(), -1).getTime()),
+    10,
   )
 
   const dbStakeKeyHashes = await prisma.poolOutput.findMany({

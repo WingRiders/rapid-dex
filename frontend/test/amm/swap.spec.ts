@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'bun:test'
-import {type ComputeNewReservesParams, computeNewReserves} from '@/amm/swap'
 import BigNumber from 'bignumber.js'
+import {type ComputeNewReservesParams, computeNewReserves} from '@/amm/swap'
 
 describe('computeNewReserves', () => {
   const params = {

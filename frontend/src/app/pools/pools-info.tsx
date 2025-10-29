@@ -1,14 +1,14 @@
 'use client'
 
+import {useQuery} from '@tanstack/react-query'
+import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import {InfoIcon} from 'lucide-react'
+import type {ReactNode} from 'react'
 import {AssetQuantity} from '@/components/asset-quantity'
 import {Skeleton} from '@/components/ui/skeleton'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
 import {usePoolsQuery} from '@/helpers/pool'
 import {useTRPC} from '@/trpc/client'
-import {useQuery} from '@tanstack/react-query'
-import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
-import {InfoIcon} from 'lucide-react'
-import type {ReactNode} from 'react'
 
 export const PoolsInfo = () => {
   return (

@@ -1,10 +1,10 @@
+import type {ReactNode} from 'react'
 import {AssetQuantity} from '@/components/asset-quantity'
 import {UnitPairDisplay} from '@/components/unit-pair-display'
 import {computeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {cn} from '@/lib/utils'
 import type {PoolsListItem} from '@/types'
-import type {ReactNode} from 'react'
 import type {AvailableRoute} from './swap-form'
 
 type RouteSelectItemProps = {
@@ -98,7 +98,7 @@ export const RouteSelectItem = ({
       </div>
 
       {isRouteInvalid && (
-        <p className="text-red-200 text-sm ">
+        <p className="text-red-200 text-sm">
           This pool cannot satisfy the swap amount.
         </p>
       )}

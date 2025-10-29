@@ -1,6 +1,5 @@
 'use client'
 
-import type {TRPC} from '@/trpc/client'
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -13,6 +12,7 @@ import type {Dictionary} from 'lodash'
 import {ArrowDownUp} from 'lucide-react'
 import Link from 'next/link'
 import {useMemo, useState} from 'react'
+import type {TRPC} from '@/trpc/client'
 import {getSwapUrl} from '../app/swap/search-params'
 import {DEFAULT_PAGE_SIZE} from '../constants'
 import type {PortfolioItem} from '../helpers/portfolio'

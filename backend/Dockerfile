@@ -1,4 +1,4 @@
-FROM oven/bun:1.2.8 AS base
+FROM oven/bun:1.3.1 AS base
 WORKDIR /app
 
 # This will cache installed dependencies and speed up future builds

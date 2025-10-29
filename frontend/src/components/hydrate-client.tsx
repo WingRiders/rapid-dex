@@ -1,4 +1,4 @@
-import {HydrationBoundary, dehydrate} from '@tanstack/react-query'
+import {dehydrate, HydrationBoundary} from '@tanstack/react-query'
 import type {ReactNode} from 'react'
 import {getQueryClient} from '../trpc/server'
 

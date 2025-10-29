@@ -1,8 +1,3 @@
-import {env} from '@/config'
-import {DEFAULT_PAGE_SIZE} from '@/constants'
-import {CardanoscanLinks} from '@/helpers/explorer-links'
-import {formatDateTime} from '@/helpers/format-date'
-import {shortLabel} from '@/helpers/short-label'
 import {SLOT_CONFIG_NETWORK, slotToBeginUnixTime} from '@meshsdk/core'
 import {
   type ColumnDef,
@@ -13,6 +8,11 @@ import {
 import type {Interaction} from '@wingriders/rapid-dex-common'
 import {ExternalLinkIcon, Loader2} from 'lucide-react'
 import {useMemo, useState} from 'react'
+import {env} from '@/config'
+import {DEFAULT_PAGE_SIZE} from '@/constants'
+import {CardanoscanLinks} from '@/helpers/explorer-links'
+import {formatDateTime} from '@/helpers/format-date'
+import {shortLabel} from '@/helpers/short-label'
 import {DataTable} from '../ui/data-table'
 import {UnitPairDisplay} from '../unit-pair-display'
 import {InteractionEvent} from './interaction-event'
@@ -71,16 +71,14 @@ export const InteractionsTable = ({interactions}: InteractionsTableProps) => {
           },
         }) =>
           slot != null ? (
-            <>
-              {formatDateTime(
-                new Date(
-                  slotToBeginUnixTime(
-                    slot,
-                    SLOT_CONFIG_NETWORK[env('NEXT_PUBLIC_NETWORK')],
-                  ),
+            formatDateTime(
+              new Date(
+                slotToBeginUnixTime(
+                  slot,
+                  SLOT_CONFIG_NETWORK[env('NEXT_PUBLIC_NETWORK')],
                 ),
-              )}
-            </>
+              ),
+            )
           ) : (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
