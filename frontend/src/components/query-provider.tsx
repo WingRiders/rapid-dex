@@ -13,7 +13,7 @@ import {
   splitLink,
   wsLink,
 } from '@trpc/client'
-import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
+import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/app-router'
 import {useState} from 'react'
 import SuperJSON from 'superjson'
 import {env} from '@/config'

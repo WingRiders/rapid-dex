@@ -1,6 +1,6 @@
 import SuperJSON from 'superjson'
 import {logger} from '../logger'
-import type {MempoolPoolOutputs} from '../ogmios/mempoolCache'
+import type {MempoolPoolOutputs} from '../ogmios/mempool-cache'
 import {getRedisClient} from './client'
 
 export enum RedisKey {

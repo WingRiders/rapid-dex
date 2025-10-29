@@ -1,5 +1,5 @@
 import {Command} from 'commander'
-import {createReferenceScriptUtxo} from '@/cli/createReferenceScriptUtxo'
+import {createReferenceScriptUtxo} from '@/cli/create-reference-script-utxo'
 import {NetworkId} from '@/helpers/wallet'
 
 const program = new Command()

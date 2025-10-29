@@ -5,12 +5,12 @@ import {
   type PoolState,
 } from '@wingriders/rapid-dex-common'
 import {isOnlyAggregatorMode} from '../config'
-import {prisma} from '../db/prismaClient'
+import {prisma} from '../db/prisma-client'
 import {
   type AssetsAdaExchangeRates,
   calculateAssetsAdaExchangeRates,
   calculateExchangeRateForPool,
-} from '../helpers/exchangeRates'
+} from '../helpers/exchange-rates'
 import {PubSubChannel, publishToPubSub} from '../redis/pubsub'
 
 /** Caching exchange rates so that they can be used when emitting pools updates */

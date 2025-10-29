@@ -7,10 +7,10 @@ import {
 } from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {dbPoolOutputToPoolState, dbPoolOutputToUtxo} from './db/helpers'
-import {prisma} from './db/prismaClient'
+import {prisma} from './db/prisma-client'
 import type {getPools} from './endpoints/pools'
-import {getAdaValueFactory} from './helpers/adaValue'
-import {getAssetsAdaExchangeRatesCache} from './ogmios/exchangeRatesCache'
+import {getAdaValueFactory} from './helpers/ada-value'
+import {getAssetsAdaExchangeRatesCache} from './ogmios/exchange-rates-cache'
 import {handleCrossServiceEvent} from './redis/helpers'
 import {PubSubChannel} from './redis/pubsub'
 

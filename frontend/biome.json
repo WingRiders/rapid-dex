@@ -9,17 +9,5 @@
     "parser": {
       "tailwindDirectives": true
     }
-  },
-  "linter": {
-    "rules": {
-      "style": {
-        "useFilenamingConvention": {
-          "level": "error",
-          "options": {
-            "filenameCases": ["kebab-case"]
-          }
-        }
-      }
-    }
   }
 }

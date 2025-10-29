@@ -15,12 +15,12 @@ import {
   type PoolOutput as DbPoolOutput,
   PoolInteractionType,
   prisma,
-} from '../db/prismaClient'
+} from '../db/prisma-client'
 import {
   getMempoolPoolOutputsForPool,
   getMempoolPoolOutputsForStakeKeyHash,
   type MempoolPoolOutput,
-} from '../ogmios/mempoolCache'
+} from '../ogmios/mempool-cache'
 
 export const getUserInteractions = async (
   stakeKeyHash: string,

@@ -1,15 +1,15 @@
 import SuperJSON from 'superjson'
 import type {TaggedUnion} from 'type-fest'
-import type {AssetsAdaExchangeRates} from '../helpers/exchangeRates'
-import type {InteractionUpdatedPayload} from '../interactionsUpdates'
+import type {AssetsAdaExchangeRates} from '../helpers/exchange-rates'
+import type {InteractionUpdatedPayload} from '../interactions-updates'
 import {logger} from '../logger'
-import type {MempoolPoolOutputs} from '../ogmios/mempoolCache'
+import type {MempoolPoolOutputs} from '../ogmios/mempool-cache'
 import type {
   PoolCreatedPayload,
   PoolRolledBackPayload,
   PoolStateUpdatedPayload,
   PoolUtxoUpdatedPayload,
-} from '../poolsUpdates'
+} from '../pools-updates'
 import {getRedisClient} from './client'
 
 export enum PubSubChannel {

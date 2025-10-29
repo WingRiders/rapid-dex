@@ -9,10 +9,10 @@ import BigNumber from 'bignumber.js'
 import {addHours} from 'date-fns'
 import {keyBy} from 'lodash'
 import {config} from '../config'
-import {prisma} from '../db/prismaClient'
-import {getAdaValueFactory} from '../helpers/adaValue'
-import {calculateAssetsAdaExchangeRates} from '../helpers/exchangeRates'
-import {getMempoolPoolOutputsForPool} from '../ogmios/mempoolCache'
+import {prisma} from '../db/prisma-client'
+import {getAdaValueFactory} from '../helpers/ada-value'
+import {calculateAssetsAdaExchangeRates} from '../helpers/exchange-rates'
+import {getMempoolPoolOutputsForPool} from '../ogmios/mempool-cache'
 
 export const getPoolsVolume = async (hoursOffset: number) => {
   const fromSlot = Number.parseInt(

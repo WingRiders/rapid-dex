@@ -3,7 +3,7 @@ import {compact, omit} from 'lodash'
 import {
   getTokenMetadataFromCache,
   getTokensMetadataFromCache,
-} from '../tokenRegistry'
+} from '../token-registry'
 
 const prepareTokenMetadataForOutput = (tokenMetadata: TokenMetadata) =>
   omit(tokenMetadata, 'logo')

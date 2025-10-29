@@ -1,9 +1,9 @@
 import {TRPCError} from '@trpc/server'
-import {prisma} from '../db/prismaClient'
+import {prisma} from '../db/prisma-client'
 import {tipToSlot} from '../helpers'
-import {getLedgerTip, getNetworkTip} from '../ogmios/ledgerStateQuery'
-import {isTxSubmissionClientInitialized as isTxSubmissionClientInitializedFn} from '../ogmios/txSubmissionClient'
-import {isTokenMetadataFetched as isTokenMetadataFetchedFn} from '../tokenRegistry'
+import {getLedgerTip, getNetworkTip} from '../ogmios/ledger-state-query'
+import {isTxSubmissionClientInitialized as isTxSubmissionClientInitializedFn} from '../ogmios/tx-submission-client'
+import {isTokenMetadataFetched as isTokenMetadataFetchedFn} from '../token-registry'
 
 const IS_DB_SYNCED_THRESHOLD_SLOTS = 300 // 5 minutes
 

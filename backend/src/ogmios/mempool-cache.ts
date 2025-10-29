@@ -1,6 +1,6 @@
 import {isEmpty} from 'lodash'
 import {isOnlyAggregatorMode} from '../config'
-import type {PoolOutput} from '../db/prismaClient'
+import type {PoolOutput} from '../db/prisma-client'
 import {getRedisValue, RedisKey, setRedisValue} from '../redis/kv'
 import {PubSubChannel, publishToPubSub} from '../redis/pubsub'
 

@@ -6,15 +6,15 @@ import {
   dbPoolOutputToUtxo,
 } from '../db/helpers'
 import {logger} from '../logger'
-import {getAssetsAdaExchangeRatesCache} from '../ogmios/exchangeRatesCache'
+import {getAssetsAdaExchangeRatesCache} from '../ogmios/exchange-rates-cache'
 import {
   emitPoolCreated,
   emitPoolStateUpdated,
   emitPoolUtxoUpdated,
-} from '../poolsUpdates'
+} from '../pools-updates'
 import {handleCrossServiceEvent} from '../redis/helpers'
 import {PubSubChannel} from '../redis/pubsub'
-import {getAdaValueFactory} from './adaValue'
+import {getAdaValueFactory} from './ada-value'
 
 type HandleNewPoolOutputEventsArgs = {
   poolOutput: Pick<

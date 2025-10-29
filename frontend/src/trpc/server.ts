@@ -5,7 +5,7 @@ import {
   createTRPCOptionsProxy,
   type TRPCQueryOptions,
 } from '@trpc/tanstack-react-query'
-import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
+import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/app-router'
 import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
 import {cache} from 'react'
 import SuperJSON from 'superjson'

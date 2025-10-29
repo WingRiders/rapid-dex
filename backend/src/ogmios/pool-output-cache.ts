@@ -1,4 +1,4 @@
-import {prisma} from '../db/prismaClient'
+import {prisma} from '../db/prisma-client'
 
 type PoolOutputCacheEntry = {
   shareAssetName: string

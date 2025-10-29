@@ -20,6 +20,12 @@
       "style": {
         "noNonNullAssertion": {
           "level": "off"
+        },
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["kebab-case"]
+          }
         }
       },
       "correctness": {
@@ -65,7 +71,7 @@
   },
   "overrides": [
     {
-      "includes": ["**/cli/createReferenceScriptUtxo.ts"],
+      "includes": ["**/cli/create-reference-script-utxo.ts"],
       "linter": {
         "rules": {
           "suspicious": {

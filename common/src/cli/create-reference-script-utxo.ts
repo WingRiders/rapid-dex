@@ -12,7 +12,7 @@ import {
   type SupportedNetwork,
   walletNetworkIdToNetwork,
 } from '@/helpers/wallet'
-import {poolValidatorCompiledCode, poolValidatorHash} from '@/onChain'
+import {poolValidatorCompiledCode, poolValidatorHash} from '@/on-chain'
 import {LOVELACE_UNIT} from '../helpers'
 
 const DEFAULT_REF_SCRIPT_HOLDER_ADDRESS: Record<SupportedNetwork, string> = {
@@ -141,7 +141,7 @@ export const createReferenceScriptUtxo = async ({
   ).address
   console.info('Computed script address:', scriptAddr)
 
-  const file = `src/refScriptUtxos/${network}.ts`
+  const file = `src/ref-script-utxos/${network}.ts`
   console.info(`Writing reference script UTxO to file ${file}`)
   const content = createResultFileContent(
     network,

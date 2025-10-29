@@ -1,5 +1,5 @@
 import type {TRPCClientErrorLike} from '@trpc/client'
-import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/appRouter'
+import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/app-router'
 
 export enum TxSignErrorCode {
   /**

@@ -1,6 +1,6 @@
 import {deserializeDatum, type UTxO} from '@meshsdk/core'
 import {z} from 'zod'
-import type {PoolDatum} from '../onChain'
+import type {PoolDatum} from '../on-chain'
 
 const poolDatumSchema = z
   .object({

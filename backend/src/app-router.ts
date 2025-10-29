@@ -3,7 +3,7 @@ import type {RouterRecord} from '@trpc/server/unstable-core-do-not-import'
 import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
 import superjson from 'superjson'
 import {z} from 'zod'
-import {getDailyActiveUsers} from './endpoints/dailyActiveUsers'
+import {getDailyActiveUsers} from './endpoints/daily-active-users'
 import {
   getAggregatorHealthcheck,
   getBothModeHealthcheck,
@@ -15,12 +15,12 @@ import {
 } from './endpoints/interactions'
 import {getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
-import {getTokenMetadata, getTokensMetadata} from './endpoints/tokenMetadata'
+import {getTokenMetadata, getTokensMetadata} from './endpoints/token-metadata'
 import {getTvl} from './endpoints/tvl'
 import {getPoolsVolume, getVolume} from './endpoints/volume'
-import {interactionsUpdatesEventEmitterIterable} from './interactionsUpdates'
-import {submitTx} from './ogmios/txSubmissionClient'
-import {poolsUpdatesEventEmitterIterable} from './poolsUpdates'
+import {interactionsUpdatesEventEmitterIterable} from './interactions-updates'
+import {submitTx} from './ogmios/tx-submission-client'
+import {poolsUpdatesEventEmitterIterable} from './pools-updates'
 
 augmentSuperJSON()
 

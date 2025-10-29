@@ -5,9 +5,9 @@ import {
   sumBigNumbers,
 } from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
-import {prisma} from '../db/prismaClient'
-import {getAdaValueFactory} from '../helpers/adaValue'
-import {calculateAssetsAdaExchangeRates} from '../helpers/exchangeRates'
+import {prisma} from '../db/prisma-client'
+import {getAdaValueFactory} from '../helpers/ada-value'
+import {calculateAssetsAdaExchangeRates} from '../helpers/exchange-rates'
 import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
 
 export const getTvl = async () => {

@@ -1,12 +1,12 @@
-import {emitInteractionUpdated} from '../interactionsUpdates'
-import {setAssetsAdaExchangeRates} from '../ogmios/exchangeRatesCache'
-import {setMempoolPoolOutputs} from '../ogmios/mempoolCache'
+import {emitInteractionUpdated} from '../interactions-updates'
+import {setAssetsAdaExchangeRates} from '../ogmios/exchange-rates-cache'
+import {setMempoolPoolOutputs} from '../ogmios/mempool-cache'
 import {
   emitPoolCreated,
   emitPoolRolledBack,
   emitPoolStateUpdated,
   emitPoolUtxoUpdated,
-} from '../poolsUpdates'
+} from '../pools-updates'
 import {PubSubChannel, subscribeToPubSub} from './pubsub'
 
 export const initRedisSubscriptions = async () => {

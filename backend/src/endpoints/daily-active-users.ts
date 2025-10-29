@@ -1,8 +1,8 @@
 import {resolveSlotNo} from '@meshsdk/core'
 import {addDays} from 'date-fns'
 import {config} from '../config'
-import {prisma} from '../db/prismaClient'
-import {getMempoolPoolOutputs} from '../ogmios/mempoolCache'
+import {prisma} from '../db/prisma-client'
+import {getMempoolPoolOutputs} from '../ogmios/mempool-cache'
 
 export const getDailyActiveUsers = async () => {
   const fromSlot = Number.parseInt(

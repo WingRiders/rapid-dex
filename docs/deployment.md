@@ -13,7 +13,7 @@ Before running the deployment script, ensure you have the following:
 ## Deploying the reference script UTxO
 
 The following command initializes a Cardano wallet, fetches UTxOs, submits a transaction to deploy a reference script on-chain,
-and writes the deployment information to `refScriptUtxos/<network>.ts`.
+and writes the deployment information to `ref-script-utxos/<network>.ts`.
 
 ### Usage
 
@@ -31,6 +31,7 @@ bun cli create-reference-script-utxo \
 ```
 
 ### Parameters
+
 - `--blockfrostProjectId` – Your Blockfrost project ID.
 - `--networkId` – Network ID (0 for Preprod, 1 for Mainnet).
 - `--mnemonic` – Your wallet's mnemonic phrase.
@@ -38,9 +39,10 @@ bun cli create-reference-script-utxo \
 - `--refScriptHolderAddress` – CIP-19 Address used for holding the UTxO with pool validator script.
 
 ### Notes
+
 - Ensure your wallet has enough funds to cover transaction fees.
 - The script will deploy a reference script on-chain.
-- After running the script, commit the changed `refScriptUtxos/<network>.ts` to the repository.
+- After running the script, commit the changed `ref-script-utxos/<network>.ts` to the repository.
 
 ## Verifying the deployment
 

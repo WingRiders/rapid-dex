@@ -17,23 +17,23 @@ import {
   type PoolOutput,
   type Prisma,
   prisma,
-} from '../db/prismaClient'
+} from '../db/prisma-client'
 import {poolOutputToInteraction} from '../endpoints/interactions'
 import {originPoint} from '../helpers'
 import {handleNewPoolOutputEvents} from '../helpers/pool'
 import {txOutRefToUtxoInput} from '../helpers/utxo'
 import {calculatePoolOutputVolume} from '../helpers/volume'
-import {emitInteractionUpdated} from '../interactionsUpdates'
+import {emitInteractionUpdated} from '../interactions-updates'
 import {logger} from '../logger'
-import {emitPoolUpdatesOnRollback} from '../poolsUpdates'
+import {emitPoolUpdatesOnRollback} from '../pools-updates'
 import {handleCrossServiceEvent} from '../redis/helpers'
 import {PubSubChannel} from '../redis/pubsub'
-import {updateChainSyncStatus} from './chainSyncStatus'
+import {updateChainSyncStatus} from './chain-sync-status'
 import {
   clearAssetsAdaExchangeRatesCache,
   initAssetAdaExchangeRatesCache,
   updateAdaExchangeRateForPool,
-} from './exchangeRatesCache'
+} from './exchange-rates-cache'
 import {getSpentPoolInteractionType, isPoolOutput} from './helpers'
 import {
   clearMempoolCache,
@@ -41,16 +41,16 @@ import {
   getLatestMempoolPoolOutput,
 } from './mempool'
 import {getOgmiosContext} from './ogmios'
-import {ogmiosMetadataToJson} from './ogmiosMetadataToJson'
-import {ogmiosValueToMeshAssets} from './ogmiosValueToMeshAssets'
-import {parseOgmiosScript} from './parseOgmiosScript'
+import {ogmiosMetadataToJson} from './ogmios-metadata-to-json'
+import {ogmiosValueToMeshAssets} from './ogmios-value-to-mesh-assets'
+import {parseOgmiosScript} from './parse-ogmios-script'
 import {
   addPoolOutputToCache,
   getPoolOutputCacheEntry,
   initPoolOutputCache,
   poolOutputExists,
   removePoolOutputFromCache,
-} from './poolOutputCache'
+} from './pool-output-cache'
 
 // Buffering is suitable when doing the initial sync
 const BUFFER_SIZE = 10_000

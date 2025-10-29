@@ -7,9 +7,9 @@ import {
   createAggregatorRouter,
   createBothModeRouter,
   createServerRouter,
-} from './appRouter'
+} from './app-router'
 import {config, isProd, isServerMode} from './config'
-import {handleTokenImageRequest} from './endpoints/tokenImage'
+import {handleTokenImageRequest} from './endpoints/token-image'
 import {getCorsOptions} from './helpers/cors'
 import {logger} from './logger'
 

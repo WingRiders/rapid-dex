@@ -4,17 +4,17 @@ import {
   isOnlyServerMode,
   isServerMode,
 } from './config'
-import {ensureDBMigrated} from './db/migrateDb'
-import {startChainSyncClient} from './ogmios/chainSync'
-import {initAssetAdaExchangeRatesCache} from './ogmios/exchangeRatesCache'
+import {ensureDBMigrated} from './db/migrate-db'
+import {startChainSyncClient} from './ogmios/chain-sync'
+import {initAssetAdaExchangeRatesCache} from './ogmios/exchange-rates-cache'
 import {startMempoolMonitoring} from './ogmios/mempool'
-import {initMempoolCacheFromRedis} from './ogmios/mempoolCache'
+import {initMempoolCacheFromRedis} from './ogmios/mempool-cache'
 import {getOgmiosContext} from './ogmios/ogmios'
-import {initializeTxSubmissionClient} from './ogmios/txSubmissionClient'
+import {initializeTxSubmissionClient} from './ogmios/tx-submission-client'
 import {initRedisClient} from './redis/client'
 import {initRedisSubscriptions} from './redis/init'
 import {startServer} from './server'
-import {tokensMetadataLoop} from './tokenRegistry'
+import {tokensMetadataLoop} from './token-registry'
 
 if (isOnlyServerMode || isOnlyAggregatorMode) {
   initRedisClient()

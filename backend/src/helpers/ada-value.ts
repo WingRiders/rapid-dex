@@ -2,7 +2,7 @@ import type {Asset} from '@meshsdk/core'
 import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {maxBy} from 'lodash'
-import type {AssetsAdaExchangeRates} from './exchangeRates'
+import type {AssetsAdaExchangeRates} from './exchange-rates'
 
 export const getAdaValueFactory = (
   assetsAdaExchangeRates: AssetsAdaExchangeRates,

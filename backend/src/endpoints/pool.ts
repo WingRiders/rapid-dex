@@ -1,6 +1,6 @@
 import {TRPCError} from '@trpc/server'
 import {dbPoolOutputToUtxo} from '../db/helpers'
-import {prisma} from '../db/prismaClient'
+import {prisma} from '../db/prisma-client'
 import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
 
 export const getPoolUtxo = async (shareAssetName: string) => {
