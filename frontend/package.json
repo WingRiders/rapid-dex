@@ -2,9 +2,9 @@
   "name": "@wingriders/rapid-dex-frontend",
   "version": "0.1.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "bun next dev",
+    "build": "bun next build",
+    "start": "bun next start",
     "check": "bun biome check .",
     "fix": "bun run check --write",
     "test": "bun test",
