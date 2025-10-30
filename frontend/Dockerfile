@@ -36,10 +36,18 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY --from=builder /app/frontend/.next ./.next
-COPY --from=builder /app/frontend/public ./public
-COPY --from=builder /app/frontend/package.json ./package.json
-COPY --from=builder /app/frontend/next.config.ts ./next.config.ts
 COPY --from=builder /app/node_modules ./node_modules
+
+COPY --from=builder /app/common/package.json ./common/package.json
+COPY --from=builder /app/common/node_modules ./common/node_modules
+COPY --from=builder /app/common/src ./common/src
+
+COPY --from=builder /app/frontend/package.json ./frontend/package.json
+COPY --from=builder /app/frontend/node_modules ./frontend/node_modules
+COPY --from=builder /app/frontend/.next ./frontend/.next
+COPY --from=builder /app/frontend/next.config.ts ./frontend/next.config.ts
+COPY --from=builder /app/frontend/public ./frontend/public
+
+WORKDIR /app/frontend
 
 CMD ["bun", "run", "start"]
