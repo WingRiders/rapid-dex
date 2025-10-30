@@ -11,6 +11,12 @@ COPY backend ./backend
 COPY frontend ./frontend
 COPY patches patches
 
+# Install Python (required for building native dependencies)
+RUN apt-get update && \
+    apt-get install -y python3 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install all dependencies for build
 RUN bun install --frozen-lockfile
 
