@@ -1,7 +1,7 @@
+import {computeFee} from '@wingriders/rapid-dex-sdk-core'
 import type {ReactNode} from 'react'
 import {AssetQuantity} from '@/components/asset-quantity'
 import {UnitPairDisplay} from '@/components/unit-pair-display'
-import {computeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {cn} from '@/lib/utils'
 import type {PoolsListItem} from '@/types'

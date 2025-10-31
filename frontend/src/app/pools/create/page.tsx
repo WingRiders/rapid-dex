@@ -6,6 +6,11 @@ import {
   LOVELACE_UNIT,
   poolOil,
 } from '@wingriders/rapid-dex-common'
+import {
+  computeFee,
+  computeSharesCreatePool,
+  encodeFee,
+} from '@wingriders/rapid-dex-sdk-core'
 import BigNumber from 'bignumber.js'
 import {ArrowLeftIcon} from 'lucide-react'
 import {useRouter} from 'next/navigation'
@@ -13,7 +18,6 @@ import pluralize from 'pluralize'
 import {useEffect, useMemo} from 'react'
 import {Controller, useForm} from 'react-hook-form'
 import {NumericFormat} from 'react-number-format'
-import {computeSharesCreatePool} from '@//amm/create-pool'
 import {AssetQuantity} from '@//components/asset-quantity'
 import {DataRows} from '@//components/data-rows'
 import {TxSubmittedDialog} from '@//components/tx-submitted-dialog'
@@ -39,7 +43,6 @@ import {Alert, AlertTitle} from '@/components/ui/alert'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
-import {computeFee, encodeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {
   invalidateDailyActiveUsersQuery,

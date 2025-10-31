@@ -1,5 +1,5 @@
+import {computeFee} from '@wingriders/rapid-dex-sdk-core'
 import {useState} from 'react'
-import {computeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
 import type {PortfolioItem} from '@/helpers/portfolio'
 import {useTokenMetadata} from '@/metadata/queries'

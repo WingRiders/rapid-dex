@@ -1,11 +1,11 @@
 import {useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT, sleep} from '@wingriders/rapid-dex-common'
+import {computeReturnedTokens} from '@wingriders/rapid-dex-sdk-core'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
 import {useEffect, useMemo, useState} from 'react'
 import {NumericFormat} from 'react-number-format'
 import {useDebounce} from 'use-debounce'
-import {computeReturnedTokens} from '@/amm/withdraw-liquidity'
 import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {

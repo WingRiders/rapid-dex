@@ -1,6 +1,6 @@
+import {computeFee} from '@wingriders/rapid-dex-sdk-core'
 import {ChevronDownIcon} from 'lucide-react'
 import {useState} from 'react'
-import {computeFee} from '@/helpers/fee'
 import {formatPercentage} from '@/helpers/format-percentage'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'

@@ -1,9 +1,11 @@
+import type {
+  BuildAddLiquidityTxArgs,
+  BuildCreatePoolTxArgs,
+  BuildSwapTxArgs,
+  BuildWithdrawLiquidityTxArgs,
+} from '@wingriders/rapid-dex-sdk-core'
 import type BigNumber from 'bignumber.js'
 import type {Dictionary} from 'lodash'
-import type {BuildAddLiquidityTxArgs} from '@/on-chain/transaction/add-liquidity'
-import type {BuildCreatePoolTxArgs} from '@/on-chain/transaction/create-pool'
-import type {BuildSwapTxArgs} from '@/on-chain/transaction/swap'
-import type {BuildWithdrawLiquidityTxArgs} from '@/on-chain/transaction/withdraw-liquidity'
 import type {PoolsListItem} from '@/types'
 
 const f = {

@@ -1,9 +1,9 @@
 import {useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import {computeEarnedShares} from '@wingriders/rapid-dex-sdk-core'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
 import {useEffect, useMemo} from 'react'
-import {computeEarnedShares} from '@/amm/add-liquidity'
 import {formatBigNumber} from '@/helpers/format-number'
 import {
   invalidateDailyActiveUsersQuery,

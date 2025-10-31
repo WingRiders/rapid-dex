@@ -5,7 +5,7 @@ import {
   parseUnit,
   type TokenMetadata,
 } from '@wingriders/rapid-dex-common'
-import {decodeAssetName} from '../helpers/asset'
+import {decodeAssetName} from '@wingriders/rapid-dex-sdk-core'
 import {type TRPC, useTRPC} from '../trpc/client'
 import {ADA_METADATA} from './constants'
 

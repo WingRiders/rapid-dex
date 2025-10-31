@@ -4,7 +4,9 @@
   "workspaces": [
     "backend",
     "common",
-    "frontend"
+    "frontend",
+    "sdk/core",
+    "sdk/react"
   ],
   "scripts": {
     "dev": "next dev",
