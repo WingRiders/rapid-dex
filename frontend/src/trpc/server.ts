@@ -1,19 +1,14 @@
 import 'server-only'
 
-import {createTRPCClient, httpBatchLink} from '@trpc/client'
 import {
   createTRPCOptionsProxy,
   type TRPCQueryOptions,
 } from '@trpc/tanstack-react-query'
-import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/app-router'
-import {augmentSuperJSON} from '@wingriders/rapid-dex-common'
+import {createTRPCClient} from '@wingriders/rapid-dex-sdk-core'
+import type {TRPC} from '@wingriders/rapid-dex-sdk-react'
 import {cache} from 'react'
-import SuperJSON from 'superjson'
 import {env} from '@/config'
-import type {TRPC} from './client'
 import {makeQueryClient} from './query-client'
-
-augmentSuperJSON()
 
 export const getQueryClient = cache(makeQueryClient)
 
@@ -22,13 +17,9 @@ let serverTrpc: TRPC | undefined
 export const getServerTrpc = () => {
   if (!serverTrpc)
     serverTrpc = createTRPCOptionsProxy({
-      client: createTRPCClient<ServerAppRouter>({
-        links: [
-          httpBatchLink({
-            url: env('SERVER_URL'),
-            transformer: SuperJSON,
-          }),
-        ],
+      client: createTRPCClient({
+        type: 'server',
+        serverUrl: env('SERVER_URL'),
       }),
       queryClient: getQueryClient,
     })

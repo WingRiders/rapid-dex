@@ -15,16 +15,18 @@
   "dependencies": {
     "@meshsdk/core": "^1.9.0-beta.18",
     "@meshsdk/core-csl": "^1.9.0-beta.18",
+    "@trpc/client": "^11.0.0",
     "@wingriders/rapid-dex-common": "workspace:*",
-    "@wingriders/rapid-dex-backend": "workspace:*",
     "bignumber.js": "^9.1.2",
     "date-fns": "^4.1.0",
+    "superjson": "^2.2.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.1",
     "@cardano-sdk/core": "^0.45.5",
     "@types/bun": "^1.2.8",
+    "@wingriders/rapid-dex-backend": "workspace:*",
     "commander": "^13.1.0",
     "typescript": "^5.7.3"
   }

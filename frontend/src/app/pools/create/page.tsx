@@ -11,6 +11,7 @@ import {
   computeSharesCreatePool,
   encodeFee,
 } from '@wingriders/rapid-dex-sdk-core'
+import {usePoolsQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
 import {ArrowLeftIcon} from 'lucide-react'
 import {useRouter} from 'next/navigation'
@@ -23,7 +24,6 @@ import {DataRows} from '@//components/data-rows'
 import {TxSubmittedDialog} from '@//components/tx-submitted-dialog'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@//components/ui/tooltip'
 import {formatBigNumber} from '@//helpers/format-number'
-import {useTRPC} from '@//trpc/client'
 import {AssetInput} from '@/components/asset-input/asset-input'
 import {EMPTY_ASSET_INPUT_VALUE} from '@/components/asset-input/constants'
 import {
@@ -48,7 +48,7 @@ import {
   invalidateDailyActiveUsersQuery,
   invalidateTotalTvlQuery,
 } from '@/helpers/invalidation'
-import {matchPoolForUnits, usePoolsQuery} from '@/helpers/pool'
+import {matchPoolForUnits} from '@/helpers/pool'
 import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
 import {useBuildCreatePoolTxQuery} from '@/on-chain/transaction/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'

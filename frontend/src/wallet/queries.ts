@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import {useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
 import {partition} from 'lodash'
 import {useCallback} from 'react'
@@ -14,7 +15,6 @@ import {env} from '@/config'
 import {queryKeyFactory} from '@/helpers/query-key'
 import {prefetchTokensMetadata} from '../metadata/queries'
 import {useConnectedWalletStore} from '../store/connected-wallet'
-import {useTRPC} from '../trpc/client'
 
 export const invalidateWalletQueries = (queryClient: QueryClient) => {
   queryClient.invalidateQueries({queryKey: queryKeyFactory.wallet()})

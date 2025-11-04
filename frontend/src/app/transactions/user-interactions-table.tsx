@@ -1,8 +1,8 @@
 import {useQuery} from '@tanstack/react-query'
+import {useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import {Loader2} from 'lucide-react'
 import {ErrorAlert} from '@/components/error-alert'
 import {InteractionsTable} from '@/components/interactions/interactions-table'
-import {useTRPC} from '@/trpc/client'
 
 type UserInteractionsTableProps = {
   stakeKeyHash: string

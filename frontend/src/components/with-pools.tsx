@@ -1,8 +1,8 @@
 import {isLovelaceUnit} from '@wingriders/rapid-dex-common'
+import {LivePoolsUpdate} from '@wingriders/rapid-dex-sdk-react'
 import {uniq} from 'lodash'
 import type {ReactNode} from 'react'
 import {HydrateClient} from '@/components/hydrate-client'
-import {LivePoolsUpdate} from '@/components/live-pools-update'
 import {prefetchTokensMetadata} from '@/metadata/queries'
 import {getQueryClient, getServerTrpc} from '@/trpc/server'
 

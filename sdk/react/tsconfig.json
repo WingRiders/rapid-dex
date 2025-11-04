@@ -15,7 +15,8 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noErrorTruncation": true
+    "noErrorTruncation": true,
+    "jsx": "preserve"
   },
   "include": ["src"],
   "exclude": ["node_modules"]

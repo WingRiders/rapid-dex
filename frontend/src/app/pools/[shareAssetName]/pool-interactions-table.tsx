@@ -1,7 +1,7 @@
+import {useLivePoolInteractionsQuery} from '@wingriders/rapid-dex-sdk-react'
 import {Loader2} from 'lucide-react'
 import {ErrorAlert} from '@/components/error-alert'
 import {InteractionsTable} from '@/components/interactions/interactions-table'
-import {useLivePoolInteractionsQuery} from '@/helpers/pool'
 
 type PoolInteractionsTableProps = {
   shareAssetName: string

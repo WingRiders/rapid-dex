@@ -1,7 +1,7 @@
 import type {Unit} from '@meshsdk/core'
 import type {QueryClient} from '@tanstack/react-query'
+import type {TRPC} from '@wingriders/rapid-dex-sdk-react'
 import type BigNumber from 'bignumber.js'
-import type {TRPC} from '../trpc/client'
 import {getTokenMetadataFromQueryCache} from './queries'
 
 /**

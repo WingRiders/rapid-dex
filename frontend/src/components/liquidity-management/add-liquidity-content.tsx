@@ -1,6 +1,7 @@
 import {useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
 import {computeEarnedShares} from '@wingriders/rapid-dex-sdk-core'
+import {useLivePoolUtxoQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
 import {useEffect, useMemo} from 'react'
@@ -9,9 +10,7 @@ import {
   invalidateDailyActiveUsersQuery,
   invalidateTotalTvlQuery,
 } from '@/helpers/invalidation'
-import {useLivePoolUtxoQuery} from '@/helpers/pool'
 import {useBuildAddLiquidityTxQuery} from '@/on-chain/transaction/queries'
-import {useTRPC} from '@/trpc/client'
 import type {PoolsListItem} from '@/types'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {

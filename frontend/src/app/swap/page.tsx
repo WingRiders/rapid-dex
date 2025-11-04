@@ -1,6 +1,11 @@
 'use client'
 import {skipToken, useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import {
+  useLivePoolUtxoQuery,
+  usePoolsQuery,
+  useTRPC,
+} from '@wingriders/rapid-dex-sdk-react'
 import {compact} from 'lodash'
 import {ArrowDownUpIcon} from 'lucide-react'
 import {useEffect, useMemo} from 'react'
@@ -17,9 +22,7 @@ import {
   invalidateDailyActiveUsersQuery,
   invalidateVolumeQueries,
 } from '@/helpers/invalidation'
-import {useLivePoolUtxoQuery, usePoolsQuery} from '@/helpers/pool'
 import {useBuildSwapTxQuery} from '@/on-chain/transaction/queries'
-import {useTRPC} from '@/trpc/client'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
 import {
   invalidateWalletQueries,

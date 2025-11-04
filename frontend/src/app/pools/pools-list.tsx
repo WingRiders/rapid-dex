@@ -1,12 +1,11 @@
 'use client'
 
 import {useQuery} from '@tanstack/react-query'
+import {usePoolsQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import {Loader2} from 'lucide-react'
 import {ErrorAlert} from '@/components/error-alert'
 import {PoolsTable} from '@/components/pools-table'
-import {usePoolsQuery} from '@/helpers/pool'
 import {usePortfolioQuery} from '@/helpers/portfolio'
-import {useTRPC} from '@/trpc/client'
 
 export const PoolsList = () => {
   const trpc = useTRPC()

@@ -6,7 +6,7 @@ import {
   type TokenMetadata,
 } from '@wingriders/rapid-dex-common'
 import {decodeAssetName} from '@wingriders/rapid-dex-sdk-core'
-import {type TRPC, useTRPC} from '../trpc/client'
+import {type TRPC, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import {ADA_METADATA} from './constants'
 
 const getDefaultMetadata = (unit: Unit): TokenMetadata => {

@@ -2,13 +2,12 @@
 
 import {useQuery} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import {usePoolsQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import {InfoIcon} from 'lucide-react'
 import type {ReactNode} from 'react'
 import {AssetQuantity} from '@/components/asset-quantity'
 import {Skeleton} from '@/components/ui/skeleton'
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
-import {usePoolsQuery} from '@/helpers/pool'
-import {useTRPC} from '@/trpc/client'
 
 export const PoolsInfo = () => {
   return (

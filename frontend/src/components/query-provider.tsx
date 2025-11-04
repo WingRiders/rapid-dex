@@ -6,27 +6,13 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
-import {
-  createTRPCClient,
-  createWSClient,
-  httpBatchStreamLink,
-  splitLink,
-  wsLink,
-} from '@trpc/client'
-import type {ServerAppRouter} from '@wingriders/rapid-dex-backend/src/app-router'
+import {createTRPCClient} from '@wingriders/rapid-dex-sdk-core'
+import {TRPCProvider} from '@wingriders/rapid-dex-sdk-react'
 import {useState} from 'react'
-import SuperJSON from 'superjson'
 import {env} from '@/config'
-import {TRPCProvider} from '../trpc/client'
 import {makeQueryClient} from '../trpc/query-client'
 
 let browserQueryClient: QueryClient | undefined
-
-const wsClient: ReturnType<typeof createWSClient> | undefined = isServer
-  ? undefined
-  : createWSClient({
-      url: env('NEXT_PUBLIC_SERVER_URL'),
-    })
 
 const getQueryClient = () => {
   if (isServer) {
@@ -42,20 +28,9 @@ export const QueryProvider = ({children}: {children: React.ReactNode}) => {
   const queryClient = getQueryClient()
 
   const [trpcClient] = useState(() =>
-    createTRPCClient<ServerAppRouter>({
-      links: [
-        splitLink({
-          condition: (op) => op.type === 'subscription' && !!wsClient,
-          true: wsLink({
-            client: wsClient!,
-            transformer: SuperJSON,
-          }),
-          false: httpBatchStreamLink({
-            url: env('NEXT_PUBLIC_SERVER_URL'),
-            transformer: SuperJSON,
-          }),
-        }),
-      ],
+    createTRPCClient({
+      type: 'browser',
+      serverUrl: env('NEXT_PUBLIC_SERVER_URL'),
     }),
   )
 

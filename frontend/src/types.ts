@@ -1,5 +1,3 @@
-import type {useTRPC} from './trpc/client'
+import type {TRPC} from '@wingriders/rapid-dex-sdk-react'
 
-export type PoolsListItem = ReturnType<
-  typeof useTRPC
->['pools']['~types']['output'][number]
+export type PoolsListItem = TRPC['pools']['~types']['output'][number]
