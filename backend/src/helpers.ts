@@ -9,10 +9,11 @@ export const originPoint = {
     height: 4490511,
   },
   preprod: {
-    // TODO Set to the point 1 block before first pool is created
-    id: 'e8dbe8276fc4768ce985c3afd97a92e4b27cbe5dae332f4f2e6727055cd81e8b',
-    slot: 106587008,
-    height: 4085086,
+    // First pool was created in this transaction: https://preprod.cardanoscan.io/transaction/de232c0234a6f1b964fe6a00514a75f758ec01551e7c1fe399bc474e8a55b276
+    // Origin point need to be 1 block before that
+    id: '42bc57652b1df6ce7df5169f56f4d2f058745d0f775703e17746335c6834fef9',
+    slot: 106658607,
+    height: 4088123,
   },
 }[config.NETWORK]
 
