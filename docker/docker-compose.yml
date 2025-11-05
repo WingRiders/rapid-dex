@@ -40,7 +40,7 @@ services:
         max-file: "20"
 
   ogmios:
-    image: cardanosolutions/ogmios:6.11.2
+    image: cardanosolutions/ogmios:v6.11.2
     restart: unless-stopped
     command:
       [
