@@ -49,10 +49,15 @@ const appendSwapQuantitiesToAvailableRoutes = (
         const {lockX, outY, newX, newY, paidSwapFee} = computeNewReserves({
           currentX: poolX,
           currentY: poolY,
-          swapFeePoints: pool.swapFeePoints,
+          swapFeePoints:
+            fromUnit === pool.unitA
+              ? pool.swapFeePointsAToB
+              : pool.swapFeePointsBToA,
           feeBasis: pool.feeBasis,
           lockX: basedOn.type === 'lockX' ? basedOn.value : undefined,
           outY: basedOn.type === 'outY' ? basedOn.value : undefined,
+          aToB: fromUnit === pool.unitA,
+          feeFrom: pool.feeFrom,
         })
 
         return {

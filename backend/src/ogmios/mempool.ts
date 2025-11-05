@@ -14,6 +14,7 @@ import {
   poolValidatorHash,
 } from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
+import {feeFromToDbFeeFrom} from '../db/helpers'
 import {PoolInteractionType} from '../db/prisma-client'
 import {poolOutputToInteraction} from '../endpoints/interactions'
 import {handleNewPoolOutputEvents} from '../helpers/pool'
@@ -231,7 +232,9 @@ const processMempoolTransaction = (
     lpts,
     qtyA,
     qtyB,
-    swapFeePoints: poolDatum.swapFeePoints,
+    feeFrom: feeFromToDbFeeFrom(poolDatum.feeFrom),
+    swapFeePointsAToB: poolDatum.swapFeePointsAToB,
+    swapFeePointsBToA: poolDatum.swapFeePointsBToA,
     feeBasis: poolDatum.feeBasis,
     address: poolOutput.address,
     assets: ogmiosValueToMeshAssets(poolOutput.value),

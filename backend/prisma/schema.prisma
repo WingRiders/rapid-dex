@@ -31,6 +31,13 @@ enum PoolInteractionType {
   Donate
 }
 
+enum FeeFrom {
+  InputToken
+  OutputToken
+  TokenA
+  TokenB
+}
+
 model PoolOutput {
   utxoId      String  @id
   spendUtxoId String? @unique
@@ -38,16 +45,18 @@ model PoolOutput {
   slot      Int
   spendSlot Int?
 
-  shareAssetName String
-  assetAPolicy   String
-  assetAName     String
-  assetBPolicy   String
-  assetBName     String
-  lpts           BigInt
-  qtyA           BigInt
-  qtyB           BigInt
-  swapFeePoints  Int
-  feeBasis       Int
+  shareAssetName    String
+  assetAPolicy      String
+  assetAName        String
+  assetBPolicy      String
+  assetBName        String
+  lpts              BigInt
+  qtyA              BigInt
+  qtyB              BigInt
+  feeFrom           FeeFrom
+  swapFeePointsAToB Int
+  swapFeePointsBToA Int
+  feeBasis          Int
 
   address       String // bech32 encoded
   assets        Json

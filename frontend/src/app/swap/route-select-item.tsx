@@ -66,7 +66,11 @@ export const RouteSelectItem = ({
         <Row
           label="Swap fee"
           value={formatPercentage(
-            computeFee(pool.swapFeePoints, pool.feeBasis).times(100),
+            // TODO Consider showing also feeFrom
+            computeFee(
+              isSwapAToB ? pool.swapFeePointsAToB : pool.swapFeePointsBToA,
+              pool.feeBasis,
+            ).times(100),
           )}
         />
         {swapQuantities && (

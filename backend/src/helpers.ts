@@ -9,9 +9,10 @@ export const originPoint = {
     height: 4490511,
   },
   preprod: {
-    id: '2c3985ab424e7d5f683f3529c6e18638cfc4289e7a4d0a279b4169f4d2b38302',
-    slot: 86531256,
-    height: 3287900,
+    // TODO Set to the point 1 block before first pool is created
+    id: 'e8dbe8276fc4768ce985c3afd97a92e4b27cbe5dae332f4f2e6727055cd81e8b',
+    slot: 106587008,
+    height: 4085086,
   },
 }[config.NETWORK]
 

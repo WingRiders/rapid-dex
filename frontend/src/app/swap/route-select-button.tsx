@@ -77,9 +77,11 @@ const SelectedPool = ({pool}: SelectedPoolProps) => {
   const assetBTicker = metadataB?.ticker ?? metadataB?.name ?? 'unknown'
 
   const poolName = `${assetATicker}/${assetBTicker}`
-  const swapFeePercentage = computeFee(pool.swapFeePoints, pool.feeBasis).times(
-    100,
-  )
+  // TODO Add swap direction to props, consider showing also feeFrom
+  const swapFeePercentage = computeFee(
+    pool.swapFeePointsAToB,
+    pool.feeBasis,
+  ).times(100)
 
   return (
     <p>

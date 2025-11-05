@@ -2,6 +2,7 @@ import type {Asset, IFetcher, IWallet, RefTxIn} from '@meshsdk/core'
 import {
   burnedShareTokens,
   createUnit,
+  type FeeFrom,
   getShareAssetName,
   isLovelaceUnit,
   LOVELACE_UNIT,
@@ -32,7 +33,9 @@ export type BuildCreatePoolTxArgs = {
   outShares: BigNumber
   seed: RefTxIn
   feeBasis: number
-  swapFeePoints: number
+  feeFrom: FeeFrom
+  swapFeePointsAToB: number
+  swapFeePointsBToA: number
   now?: Date // if not provided, the current date will be used
 }
 
@@ -49,7 +52,9 @@ export const buildCreatePoolTx = async ({
   outShares,
   seed,
   feeBasis,
-  swapFeePoints,
+  feeFrom,
+  swapFeePointsAToB,
+  swapFeePointsBToA,
   now = new Date(),
 }: BuildCreatePoolTxArgs): Promise<BuildCreatePoolTxResult> => {
   const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
@@ -79,7 +84,9 @@ export const buildCreatePoolTx = async ({
     bPolicyId,
     feeBasis,
     sharesAssetName,
-    swapFeePoints,
+    feeFrom,
+    swapFeePointsAToB,
+    swapFeePointsBToA,
   }
 
   const mintedSharesQuantity = maxShareTokens.minus(burnedShareTokens)

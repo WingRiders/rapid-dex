@@ -11,6 +11,7 @@ import {
   poolValidatorHash,
 } from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
+import {feeFromToDbFeeFrom} from '../db/helpers'
 import {
   type Block,
   PoolInteractionType,
@@ -140,7 +141,9 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
         lpts,
         qtyA,
         qtyB,
-        swapFeePoints: poolDatum.swapFeePoints,
+        feeFrom: feeFromToDbFeeFrom(poolDatum.feeFrom),
+        swapFeePointsAToB: poolDatum.swapFeePointsAToB,
+        swapFeePointsBToA: poolDatum.swapFeePointsBToA,
         feeBasis: poolDatum.feeBasis,
         address: poolOutput.address,
         assets: ogmiosValueToMeshAssets(poolOutput.value),

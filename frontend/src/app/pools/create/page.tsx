@@ -2,6 +2,7 @@
 
 import {useQueryClient} from '@tanstack/react-query'
 import {
+  FeeFrom,
   isLovelaceUnit,
   LOVELACE_UNIT,
   poolOil,
@@ -142,7 +143,10 @@ const CreatePoolPage = () => {
             txIndex: seed.input.outputIndex,
           },
           feeBasis: encodedSwapFee.feeBasis,
-          swapFeePoints: encodedSwapFee.feePoints,
+          // TODO Allow customizing the fields for flexible fees
+          feeFrom: FeeFrom.InputToken,
+          swapFeePointsAToB: encodedSwapFee.feePoints,
+          swapFeePointsBToA: encodedSwapFee.feePoints,
         }
       : undefined,
   )
@@ -377,7 +381,7 @@ const CreatePoolPage = () => {
                                   <p>
                                     {formatPercentage(
                                       computeFee(
-                                        pool.swapFeePoints,
+                                        pool.swapFeePointsAToB, // TODO Support flexible-fee fields
                                         pool.feeBasis,
                                       ).times(100),
                                     )}

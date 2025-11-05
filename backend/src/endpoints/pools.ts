@@ -23,7 +23,9 @@ export const getPools = async () => {
       lpts: true,
       qtyA: true,
       qtyB: true,
-      swapFeePoints: true,
+      feeFrom: true,
+      swapFeePointsAToB: true,
+      swapFeePointsBToA: true,
       feeBasis: true,
     },
   })

@@ -1,5 +1,8 @@
 import {describe, expect, it} from 'bun:test'
+import {FeeFrom} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
+import {zip} from 'lodash'
+import {isFeeFromInput} from '../../src'
 import {
   type ComputeNewReservesParams,
   computeNewReserves,
@@ -11,6 +14,8 @@ describe('computeNewReserves', () => {
     currentY: new BigNumber(30),
     swapFeePoints: 1, // 1% fee
     feeBasis: 100,
+    aToB: true,
+    feeFrom: FeeFrom.InputToken,
   }
 
   describe('computeNewReserves with lockX', () => {
@@ -25,6 +30,8 @@ describe('computeNewReserves', () => {
           lockX: new BigNumber(10_000_000),
           swapFeePoints: 1,
           feeBasis: 500,
+          aToB: true,
+          feeFrom: FeeFrom.InputToken,
         },
         expectedOutY: new BigNumber(90_743_771),
       },
@@ -53,21 +60,30 @@ describe('computeNewReserves', () => {
     expect(result.newX).toEqual(params.currentX.plus(result.lockX))
   }
 
-  for (const currentX of [1, 2, 7, 19, 80]) {
-    for (const currentY of [1, 2, 3, 13]) {
-      for (const swapFeePoints of [0, 1, 2, 3, 5, 8, 13]) {
-        for (let outY = 1; outY < currentY; outY++) {
-          it(`should compute new reserves for currentX = ${currentX}, currentY = ${currentY}, swapFee = ${swapFeePoints}%, outY = ${outY}`, () => {
-            testComputeNewReservesFromOutY({
-              currentX: new BigNumber(currentX),
-              currentY: new BigNumber(currentY),
-              outY: new BigNumber(outY),
-              swapFeePoints,
-              feeBasis: params.feeBasis,
-            })
-          })
-        }
-      }
+  for (const [currentX, currentY, swapFeePoints, aToB, feeFrom] of zip(
+    [1, 2, 7, 19, 80], // currentX
+    [1, 2, 3, 13], // currentY
+    [0, 1, 2, 3, 5, 8, 13], // swapFeePoints
+    [true, false], // aToB
+    Object.values(FeeFrom), // feeFrom
+  )) {
+    const maxOutY = // Getting more Y than maxOutY is impossible
+      currentY -
+      (isFeeFromInput(feeFrom, aToB)
+        ? 1
+        : Math.ceil((swapFeePoints * currentY) / params.feeBasis))
+    for (let outY = 1; outY <= maxOutY; outY++) {
+      it(`should compute new reserves for currentX = ${currentX}, currentY = ${currentY}, swapFee = ${swapFeePoints}%, outY = ${outY}, aToB = ${aToB}, feeFrom = ${feeFrom}`, () => {
+        testComputeNewReservesFromOutY({
+          currentX: new BigNumber(currentX),
+          currentY: new BigNumber(currentY),
+          outY: new BigNumber(outY),
+          swapFeePoints,
+          feeBasis: params.feeBasis,
+          aToB,
+          feeFrom,
+        })
+      })
     }
   }
 

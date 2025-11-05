@@ -120,7 +120,8 @@ const LiquidityManagementDialogContent = ({
                   value: (
                     <p>
                       {formatPercentage(
-                        computeFee(pool.swapFeePoints, pool.feeBasis).times(
+                        // TODO Show fees in both directions if differs? And feeFrom?
+                        computeFee(pool.swapFeePointsAToB, pool.feeBasis).times(
                           100,
                         ),
                       )}

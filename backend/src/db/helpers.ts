@@ -1,8 +1,9 @@
 import type {Asset, UTxO} from '@meshsdk/core'
-import type {PoolOutput} from '@prisma/client'
+import {FeeFrom as DbFeeFrom, type PoolOutput} from '@prisma/client'
 import {
   bigintToBigNumber,
   createUnit,
+  FeeFrom,
   LOVELACE_UNIT,
   maxShareTokens,
   type PoolState,
@@ -42,7 +43,9 @@ export const dbPoolOutputToPool = (
     | 'assetBPolicy'
     | 'assetBName'
     | 'shareAssetName'
-    | 'swapFeePoints'
+    | 'feeFrom'
+    | 'swapFeePointsAToB'
+    | 'swapFeePointsBToA'
     | 'feeBasis'
     | 'lpts'
     | 'qtyA'
@@ -53,6 +56,24 @@ export const dbPoolOutputToPool = (
   unitB: createUnit(poolOutput.assetBPolicy, poolOutput.assetBName),
   shareAssetName: poolOutput.shareAssetName,
   poolState: dbPoolOutputToPoolState(poolOutput),
-  swapFeePoints: poolOutput.swapFeePoints,
+  feeFrom: dbFeeFromToFeeFrom(poolOutput.feeFrom),
+  swapFeePointsAToB: poolOutput.swapFeePointsAToB,
+  swapFeePointsBToA: poolOutput.swapFeePointsBToA,
   feeBasis: poolOutput.feeBasis,
 })
+
+const dbFeeFromToFeeFrom = (dbFeeFrom: DbFeeFrom): FeeFrom =>
+  ({
+    [DbFeeFrom.InputToken]: FeeFrom.InputToken,
+    [DbFeeFrom.OutputToken]: FeeFrom.OutputToken,
+    [DbFeeFrom.TokenA]: FeeFrom.TokenA,
+    [DbFeeFrom.TokenB]: FeeFrom.TokenB,
+  })[dbFeeFrom]
+
+export const feeFromToDbFeeFrom = (feeFrom: FeeFrom): DbFeeFrom =>
+  ({
+    [FeeFrom.InputToken]: DbFeeFrom.InputToken,
+    [FeeFrom.OutputToken]: DbFeeFrom.OutputToken,
+    [FeeFrom.TokenA]: DbFeeFrom.TokenA,
+    [FeeFrom.TokenB]: DbFeeFrom.TokenB,
+  })[feeFrom]
