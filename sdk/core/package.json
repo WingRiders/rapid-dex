@@ -9,7 +9,7 @@
     "build": "tsc",
     "check": "bun biome check .",
     "fix": "bun run check --write",
-    "cli": "bun src/cli.ts",
+    "cli": "bun src/cli/main.ts",
     "test": "bun test"
   },
   "dependencies": {
@@ -26,10 +26,11 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.1",
     "@cardano-sdk/core": "^0.45.5",
+    "@commander-js/extra-typings": "^14.0.0",
     "@types/bun": "^1.2.8",
     "@types/lodash": "^4.17.20",
     "@wingriders/rapid-dex-backend": "workspace:*",
-    "commander": "^13.1.0",
+    "commander": "^14.0.2",
     "typescript": "^5.7.3"
   }
 }

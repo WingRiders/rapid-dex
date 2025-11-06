@@ -42,6 +42,7 @@ export type BuildCreatePoolTxArgs = {
 export type BuildCreatePoolTxResult = {
   builtTx: string
   txFee: BigNumber
+  sharesAssetName: string
 }
 
 export const buildCreatePoolTx = async ({
@@ -132,5 +133,5 @@ export const buildCreatePoolTx = async ({
 
   const builtTx = await txBuilder.complete()
   const txFee = await getTxFee(builtTx)
-  return {builtTx, txFee}
+  return {builtTx, txFee, sharesAssetName}
 }

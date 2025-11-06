@@ -13,7 +13,7 @@ import {
   getPoolInteractions,
   getUserInteractions,
 } from './endpoints/interactions'
-import {getPoolUtxo} from './endpoints/pool'
+import {getPool, getPoolUtxo} from './endpoints/pool'
 import {getPools} from './endpoints/pools'
 import {getTokenMetadata, getTokensMetadata} from './endpoints/token-metadata'
 import {getTvl} from './endpoints/tvl'
@@ -40,6 +40,9 @@ export const createServerRouter = () =>
       .mutation(({input}) => submitTx(input)),
     healthcheck: publicProcedure.query(getServerHealthcheck),
     pools: publicProcedure.query(getPools),
+    pool: publicProcedure
+      .input(z.object({shareAssetName: z.string()}))
+      .query(({input}) => getPool(input.shareAssetName)),
     poolUtxo: publicProcedure
       .input(z.object({shareAssetName: z.string()}))
       .query(({input}) => getPoolUtxo(input.shareAssetName)),

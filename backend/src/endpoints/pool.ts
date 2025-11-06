@@ -1,7 +1,47 @@
 import {TRPCError} from '@trpc/server'
-import {dbPoolOutputToUtxo} from '../db/helpers'
+import {dbPoolOutputToPool, dbPoolOutputToUtxo} from '../db/helpers'
 import {prisma} from '../db/prisma-client'
 import {getLatestMempoolPoolOutput} from '../ogmios/mempool'
+
+export const getPool = async (shareAssetName: string) => {
+  const dbPoolOutput = await prisma.poolOutput.findFirst({
+    where: {
+      spendSlot: null,
+      shareAssetName,
+    },
+    select: {
+      utxoId: true,
+      shareAssetName: true,
+      assetAPolicy: true,
+      assetAName: true,
+      assetBPolicy: true,
+      assetBName: true,
+      lpts: true,
+      qtyA: true,
+      qtyB: true,
+      feeBasis: true,
+      swapFeePointsAToB: true,
+      swapFeePointsBToA: true,
+      feeFrom: true,
+    },
+  })
+
+  const mempoolPoolOutput = getLatestMempoolPoolOutput(
+    shareAssetName,
+    dbPoolOutput?.utxoId,
+  )
+
+  const poolOutput = mempoolPoolOutput ?? dbPoolOutput
+
+  if (!poolOutput) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: `Pool ${shareAssetName} not found`,
+    })
+  }
+
+  return dbPoolOutputToPool(poolOutput)
+}
 
 export const getPoolUtxo = async (shareAssetName: string) => {
   const validAt = new Date()

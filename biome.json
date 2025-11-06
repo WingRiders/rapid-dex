@@ -71,7 +71,7 @@
   },
   "overrides": [
     {
-      "includes": ["**/cli/create-reference-script-utxo.ts"],
+      "includes": ["common/src/cli/**", "sdk/core/src/cli/**"],
       "linter": {
         "rules": {
           "suspicious": {
