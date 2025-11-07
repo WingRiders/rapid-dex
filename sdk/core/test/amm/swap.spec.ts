@@ -1,12 +1,12 @@
 import {describe, expect, it} from 'bun:test'
 import {FeeFrom} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
-import {zip} from 'lodash'
 import {isFeeFromInput} from '../../src'
 import {
   type ComputeNewReservesParams,
   computeNewReserves,
 } from '../../src/amm/swap'
+import {cartesianGen} from './cartesian-gen'
 
 describe('computeNewReserves', () => {
   const params = {
@@ -60,12 +60,14 @@ describe('computeNewReserves', () => {
     expect(result.newX).toEqual(params.currentX.plus(result.lockX))
   }
 
-  for (const [currentX, currentY, swapFeePoints, aToB, feeFrom] of zip(
-    [1, 2, 7, 19, 80], // currentX
-    [1, 2, 3, 13], // currentY
-    [0, 1, 2, 3, 5, 8, 13], // swapFeePoints
-    [true, false], // aToB
-    Object.values(FeeFrom), // feeFrom
+  for (const [currentX, currentY, swapFeePoints, aToB, feeFrom] of cartesianGen(
+    [
+      [1, 2, 7, 19, 80], // currentX
+      [1, 2, 3, 13], // currentY
+      [0, 1, 2, 3, 5, 8, 13], // swapFeePoints
+      [true, false], // aToB
+      Object.values(FeeFrom), // feeFrom
+    ],
   )) {
     const maxOutY = // Getting more Y than maxOutY is impossible
       currentY -
