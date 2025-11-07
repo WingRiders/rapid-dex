@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js'
 import {Command, Option} from 'commander'
 import {computeSharesCreatePool} from '../../../amm'
 import {encodeFee} from '../../../helpers'
+import {leastCommonMultiple} from '../../../helpers/number'
 import {buildCreatePoolTx} from '../../../on-chain'
 import {initConfig} from '../../config'
 import {
@@ -74,18 +75,15 @@ export const buildCreatePoolCommand = () => {
       const encodedFeeAToB = encodeFee(new BigNumber(options.feeAToB).div(100))
       const encodedFeeBToA = encodeFee(new BigNumber(options.feeBToA).div(100))
 
-      const [feeBasis, swapFeePointsAToB, swapFeePointsBToA] =
-        encodedFeeAToB.feeBasis === encodedFeeBToA.feeBasis
-          ? [
-              encodedFeeAToB.feeBasis,
-              encodedFeeAToB.feePoints,
-              encodedFeeBToA.feePoints,
-            ]
-          : [
-              encodedFeeAToB.feeBasis * encodedFeeBToA.feeBasis,
-              encodedFeeAToB.feePoints * encodedFeeBToA.feeBasis,
-              encodedFeeBToA.feePoints * encodedFeeAToB.feeBasis,
-            ]
+      const feeBasis = leastCommonMultiple(
+        encodedFeeAToB.feeBasis,
+        encodedFeeBToA.feeBasis,
+      )
+
+      const swapFeePointsAToB =
+        (encodedFeeAToB.feePoints * feeBasis) / encodedFeeAToB.feeBasis
+      const swapFeePointsBToA =
+        (encodedFeeBToA.feePoints * feeBasis) / encodedFeeBToA.feeBasis
 
       const {builtTx, txFee, sharesAssetName} = await buildCreatePoolTx({
         wallet,
