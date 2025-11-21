@@ -8,9 +8,9 @@ import {
   poolOil,
 } from '@wingriders/rapid-dex-common'
 import {
-  computeFee,
   computeSharesCreatePool,
   encodeFee,
+  sortUnits,
 } from '@wingriders/rapid-dex-sdk-core'
 import {usePoolsQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
@@ -34,6 +34,7 @@ import {
 import type {AssetInputItem} from '@/components/asset-input/types'
 import {ErrorAlert} from '@/components/error-alert'
 import {PageContainer} from '@/components/page-container'
+import {SwapFeeDisplay} from '@/components/swap-fee-display'
 import {
   Accordion,
   AccordionContent,
@@ -43,14 +44,21 @@ import {
 import {Alert, AlertTitle} from '@/components/ui/alert'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
-import {formatPercentage} from '@/helpers/format-percentage'
 import {
   invalidateDailyActiveUsersQuery,
   invalidateTotalTvlQuery,
 } from '@/helpers/invalidation'
 import {matchPoolForUnits} from '@/helpers/pool'
 import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
+import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildCreatePoolTxQuery} from '@/on-chain/transaction/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
@@ -63,6 +71,7 @@ import {
 import {useValidateCreatePoolForm} from './helpers'
 import type {CreatePoolFormInputs} from './types'
 
+const DEFAULT_FEE_FROM = FeeFrom.InputToken
 const DEFAULT_SWAP_FEE_PERCENTAGE = 0.2
 const FEE_MAX_DECIMALS = 5
 
@@ -96,13 +105,32 @@ const CreatePoolPage = () => {
     defaultValues: {
       assetX: EMPTY_ASSET_INPUT_VALUE,
       assetY: EMPTY_ASSET_INPUT_VALUE,
-      swapFeePercentage: DEFAULT_SWAP_FEE_PERCENTAGE,
+      feeFrom: DEFAULT_FEE_FROM,
+      swapFeePercentageAToB: DEFAULT_SWAP_FEE_PERCENTAGE,
+      swapFeePercentageBToA: DEFAULT_SWAP_FEE_PERCENTAGE,
     },
     disabled: isSigningAndSubmittingTx,
   })
 
   const inputs = watch()
-  const {assetX, assetY, swapFeePercentage} = inputs
+  const {
+    assetX,
+    assetY,
+    swapFeePercentageAToB,
+    swapFeePercentageBToA,
+    feeFrom,
+  } = inputs
+
+  const [unitA, unitB] =
+    assetX.unit != null && assetY.unit != null
+      ? sortUnits(assetX.unit, assetY.unit)
+      : [null, null]
+
+  const {metadata: unitAMetadata} = useTokenMetadata(unitA)
+  const {metadata: unitBMetadata} = useTokenMetadata(unitB)
+
+  const unitATicker = unitAMetadata?.ticker ?? unitAMetadata?.name ?? 'unknown'
+  const unitBTicker = unitBMetadata?.ticker ?? unitBMetadata?.name ?? 'unknown'
 
   const earnedShares = useMemo(() => {
     if (!assetX.quantity || !assetY.quantity) return undefined
@@ -117,9 +145,14 @@ const CreatePoolPage = () => {
 
   const seed = utxos?.[0]
 
-  const encodedSwapFee =
-    swapFeePercentage != null
-      ? encodeFee(new BigNumber(swapFeePercentage).div(100))
+  const encodedSwapFeeAToB =
+    swapFeePercentageAToB != null
+      ? encodeFee(new BigNumber(swapFeePercentageAToB).div(100))
+      : undefined
+
+  const encodedSwapFeeBToA =
+    swapFeePercentageBToA != null
+      ? encodeFee(new BigNumber(swapFeePercentageBToA).div(100))
       : undefined
 
   const {
@@ -133,7 +166,8 @@ const CreatePoolPage = () => {
       earnedShares != null &&
       connectedWallet &&
       seed &&
-      encodedSwapFee
+      encodedSwapFeeAToB &&
+      encodedSwapFeeBToA
       ? {
           assetX: assetInputValueToAsset(assetX),
           assetY: assetInputValueToAsset(assetY),
@@ -142,11 +176,19 @@ const CreatePoolPage = () => {
             txHash: seed.input.txHash,
             txIndex: seed.input.outputIndex,
           },
-          feeBasis: encodedSwapFee.feeBasis,
-          // TODO Allow customizing the fields for flexible fees
-          feeFrom: FeeFrom.InputToken,
-          swapFeePointsAToB: encodedSwapFee.feePoints,
-          swapFeePointsBToA: encodedSwapFee.feePoints,
+          feeBasis:
+            encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
+              ? encodedSwapFeeAToB.feeBasis
+              : encodedSwapFeeAToB.feeBasis * encodedSwapFeeBToA.feeBasis,
+          feeFrom,
+          swapFeePointsAToB:
+            encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
+              ? encodedSwapFeeAToB.feePoints
+              : encodedSwapFeeAToB.feePoints * encodedSwapFeeBToA.feeBasis,
+          swapFeePointsBToA:
+            encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
+              ? encodedSwapFeeBToA.feePoints
+              : encodedSwapFeeBToA.feePoints * encodedSwapFeeAToB.feeBasis,
         }
       : undefined,
   )
@@ -277,31 +319,74 @@ const CreatePoolPage = () => {
         </div>
 
         <div className="wrap mt-2 flex flex-row items-center justify-between gap-2">
-          <p className="flex-3">Swap fee</p>
+          <p className="flex-3">Take swap fee from</p>
           <Controller
             control={control}
-            name="swapFeePercentage"
+            name="feeFrom"
             render={({field}) => (
-              <NumericFormat
-                customInput={Input}
-                thousandSeparator={THOUSAND_SEPARATOR}
-                decimalSeparator={DECIMAL_SEPARATOR}
-                allowedDecimalSeparators={['.', ',']}
-                allowNegative={false}
-                decimalScale={FEE_MAX_DECIMALS}
-                isAllowed={({value}) => !value || new BigNumber(value).lte(100)}
-                type="text"
-                placeholder="e.g. 0.2%"
-                onValueChange={({value: newValue}, {source}) => {
-                  if (source === 'prop') return
-                  const number = Number.parseFloat(newValue)
-                  field.onChange(Number.isNaN(number) ? undefined : number)
-                }}
-                value={field.value?.toString()}
-                suffix="%"
-                valueIsNumericString
-                autoComplete="off"
-                className="flex-1 text-right text-md"
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={field.disabled}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select fee option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={FeeFrom.InputToken}>
+                    Input token
+                  </SelectItem>
+                  <SelectItem value={FeeFrom.OutputToken}>
+                    Output token
+                  </SelectItem>
+                  <SelectItem value={FeeFrom.TokenA}>
+                    {unitA != null && unitB != null
+                      ? `Always ${unitATicker}`
+                      : 'Token A'}
+                  </SelectItem>
+                  <SelectItem value={FeeFrom.TokenB}>
+                    {unitA != null && unitB != null
+                      ? `Always ${unitBTicker}`
+                      : 'Token B'}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+
+        <div className="wrap mt-2 flex flex-row items-center justify-between gap-2">
+          <p className="flex-3">
+            {unitA != null && unitB != null
+              ? `Swap fee ${unitATicker} to ${unitBTicker}`
+              : 'Swap fee A to B'}
+          </p>
+          <Controller
+            control={control}
+            name="swapFeePercentageAToB"
+            render={({field}) => (
+              <SwapFeePercentageInput
+                value={field.value}
+                onChange={field.onChange}
+                disabled={field.disabled}
+              />
+            )}
+          />
+        </div>
+
+        <div className="wrap mt-2 flex flex-row items-center justify-between gap-2">
+          <p className="flex-3">
+            {unitA != null && unitB != null
+              ? `Swap fee ${unitBTicker} to ${unitATicker}`
+              : 'Swap fee B to A'}
+          </p>
+          <Controller
+            control={control}
+            name="swapFeePercentageBToA"
+            render={({field}) => (
+              <SwapFeePercentageInput
+                value={field.value}
+                onChange={field.onChange}
                 disabled={field.disabled}
               />
             )}
@@ -379,12 +464,14 @@ const CreatePoolPage = () => {
                                 label: 'Swap fee',
                                 value: (
                                   <p>
-                                    {formatPercentage(
-                                      computeFee(
-                                        pool.swapFeePointsAToB, // TODO Support flexible-fee fields
-                                        pool.feeBasis,
-                                      ).times(100),
-                                    )}
+                                    <SwapFeeDisplay
+                                      swapFeePointsAToB={pool.swapFeePointsAToB}
+                                      swapFeePointsBToA={pool.swapFeePointsBToA}
+                                      feeBasis={pool.feeBasis}
+                                      feeFrom={pool.feeFrom}
+                                      unitA={pool.unitA}
+                                      unitB={pool.unitB}
+                                    />
                                   </p>
                                 ),
                               },
@@ -455,6 +542,43 @@ const CreatePoolPage = () => {
         onOpenChange={handleTxSubmittedDialogOpenChange}
       />
     </>
+  )
+}
+
+type SwapFeePercentageInputProps = {
+  value?: number
+  onChange: (value: number | undefined) => void
+  disabled?: boolean
+}
+
+const SwapFeePercentageInput = ({
+  value,
+  onChange,
+  disabled,
+}: SwapFeePercentageInputProps) => {
+  return (
+    <NumericFormat
+      customInput={Input}
+      thousandSeparator={THOUSAND_SEPARATOR}
+      decimalSeparator={DECIMAL_SEPARATOR}
+      allowedDecimalSeparators={['.', ',']}
+      allowNegative={false}
+      decimalScale={FEE_MAX_DECIMALS}
+      isAllowed={({value}) => !value || new BigNumber(value).lte(100)}
+      type="text"
+      placeholder="e.g. 0.2%"
+      onValueChange={({value: newValue}, {source}) => {
+        if (source === 'prop') return
+        const number = Number.parseFloat(newValue)
+        onChange(Number.isNaN(number) ? undefined : number)
+      }}
+      value={value?.toString()}
+      suffix="%"
+      valueIsNumericString
+      autoComplete="off"
+      className="flex-1 text-right text-md"
+      disabled={disabled}
+    />
   )
 }
 

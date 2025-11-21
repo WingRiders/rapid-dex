@@ -1,7 +1,6 @@
-import {computeFee} from '@wingriders/rapid-dex-sdk-core'
 import {ChevronDownIcon} from 'lucide-react'
 import {useState} from 'react'
-import {formatPercentage} from '@/helpers/format-percentage'
+import {SwapFeeDisplay} from '@/components/swap-fee-display'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
@@ -44,7 +43,7 @@ export const RouteSelectButton = ({
         disabled={disabled}
       >
         {selectedPool ? (
-          <SelectedPool pool={selectedPool} />
+          <SelectedPool pool={selectedPool} isSwapAToB={isSwapAToB} />
         ) : (
           <span>Liquidity pool</span>
         )}
@@ -67,9 +66,10 @@ export const RouteSelectButton = ({
 
 type SelectedPoolProps = {
   pool: PoolsListItem
+  isSwapAToB: boolean
 }
 
-const SelectedPool = ({pool}: SelectedPoolProps) => {
+const SelectedPool = ({pool, isSwapAToB}: SelectedPoolProps) => {
   const {metadata: metadataA} = useTokenMetadata(pool.unitA)
   const {metadata: metadataB} = useTokenMetadata(pool.unitB)
 
@@ -77,15 +77,20 @@ const SelectedPool = ({pool}: SelectedPoolProps) => {
   const assetBTicker = metadataB?.ticker ?? metadataB?.name ?? 'unknown'
 
   const poolName = `${assetATicker}/${assetBTicker}`
-  // TODO Add swap direction to props, consider showing also feeFrom
-  const swapFeePercentage = computeFee(
-    pool.swapFeePointsAToB,
-    pool.feeBasis,
-  ).times(100)
 
   return (
     <p>
-      {poolName} ({formatPercentage(swapFeePercentage)})
+      {poolName} (
+      <SwapFeeDisplay
+        swapFeePointsAToB={pool.swapFeePointsAToB}
+        swapFeePointsBToA={pool.swapFeePointsBToA}
+        feeBasis={pool.feeBasis}
+        feeFrom={pool.feeFrom}
+        unitA={pool.unitA}
+        unitB={pool.unitB}
+        showOnly={isSwapAToB ? 'aToB' : 'bToA'}
+      />
+      )
     </p>
   )
 }

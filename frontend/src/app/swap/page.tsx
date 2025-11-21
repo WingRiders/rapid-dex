@@ -1,6 +1,7 @@
 'use client'
 import {skipToken, useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
+import {isFeeFromInput} from '@wingriders/rapid-dex-sdk-core'
 import {
   useLivePoolUtxoQuery,
   usePoolsQuery,
@@ -247,11 +248,19 @@ const SwapPage = () => {
                 ]
               : []),
             selectedRoute?.swapQuantities &&
-              from.unit && {
+              from.unit &&
+              to.unit && {
                 label: 'Swap fee',
                 value: (
                   <AssetQuantity
-                    unit={from.unit}
+                    unit={
+                      isFeeFromInput(
+                        selectedRoute.pool.feeFrom,
+                        from.unit === selectedRoute.pool.unitA,
+                      )
+                        ? from.unit
+                        : to.unit
+                    }
                     quantity={selectedRoute.swapQuantities.paidSwapFee}
                   />
                 ),

@@ -1,12 +1,11 @@
-import {computeFee} from '@wingriders/rapid-dex-sdk-core'
 import {useState} from 'react'
-import {formatPercentage} from '@/helpers/format-percentage'
 import type {PortfolioItem} from '@/helpers/portfolio'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
 import {useConnectedWalletStore} from '../../store/connected-wallet'
 import {AssetQuantity} from '../asset-quantity'
 import {DataRows} from '../data-rows'
+import {SwapFeeDisplay} from '../swap-fee-display'
 import {
   Accordion,
   AccordionContent,
@@ -119,12 +118,14 @@ const LiquidityManagementDialogContent = ({
                   label: 'Swap fee',
                   value: (
                     <p>
-                      {formatPercentage(
-                        // TODO Show fees in both directions if differs? And feeFrom?
-                        computeFee(pool.swapFeePointsAToB, pool.feeBasis).times(
-                          100,
-                        ),
-                      )}
+                      <SwapFeeDisplay
+                        swapFeePointsAToB={pool.swapFeePointsAToB}
+                        swapFeePointsBToA={pool.swapFeePointsBToA}
+                        feeBasis={pool.feeBasis}
+                        feeFrom={pool.feeFrom}
+                        unitA={pool.unitA}
+                        unitB={pool.unitB}
+                      />
                     </p>
                   ),
                 },

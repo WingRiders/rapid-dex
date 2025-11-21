@@ -43,7 +43,12 @@ export const useValidateCreatePoolForm = ({
       return 'Enter different assets'
     }
 
-    if (inputs.swapFeePercentage == null) return 'Enter a swap fee'
+    if (inputs.swapFeePercentageAToB == null)
+      return 'Enter a swap fee for A to B'
+    if (inputs.swapFeePercentageBToA == null)
+      return 'Enter a swap fee for B to A'
+
+    if (inputs.feeFrom == null) return 'Select a fee option'
 
     const assetXBalance = balance?.[assetX.unit] ?? new BigNumber(0)
     const assetYBalance = balance?.[assetY.unit] ?? new BigNumber(0)

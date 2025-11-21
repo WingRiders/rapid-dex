@@ -6,6 +6,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import type {Interaction} from '@wingriders/rapid-dex-common'
+import {compact} from 'lodash'
 import {ExternalLinkIcon, Loader2} from 'lucide-react'
 import {useMemo, useState} from 'react'
 import {env} from '@/config'
@@ -20,9 +21,13 @@ import {InteractionTypeDisplay} from './interaction-type-display'
 
 type InteractionsTableProps = {
   interactions: Interaction[]
+  hidePoolColumn?: boolean
 }
 
-export const InteractionsTable = ({interactions}: InteractionsTableProps) => {
+export const InteractionsTable = ({
+  interactions,
+  hidePoolColumn,
+}: InteractionsTableProps) => {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -31,8 +36,8 @@ export const InteractionsTable = ({interactions}: InteractionsTableProps) => {
   const columns: ColumnDef<Interaction>[] = useMemo(() => {
     const explorerLinks = new CardanoscanLinks(env('NEXT_PUBLIC_NETWORK'))
 
-    const columns: ColumnDef<Interaction>[] = [
-      {
+    const columns: ColumnDef<Interaction>[] = compact([
+      !hidePoolColumn && {
         header: 'Pool',
         cell: ({
           row: {
@@ -110,10 +115,10 @@ export const InteractionsTable = ({interactions}: InteractionsTableProps) => {
           width: '15%',
         },
       },
-    ]
+    ])
 
     return columns
-  }, [])
+  }, [hidePoolColumn])
 
   const table = useReactTable({
     data: interactions,

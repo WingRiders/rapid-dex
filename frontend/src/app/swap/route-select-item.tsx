@@ -1,8 +1,7 @@
-import {computeFee} from '@wingriders/rapid-dex-sdk-core'
 import type {ReactNode} from 'react'
 import {AssetQuantity} from '@/components/asset-quantity'
+import {SwapFeeDisplay} from '@/components/swap-fee-display'
 import {UnitPairDisplay} from '@/components/unit-pair-display'
-import {formatPercentage} from '@/helpers/format-percentage'
 import {cn} from '@/lib/utils'
 import type {PoolsListItem} from '@/types'
 import type {AvailableRoute} from './swap-form'
@@ -65,13 +64,18 @@ export const RouteSelectItem = ({
         />
         <Row
           label="Swap fee"
-          value={formatPercentage(
-            // TODO Consider showing also feeFrom
-            computeFee(
-              isSwapAToB ? pool.swapFeePointsAToB : pool.swapFeePointsBToA,
-              pool.feeBasis,
-            ).times(100),
-          )}
+          value={
+            <p>
+              <SwapFeeDisplay
+                swapFeePointsAToB={pool.swapFeePointsAToB}
+                swapFeePointsBToA={pool.swapFeePointsBToA}
+                feeBasis={pool.feeBasis}
+                feeFrom={pool.feeFrom}
+                unitA={pool.unitA}
+                unitB={pool.unitB}
+              />
+            </p>
+          }
         />
         {swapQuantities && (
           <>

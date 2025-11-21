@@ -33,5 +33,5 @@ export const PoolInteractionsTable = ({
 
   if (!interactions) return null
 
-  return <InteractionsTable interactions={interactions} />
+  return <InteractionsTable interactions={interactions} hidePoolColumn />
 }

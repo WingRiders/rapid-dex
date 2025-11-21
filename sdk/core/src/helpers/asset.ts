@@ -19,6 +19,9 @@ export const compareUnits = (a: Unit, b: Unit) => {
   )
 }
 
+export const sortUnits = (unitA: Unit, unitB: Unit): [Unit, Unit] =>
+  compareUnits(unitA, unitB) > 0 ? [unitB, unitA] : [unitA, unitB]
+
 export const sortAssets = (assetX: Asset, assetY: Asset): [Asset, Asset] =>
   compareUnits(assetX.unit, assetY.unit) > 0
     ? [assetY, assetX]
