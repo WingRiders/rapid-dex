@@ -12,7 +12,7 @@
     "cli": "bun src/cli.ts"
   },
   "dependencies": {
-    "@meshsdk/core": "^1.9.0-beta.18",
+    "@meshsdk/core": "^1.9.0-beta.86",
     "bignumber.js": "^9.1.2",
     "blakejs": "^1.2.1",
     "superjson": "^2.2.2",

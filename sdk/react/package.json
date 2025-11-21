@@ -12,7 +12,7 @@
     "cli": "bun src/cli.ts"
   },
   "dependencies": {
-    "@meshsdk/core": "^1.9.0-beta.18",
+    "@meshsdk/core": "^1.9.0-beta.86",
     "@tanstack/react-query": "^5.68.0",
     "@trpc/client": "^11.0.0",
     "@trpc/tanstack-react-query": "^11.0.0",
