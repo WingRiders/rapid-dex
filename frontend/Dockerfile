@@ -7,9 +7,9 @@ WORKDIR /app
 
 COPY package.json bun.lock ./
 COPY common ./common
+COPY sdk ./sdk
 COPY backend ./backend
 COPY frontend ./frontend
-COPY patches patches
 
 # Install Python (required for building native dependencies)
 RUN apt-get update && \
@@ -41,6 +41,14 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/common/package.json ./common/package.json
 COPY --from=builder /app/common/node_modules ./common/node_modules
 COPY --from=builder /app/common/src ./common/src
+
+COPY --from=builder /app/sdk/core/package.json ./sdk/core/package.json
+COPY --from=builder /app/sdk/core/node_modules ./sdk/core/node_modules
+COPY --from=builder /app/sdk/core/src ./sdk/core/src
+
+COPY --from=builder /app/sdk/react/package.json ./sdk/react/package.json
+COPY --from=builder /app/sdk/react/node_modules ./sdk/react/node_modules
+COPY --from=builder /app/sdk/react/src ./sdk/react/src
 
 COPY --from=builder /app/frontend/package.json ./frontend/package.json
 COPY --from=builder /app/frontend/node_modules ./frontend/node_modules

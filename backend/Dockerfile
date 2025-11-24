@@ -6,10 +6,11 @@ FROM base AS install
 
 COPY package.json bun.lock ./
 COPY common/package.json common/package.json
+COPY sdk/core/package.json sdk/core/package.json
+COPY sdk/react/package.json sdk/react/package.json
 COPY backend/package.json backend/package.json
 COPY backend/prisma backend/prisma
 COPY frontend/package.json frontend/package.json
-COPY patches patches
 
 # Install Python (required for building native dependencies)
 RUN apt-get update && \
