@@ -20,6 +20,9 @@ type BuildSwapTxResult = {
   txFee: BigNumber
 }
 
+/**
+ * Builds a transaction for swapping tokens in a liquidity pool.
+ */
 export const buildSwapTx = async ({
   wallet,
   fetcher,

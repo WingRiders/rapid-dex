@@ -15,6 +15,9 @@ export type BuildAddLiquidityTxArgs = {
   now?: Date // if not provided, the current date will be used
 }
 
+/**
+ * Builds a transaction for adding liquidity to a pool.
+ */
 export const buildAddLiquidityTx = async ({
   wallet,
   fetcher,

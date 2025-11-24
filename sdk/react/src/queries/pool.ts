@@ -4,6 +4,9 @@ import {keyBy} from 'lodash'
 import {getInteractionsQueryDataUpdater} from '../helpers/interactions'
 import {type TRPC, useTRPC} from '../trpc'
 
+/**
+ * Query for current liquidity pools.
+ */
 export const usePoolsQuery = (options?: {enabled?: boolean}) => {
   const trpc = useTRPC()
   const queryOptions = trpc.pools.queryOptions(undefined, options)
@@ -51,6 +54,9 @@ export const usePoolsQuery = (options?: {enabled?: boolean}) => {
   })
 }
 
+/**
+ * Query for current UTxO of a liquidity pool Data is updated in real-time when the UTxO is updated on-chain or in mempool.
+ */
 export const useLivePoolUtxoQuery = (
   input: Parameters<TRPC['poolUtxo']['queryOptions']>[0],
 ) => {
@@ -109,6 +115,9 @@ export const useLivePoolUtxoQuery = (
   })
 }
 
+/**
+ * Query for current interactions of a liquidity pool. Data is updated in real-time when the interactions are updated on-chain or in mempool.
+ */
 export const useLivePoolInteractionsQuery = (
   input: Parameters<TRPC['poolInteractions']['queryOptions']>[0],
 ) => {

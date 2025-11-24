@@ -7,6 +7,12 @@ export type ComputeEarnedSharesParams = {
   poolState: PoolState
 }
 
+/**
+ * @param lockA The amount of token A to add to the pool.
+ * @param lockB The amount of token B to add to the pool.
+ * @param poolState The current state of the pool.
+ * @returns The number of share tokens that the user will receive when adding the given liquidity amount into the given pool state.
+ */
 export const computeEarnedShares = ({
   lockA,
   lockB,

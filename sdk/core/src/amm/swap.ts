@@ -13,6 +13,17 @@ export type ComputeNewReservesParams = {
   feeFrom: FeeFrom
 }
 
+/**
+ * @param currentX The current amount of token X in the pool.
+ * @param currentY The current amount of token Y in the pool.
+ * @param lockX The amount of token X to be sold (if defined, @param outY must be undefined).
+ * @param outY The amount of token Y to be bought (if defined, @param lockX must be undefined).
+ * @param swapFeePoints The swap fee points.
+ * @param feeBasis The fee basis.
+ * @param aToB Whether the swap is from token A to token B.
+ * @param feeFrom Which token the fee is taken from.
+ * @returns The new pool reserves after the swap.
+ */
 export const computeNewReserves = ({
   currentX,
   currentY,

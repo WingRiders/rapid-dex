@@ -20,6 +20,9 @@ type BuildWithdrawLiquidityTxResult = {
   txFee: BigNumber
 }
 
+/**
+ * Builds a transaction for withdrawing liquidity from a pool.
+ */
 export const buildWithdrawLiquidityTx = async ({
   wallet,
   fetcher,

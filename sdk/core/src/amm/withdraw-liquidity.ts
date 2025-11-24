@@ -6,6 +6,11 @@ export type ComputeWithdrawnTokensParams = {
   poolState: PoolState
 }
 
+/**
+ * @param lockShares The amount of share tokens to withdraw.
+ * @param poolState The current state of the pool.
+ * @returns The amount of pool tokens that the user will receive when withdrawing the given amount of share tokens from the given pool state.
+ */
 export const computeReturnedTokens = ({
   lockShares,
   poolState,

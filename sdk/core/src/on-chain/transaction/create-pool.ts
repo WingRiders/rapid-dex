@@ -45,6 +45,9 @@ export type BuildCreatePoolTxResult = {
   sharesAssetName: string
 }
 
+/**
+ * Builds a transaction for creating a new liquidity pool.
+ */
 export const buildCreatePoolTx = async ({
   wallet,
   fetcher,

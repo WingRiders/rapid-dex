@@ -16,3 +16,5 @@ tsconfig.tsbuildinfo
 !.env.prod
 
 dist
+
+.prettierrc.json
