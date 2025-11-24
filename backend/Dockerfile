@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.1 AS base
+FROM oven/bun:1.3.3 AS base
 WORKDIR /app
 
 # This will cache installed dependencies and speed up future builds
@@ -17,7 +17,7 @@ RUN apt-get update && \
     apt-get install -y python3 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-    
+
 RUN bun install --frozen-lockfile --production # exclude devDependencies
 RUN bun run --filter ./backend prisma:generate
 
