@@ -14,12 +14,15 @@ export type WithdrawLiquidityRedeemer = {
   sharesAdd: number
 }
 
+export type WithdrawTreasuryRedeemer = Record<string, never>
+
 export type DonateRedeemer = Record<string, never>
 
 export type PoolRedeemer =
   | SwapRedeemer
   | AddLiquidityRedeemer
   | WithdrawLiquidityRedeemer
+  | WithdrawTreasuryRedeemer
   | DonateRedeemer
 
 export type MintRedeemer = {

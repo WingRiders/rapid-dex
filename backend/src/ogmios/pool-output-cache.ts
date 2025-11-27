@@ -4,6 +4,8 @@ type PoolOutputCacheEntry = {
   shareAssetName: string
   qtyA: bigint
   qtyB: bigint
+  treasuryA: bigint
+  treasuryB: bigint
   lpts: bigint
 }
 
@@ -17,14 +19,18 @@ export const initPoolOutputCache = async () => {
       shareAssetName: true,
       qtyA: true,
       qtyB: true,
+      treasuryA: true,
+      treasuryB: true,
       lpts: true,
     },
   })
   poolOutputCache = new Map(
-    utxos.map(({utxoId, shareAssetName, qtyA, qtyB, lpts}) => [
-      utxoId,
-      {shareAssetName, qtyA, qtyB, lpts},
-    ]),
+    utxos.map(
+      ({utxoId, shareAssetName, qtyA, qtyB, treasuryA, treasuryB, lpts}) => [
+        utxoId,
+        {shareAssetName, qtyA, qtyB, treasuryA, treasuryB, lpts},
+      ],
+    ),
   )
 }
 

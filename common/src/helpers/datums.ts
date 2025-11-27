@@ -1,6 +1,7 @@
 import {deserializeDatum, type UTxO} from '@meshsdk/core'
 import {z} from 'zod'
 import {FeeFrom, type PoolDatum} from '../on-chain'
+import {bigintToBigNumber} from './numbers'
 
 const feeFromSchema = z
   .object({
@@ -31,7 +32,13 @@ const poolDatumSchema = z
       z.object({bytes: z.string()}), // aAssetName
       z.object({bytes: z.string()}), // bPolicyId
       z.object({bytes: z.string()}), // bAssetName
+      z.object({int: z.bigint()}), // treasuryA
+      z.object({int: z.bigint()}), // treasuryB
       feeFromSchema, // feeFrom
+      z.object({bytes: z.string()}), // treasuryAuthorityPolicyId
+      z.object({bytes: z.string()}), // treasuryAuthorityAssetName
+      z.object({int: z.bigint()}), // treasuryFeePointsAToB
+      z.object({int: z.bigint()}), // treasuryFeePointsBToA
       z.object({int: z.bigint()}), // swapFeePointsAToB
       z.object({int: z.bigint()}), // swapFeePointsBToA
       z.object({int: z.bigint()}), // feeBasis
@@ -43,11 +50,17 @@ const poolDatumSchema = z
     aAssetName: fields[1].bytes,
     bPolicyId: fields[2].bytes,
     bAssetName: fields[3].bytes,
-    feeFrom: fields[4],
-    swapFeePointsAToB: Number(fields[5].int),
-    swapFeePointsBToA: Number(fields[6].int),
-    feeBasis: Number(fields[7].int),
-    sharesAssetName: fields[8].bytes,
+    treasuryA: bigintToBigNumber(fields[4].int),
+    treasuryB: bigintToBigNumber(fields[5].int),
+    feeFrom: fields[6],
+    treasuryAuthorityPolicyId: fields[7].bytes,
+    treasuryAuthorityAssetName: fields[8].bytes,
+    treasuryFeePointsAToB: Number(fields[9].int),
+    treasuryFeePointsBToA: Number(fields[10].int),
+    swapFeePointsAToB: Number(fields[11].int),
+    swapFeePointsBToA: Number(fields[12].int),
+    feeBasis: Number(fields[13].int),
+    sharesAssetName: fields[14].bytes,
   }))
 
 export const poolDatumCborFromPoolUtxo = (poolUtxo: UTxO): string => {

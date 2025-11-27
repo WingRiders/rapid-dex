@@ -1,3 +1,5 @@
+import type BigNumber from 'bignumber.js'
+
 export enum FeeFrom {
   InputToken = 'InputToken',
   OutputToken = 'OutputToken',
@@ -10,7 +12,13 @@ export type PoolDatum = {
   aAssetName: string
   bPolicyId: string
   bAssetName: string
+  treasuryA: BigNumber
+  treasuryB: BigNumber
   feeFrom: FeeFrom
+  treasuryAuthorityPolicyId: string
+  treasuryAuthorityAssetName: string
+  treasuryFeePointsAToB: number
+  treasuryFeePointsBToA: number
   swapFeePointsAToB: number
   swapFeePointsBToA: number
   feeBasis: number

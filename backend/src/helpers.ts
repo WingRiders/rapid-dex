@@ -9,11 +9,11 @@ export const originPoint = {
     height: 4490511,
   },
   preprod: {
-    // First pool was created in this transaction: https://preprod.cardanoscan.io/transaction/de232c0234a6f1b964fe6a00514a75f758ec01551e7c1fe399bc474e8a55b276
+    // First pool was created in this transaction: https://preprod.cexplorer.io/tx/d91e8c544e09f861c434552e5b6ac268a148a2f5a2acd3b3baa0cfa30d158f44
     // Origin point need to be 1 block before that
-    id: '42bc57652b1df6ce7df5169f56f4d2f058745d0f775703e17746335c6834fef9',
-    slot: 106658607,
-    height: 4088123,
+    id: 'c6170f3fe6744a6b9f06c7aefb093e32e7c1804bb1fb2e9a02653e92b7eb020b',
+    slot: 108345461,
+    height: 4162219,
   },
 }[config.NETWORK]
 

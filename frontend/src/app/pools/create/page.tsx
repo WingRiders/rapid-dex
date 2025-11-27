@@ -180,7 +180,11 @@ const CreatePoolPage = () => {
             encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
               ? encodedSwapFeeAToB.feeBasis
               : encodedSwapFeeAToB.feeBasis * encodedSwapFeeBToA.feeBasis,
+          // TODO Add treasury fields
           feeFrom,
+          treasuryAuthorityUnit: assetY.unit,
+          treasuryFeePointsAToB: encodedSwapFeeAToB.feePoints,
+          treasuryFeePointsBToA: encodedSwapFeeBToA.feePoints,
           swapFeePointsAToB:
             encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
               ? encodedSwapFeeAToB.feePoints

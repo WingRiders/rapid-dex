@@ -28,6 +28,7 @@ enum PoolInteractionType {
   Swap
   AddLiquidity
   WithdrawLiquidity
+  WithdrawTreasury
   Donate
 }
 
@@ -45,18 +46,24 @@ model PoolOutput {
   slot      Int
   spendSlot Int?
 
-  shareAssetName    String
-  assetAPolicy      String
-  assetAName        String
-  assetBPolicy      String
-  assetBName        String
-  lpts              BigInt
-  qtyA              BigInt
-  qtyB              BigInt
-  feeFrom           FeeFrom
-  swapFeePointsAToB Int
-  swapFeePointsBToA Int
-  feeBasis          Int
+  shareAssetName          String
+  assetAPolicy            String
+  assetAName              String
+  assetBPolicy            String
+  assetBName              String
+  treasuryA               BigInt
+  treasuryB               BigInt
+  lpts                    BigInt
+  qtyA                    BigInt // excluding treasury
+  qtyB                    BigInt // excluding treasury
+  feeFrom                 FeeFrom
+  treasuryAuthorityPolicy String
+  treasuryAuthorityName   String
+  treasuryFeePointsAToB   Int
+  treasuryFeePointsBToA   Int
+  swapFeePointsAToB       Int
+  swapFeePointsBToA       Int
+  feeBasis                Int
 
   address       String // bech32 encoded
   assets        Json
@@ -70,9 +77,11 @@ model PoolOutput {
   createdByStakeKeyHash String?
 
   // difference between this pool output and the previous one
-  lptsDiff BigInt
-  qtyADiff BigInt
-  qtyBDiff BigInt
+  lptsDiff      BigInt
+  qtyADiff      BigInt
+  qtyBDiff      BigInt
+  treasuryADiff BigInt
+  treasuryBDiff BigInt
 
   volumeA       BigInt
   volumeB       BigInt

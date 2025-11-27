@@ -1,5 +1,9 @@
 import {type Data, mConStr, mConStr0} from '@meshsdk/core'
-import {FeeFrom, type PoolDatum} from '@wingriders/rapid-dex-common'
+import {
+  bigNumberToBigInt,
+  FeeFrom,
+  type PoolDatum,
+} from '@wingriders/rapid-dex-common'
 
 const feeFromToMesh = (feeFrom: FeeFrom) =>
   mConStr(
@@ -17,9 +21,15 @@ export const poolDatumToMesh = ({
   aPolicyId,
   bAssetName,
   bPolicyId,
+  treasuryA,
+  treasuryB,
   feeBasis,
   sharesAssetName,
   feeFrom,
+  treasuryAuthorityPolicyId,
+  treasuryAuthorityAssetName,
+  treasuryFeePointsAToB,
+  treasuryFeePointsBToA,
   swapFeePointsAToB,
   swapFeePointsBToA,
 }: PoolDatum): Data =>
@@ -28,7 +38,13 @@ export const poolDatumToMesh = ({
     aAssetName,
     bPolicyId,
     bAssetName,
+    bigNumberToBigInt(treasuryA),
+    bigNumberToBigInt(treasuryB),
     feeFromToMesh(feeFrom),
+    treasuryAuthorityPolicyId,
+    treasuryAuthorityAssetName,
+    treasuryFeePointsAToB,
+    treasuryFeePointsBToA,
     swapFeePointsAToB,
     swapFeePointsBToA,
     feeBasis,

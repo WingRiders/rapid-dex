@@ -48,6 +48,8 @@ const mempoolPoolOutputs = new Map<
   {
     qtyA: bigint
     qtyB: bigint
+    treasuryA: bigint
+    treasuryB: bigint
     lpts: bigint
   }
 >()
@@ -95,6 +97,8 @@ export const startMempoolMonitoring = async () => {
         mempoolPoolOutputs.set(newPoolOutput.utxoId, {
           qtyA: newPoolOutput.qtyA,
           qtyB: newPoolOutput.qtyB,
+          treasuryA: newPoolOutput.treasuryA,
+          treasuryB: newPoolOutput.treasuryB,
           lpts: newPoolOutput.lpts,
         })
       }
@@ -196,13 +200,21 @@ const processMempoolTransaction = (
   const poolUtxoId = getUtxoId({txHash: tx.id, outputIndex: poolOutputIndex})
   const script = parseOgmiosScript(poolOutput.script)
 
+  const treasuryA = bigNumberToBigInt(poolDatum.treasuryA)
+  const treasuryB = bigNumberToBigInt(poolDatum.treasuryB)
+
   const lpts = poolOutput.value[poolValidatorHash]![poolDatum.sharesAssetName]!
-  const qtyA = isAdaPool
-    ? bigNumberToBigInt(
-        new BigNumber(poolOutput.value.ada.lovelace.toString()).minus(poolOil),
-      )
-    : poolOutput.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!
-  const qtyB = poolOutput.value[poolDatum.bPolicyId]![poolDatum.bAssetName]!
+  const qtyA =
+    (isAdaPool
+      ? bigNumberToBigInt(
+          new BigNumber(poolOutput.value.ada.lovelace.toString()).minus(
+            poolOil,
+          ),
+        )
+      : poolOutput.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!) -
+    treasuryA
+  const qtyB =
+    poolOutput.value[poolDatum.bPolicyId]![poolDatum.bAssetName]! - treasuryB
 
   let createdByStakeKeyHash: string | null = null
   try {
@@ -222,6 +234,13 @@ const processMempoolTransaction = (
   const qtyADiff = spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA
   const qtyBDiff = spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB
 
+  const treasuryADiff = spentPoolInput
+    ? treasuryA - spentPoolInput.treasuryA
+    : treasuryA
+  const treasuryBDiff = spentPoolInput
+    ? treasuryB - spentPoolInput.treasuryB
+    : treasuryB
+
   const mempoolPoolOutput: MempoolPoolOutput = {
     utxoId: poolUtxoId,
     shareAssetName: poolDatum.sharesAssetName,
@@ -232,7 +251,13 @@ const processMempoolTransaction = (
     lpts,
     qtyA,
     qtyB,
+    treasuryA,
+    treasuryB,
     feeFrom: feeFromToDbFeeFrom(poolDatum.feeFrom),
+    treasuryAuthorityPolicy: poolDatum.treasuryAuthorityPolicyId,
+    treasuryAuthorityName: poolDatum.treasuryAuthorityAssetName,
+    treasuryFeePointsAToB: poolDatum.treasuryFeePointsAToB,
+    treasuryFeePointsBToA: poolDatum.treasuryFeePointsBToA,
     swapFeePointsAToB: poolDatum.swapFeePointsAToB,
     swapFeePointsBToA: poolDatum.swapFeePointsBToA,
     feeBasis: poolDatum.feeBasis,
@@ -250,10 +275,15 @@ const processMempoolTransaction = (
     lptsDiff: spentPoolInput ? lpts - spentPoolInput.lpts : lpts,
     qtyADiff,
     qtyBDiff,
+    treasuryADiff,
+    treasuryBDiff,
     ...calculatePoolOutputVolume({
       interactionType,
       qtyADiff,
       qtyBDiff,
+      treasuryADiff,
+      treasuryBDiff,
+      feeFrom: poolDatum.feeFrom,
     }),
   }
 

@@ -22,6 +22,7 @@ export type AvailableRoute = {
     lockX: BigNumber
     outY: BigNumber
     paidSwapFee: BigNumber
+    paidTreasuryFee: BigNumber
   } | null
 }
 
@@ -46,25 +47,30 @@ const appendSwapQuantitiesToAvailableRoutes = (
           ? [pool.poolState.qtyA, pool.poolState.qtyB]
           : [pool.poolState.qtyB, pool.poolState.qtyA]
       try {
-        const {lockX, outY, newX, newY, paidSwapFee} = computeNewReserves({
-          currentX: poolX,
-          currentY: poolY,
-          swapFeePoints:
-            fromUnit === pool.unitA
-              ? pool.swapFeePointsAToB
-              : pool.swapFeePointsBToA,
-          feeBasis: pool.feeBasis,
-          lockX: basedOn.type === 'lockX' ? basedOn.value : undefined,
-          outY: basedOn.type === 'outY' ? basedOn.value : undefined,
-          aToB: fromUnit === pool.unitA,
-          feeFrom: pool.feeFrom,
-        })
+        const {lockX, outY, newX, newY, paidSwapFee, paidTreasuryFee} =
+          computeNewReserves({
+            currentX: poolX,
+            currentY: poolY,
+            swapFeePoints:
+              fromUnit === pool.unitA
+                ? pool.swapFeePointsAToB
+                : pool.swapFeePointsBToA,
+            treasuryFeePoints:
+              fromUnit === pool.unitA
+                ? pool.treasuryFeePointsAToB
+                : pool.treasuryFeePointsBToA,
+            feeBasis: pool.feeBasis,
+            lockX: basedOn.type === 'lockX' ? basedOn.value : undefined,
+            outY: basedOn.type === 'outY' ? basedOn.value : undefined,
+            aToB: fromUnit === pool.unitA,
+            feeFrom: pool.feeFrom,
+          })
 
         return {
           pool,
           swapQuantities:
             newX.gt(0) && newY.gt(0) && lockX.gt(0) && outY.gt(0)
-              ? {lockX, outY, paidSwapFee}
+              ? {lockX, outY, paidSwapFee, paidTreasuryFee}
               : null,
         }
       } catch {

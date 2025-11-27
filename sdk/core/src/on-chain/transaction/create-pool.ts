@@ -34,6 +34,9 @@ export type BuildCreatePoolTxArgs = {
   seed: RefTxIn
   feeBasis: number
   feeFrom: FeeFrom
+  treasuryAuthorityUnit: string
+  treasuryFeePointsAToB: number
+  treasuryFeePointsBToA: number
   swapFeePointsAToB: number
   swapFeePointsBToA: number
   now?: Date // if not provided, the current date will be used
@@ -57,6 +60,9 @@ export const buildCreatePoolTx = async ({
   seed,
   feeBasis,
   feeFrom,
+  treasuryAuthorityUnit,
+  treasuryFeePointsAToB,
+  treasuryFeePointsBToA,
   swapFeePointsAToB,
   swapFeePointsBToA,
   now = new Date(),
@@ -80,15 +86,24 @@ export const buildCreatePoolTx = async ({
 
   const [aPolicyId, aAssetName] = parseUnit(assetA.unit)
   const [bPolicyId, bAssetName] = parseUnit(assetB.unit)
+  const [treasuryAuthorityPolicyId, treasuryAuthorityAssetName] = parseUnit(
+    treasuryAuthorityUnit,
+  )
 
   const poolDatum: PoolDatum = {
     aAssetName,
     aPolicyId,
     bAssetName,
     bPolicyId,
+    treasuryA: new BigNumber(0),
+    treasuryB: new BigNumber(0),
     feeBasis,
     sharesAssetName,
     feeFrom,
+    treasuryAuthorityPolicyId,
+    treasuryAuthorityAssetName,
+    treasuryFeePointsAToB,
+    treasuryFeePointsBToA,
     swapFeePointsAToB,
     swapFeePointsBToA,
   }

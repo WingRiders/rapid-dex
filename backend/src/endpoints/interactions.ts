@@ -60,6 +60,8 @@ type RequiredDbPoolOutput = Pick<
   | 'assetBName'
   | 'qtyADiff'
   | 'qtyBDiff'
+  | 'treasuryADiff'
+  | 'treasuryBDiff'
   | 'lptsDiff'
   | 'shareAssetName'
   | 'slot'
@@ -76,6 +78,8 @@ type RequiredMempoolPoolOutput = Pick<
   | 'assetBName'
   | 'qtyADiff'
   | 'qtyBDiff'
+  | 'treasuryADiff'
+  | 'treasuryBDiff'
   | 'lptsDiff'
   | 'shareAssetName'
 >
@@ -125,6 +129,8 @@ const getInteractionType = ({
       return InteractionType.ADD_LIQUIDITY
     case PoolInteractionType.WithdrawLiquidity:
       return InteractionType.WITHDRAW_LIQUIDITY
+    case PoolInteractionType.WithdrawTreasury:
+      return InteractionType.WITHDRAW_TREASURY
     case PoolInteractionType.Donate:
       return InteractionType.DONATE
   }
@@ -144,6 +150,8 @@ const getInteractionSpecificFields = (
       return {type, ...getAddLiquidityInteractionFields(poolOutput)}
     case InteractionType.WITHDRAW_LIQUIDITY:
       return {type, ...getWithdrawLiquidityInteractionFields(poolOutput)}
+    case InteractionType.WITHDRAW_TREASURY:
+      return {type, ...getWithdrawTreasuryInteractionFields(poolOutput)}
     case InteractionType.DONATE:
       return {type, ...getDonateInteractionFields(poolOutput)}
   }
@@ -191,6 +199,15 @@ const getWithdrawLiquidityInteractionFields = (
     lockShares: bigintToBigNumber(poolOutput.lptsDiff),
     outA: bigintToBigNumber(poolOutput.qtyADiff).negated(),
     outB: bigintToBigNumber(poolOutput.qtyBDiff).negated(),
+  }
+}
+
+const getWithdrawTreasuryInteractionFields = (
+  poolOutput: PoolOutput,
+): InteractionSpecificFields[InteractionType.WITHDRAW_TREASURY] => {
+  return {
+    outA: bigintToBigNumber(poolOutput.treasuryADiff).negated(),
+    outB: bigintToBigNumber(poolOutput.treasuryBDiff).negated(),
   }
 }
 

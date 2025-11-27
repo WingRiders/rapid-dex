@@ -6,6 +6,7 @@ export enum InteractionType {
   SWAP = 'SWAP',
   ADD_LIQUIDITY = 'ADD_LIQUIDITY',
   WITHDRAW_LIQUIDITY = 'WITHDRAW_LIQUIDITY',
+  WITHDRAW_TREASURY = 'WITHDRAW_TREASURY',
   DONATE = 'DONATE',
 }
 
@@ -27,6 +28,10 @@ export type InteractionSpecificFields = {
   }
   [InteractionType.WITHDRAW_LIQUIDITY]: {
     lockShares: BigNumber
+    outA: BigNumber
+    outB: BigNumber
+  }
+  [InteractionType.WITHDRAW_TREASURY]: {
     outA: BigNumber
     outB: BigNumber
   }

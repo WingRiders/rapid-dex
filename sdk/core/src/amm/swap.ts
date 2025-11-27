@@ -8,6 +8,7 @@ export type ComputeNewReservesParams = {
   lockX?: BigNumber
   outY?: BigNumber
   swapFeePoints: number
+  treasuryFeePoints: number
   feeBasis: number
   aToB: boolean
   feeFrom: FeeFrom
@@ -30,6 +31,7 @@ export const computeNewReserves = ({
   lockX,
   outY,
   swapFeePoints,
+  treasuryFeePoints,
   feeBasis,
   aToB,
   feeFrom,
@@ -39,29 +41,110 @@ export const computeNewReserves = ({
   if (!lockX && !outY) throw new Error('Either lockX or outY must be provided.')
 
   const swapFee = computeFee(swapFeePoints, feeBasis)
+  const treasuryFee = computeFee(treasuryFeePoints, feeBasis)
 
   if (!lockX) {
     // Compute lockX from outY
-    const feeFactor = new BigNumber(1).minus(swapFee)
+    const feeFactor = new BigNumber(1).minus(swapFee).minus(treasuryFee)
+    if (feeFactor.lte(0)) {
+      throw new Error(
+        `Could not compute lockX: feeFactor <= 0: ${feeFactor.toString()}`,
+      )
+    }
+
     if (isFeeFromInput(feeFrom, aToB)) {
       // Fee is taken from X
       const newY = currentY.minus(outY!)
-      lockX = currentX
+      const lockXMinusFees = currentX
         .times(outY!)
         .div(newY)
         .integerValue(BigNumber.ROUND_CEIL)
+
+      // Piece-wise rounding may make lockX be max +2 bigger
+      const minPossibleLockX = lockXMinusFees
         .div(feeFactor)
         .integerValue(BigNumber.ROUND_CEIL)
+      const maxPossibleLockX = minPossibleLockX.plus(2)
+
+      const computeLockX = () => {
+        for (
+          let lockX = minPossibleLockX;
+          lockX.lte(maxPossibleLockX);
+          lockX = lockX.plus(1)
+        ) {
+          const paidSwapFee = lockX
+            .times(swapFee)
+            .integerValue(BigNumber.ROUND_CEIL)
+          const paidTreasuryFee = lockX
+            .times(treasuryFee)
+            .integerValue(BigNumber.ROUND_CEIL)
+          const newX = currentX.plus(lockX).minus(paidTreasuryFee)
+          const computedNewY = currentX
+            .times(currentY)
+            .div(newX.minus(paidSwapFee))
+            .integerValue(BigNumber.ROUND_CEIL)
+          const computedOutY = currentY.minus(computedNewY)
+          if (computedOutY.gte(outY!)) {
+            return lockX
+          }
+        }
+        throw new Error(
+          `Could not compute lockX - should not happen (outY: ${outY!}, swapFee: ${swapFee}, treasuryFee: ${treasuryFee}, minPossibleLockX: ${minPossibleLockX}, maxPossibleLockX: ${maxPossibleLockX}, feeFrom: ${feeFrom}, aToB: ${aToB}, currentX: ${currentX}, currentY: ${currentY})`,
+        )
+      }
+
+      lockX = computeLockX()
     } else {
       // Fee is taken from Y
-      const outYPlusFee = outY!
+
+      // Piece-wise rounding may make outYPlusFees be max +2 bigger
+      const minPossibleOutYPlusFees = outY!
         .div(feeFactor)
         .integerValue(BigNumber.ROUND_CEIL)
-      const newY = currentY.minus(outYPlusFee)
-      lockX = currentX
-        .times(outYPlusFee)
-        .div(newY)
+      const maxPossibleNewY = currentY.minus(minPossibleOutYPlusFees)
+      const minPossibleNewY = BigNumber.max(maxPossibleNewY.minus(2), 1)
+      const minPossibleNewX = currentX
+        .times(currentY)
+        .div(maxPossibleNewY)
         .integerValue(BigNumber.ROUND_CEIL)
+      const maxPossibleNewX = currentX
+        .times(currentY)
+        .div(minPossibleNewY)
+        .integerValue(BigNumber.ROUND_CEIL)
+      const minPossibleLockX = minPossibleNewX.minus(currentX)
+      const maxPossibleLockX = maxPossibleNewX.minus(currentX)
+
+      const computeLockX = () => {
+        for (
+          let lockX = minPossibleLockX;
+          lockX.lte(maxPossibleLockX);
+          lockX = lockX.plus(1)
+        ) {
+          const newX = currentX.plus(lockX)
+          const newY = currentX
+            .times(currentY)
+            .div(newX)
+            .integerValue(BigNumber.ROUND_CEIL)
+          const outYPlusFee = currentY.minus(newY)
+          const paidSwapFee = outYPlusFee
+            .times(swapFee)
+            .integerValue(BigNumber.ROUND_CEIL)
+          const paidTreasuryFee = outYPlusFee
+            .times(treasuryFee)
+            .integerValue(BigNumber.ROUND_CEIL)
+          const computedOutY = outYPlusFee
+            .minus(paidSwapFee)
+            .minus(paidTreasuryFee)
+          if (computedOutY.gte(outY!)) {
+            return lockX
+          }
+        }
+        throw new Error(
+          `Could not compute lockX - should not happen (outY: ${outY!}, swapFee: ${swapFee}, treasuryFee: ${treasuryFee}, minPossibleOutYPlusFees: ${minPossibleOutYPlusFees}, maxPossibleNewY: ${maxPossibleNewY}, minPossibleNewY: ${minPossibleNewY}, minPossibleLockX: ${minPossibleLockX}, maxPossibleLockX: ${maxPossibleLockX.plus(2)}, feeFrom: ${feeFrom}, aToB: ${aToB}, currentX: ${currentX}, currentY: ${currentY})`,
+        )
+      }
+
+      lockX = computeLockX()
     }
   }
 
@@ -70,9 +153,10 @@ export const computeNewReserves = ({
     currentB: aToB ? currentY : currentX,
     lockX,
     swapFee,
+    treasuryFee,
   }
 
-  const {newA, newB, computedOutY, paidSwapFee} = aToB
+  const {newA, newB, computedOutY, paidSwapFee, paidTreasuryFee} = aToB
     ? [FeeFrom.TokenA, FeeFrom.InputToken].includes(feeFrom)
       ? newLiquidityAToBFeeFromA(newLiquidityParams)
       : newLiquidityAToBFeeFromB(newLiquidityParams)
@@ -90,6 +174,7 @@ export const computeNewReserves = ({
     lockX,
     outY,
     paidSwapFee,
+    paidTreasuryFee,
   }
 }
 
@@ -98,12 +183,14 @@ type NewLiquidityParams = {
   currentB: BigNumber
   lockX: BigNumber
   swapFee: BigNumber // Between 0-1
+  treasuryFee: BigNumber // Between 0-1
 }
 
 const newLiquidityBToAFeeFromA = ({
   currentA,
   currentB,
   swapFee,
+  treasuryFee,
   lockX,
 }: NewLiquidityParams) => {
   const newB = currentB.plus(lockX)
@@ -115,11 +202,15 @@ const newLiquidityBToAFeeFromA = ({
   const paidSwapFee = receivedPlusFee
     .times(swapFee)
     .integerValue(BigNumber.ROUND_CEIL)
+  const paidTreasuryFee = receivedPlusFee
+    .times(treasuryFee)
+    .integerValue(BigNumber.ROUND_CEIL)
   return {
     newA,
     newB,
-    computedOutY: receivedPlusFee.minus(paidSwapFee),
+    computedOutY: receivedPlusFee.minus(paidSwapFee).minus(paidTreasuryFee),
     paidSwapFee,
+    paidTreasuryFee,
   }
 }
 
@@ -127,6 +218,7 @@ const newLiquidityAToBFeeFromB = ({
   currentA,
   currentB,
   swapFee,
+  treasuryFee,
   lockX,
 }: NewLiquidityParams) => {
   const newA = currentA.plus(lockX)
@@ -138,11 +230,15 @@ const newLiquidityAToBFeeFromB = ({
   const paidSwapFee = receivedPlusFee
     .times(swapFee)
     .integerValue(BigNumber.ROUND_CEIL)
+  const paidTreasuryFee = receivedPlusFee
+    .times(treasuryFee)
+    .integerValue(BigNumber.ROUND_CEIL)
   return {
     newA,
     newB,
-    computedOutY: receivedPlusFee.minus(paidSwapFee),
+    computedOutY: receivedPlusFee.minus(paidSwapFee).minus(paidTreasuryFee),
     paidSwapFee,
+    paidTreasuryFee,
   }
 }
 
@@ -150,28 +246,48 @@ const newLiquidityAToBFeeFromA = ({
   currentA,
   currentB,
   swapFee,
+  treasuryFee,
   lockX,
 }: NewLiquidityParams) => {
   const paidSwapFee = lockX.times(swapFee).integerValue(BigNumber.ROUND_CEIL)
-  const newA = currentA.plus(lockX)
+  const paidTreasuryFee = lockX
+    .times(treasuryFee)
+    .integerValue(BigNumber.ROUND_CEIL)
+  const newA = currentA.plus(lockX).minus(paidTreasuryFee)
   const newB = currentA
     .times(currentB)
     .div(newA.minus(paidSwapFee))
     .integerValue(BigNumber.ROUND_CEIL)
-  return {newA, newB, computedOutY: currentB.minus(newB), paidSwapFee}
+  return {
+    newA,
+    newB,
+    computedOutY: currentB.minus(newB),
+    paidSwapFee,
+    paidTreasuryFee,
+  }
 }
 
 const newLiquidityBToAFeeFromB = ({
   currentA,
   currentB,
   swapFee,
+  treasuryFee,
   lockX,
 }: NewLiquidityParams) => {
   const paidSwapFee = lockX.times(swapFee).integerValue(BigNumber.ROUND_CEIL)
-  const newB = currentB.plus(lockX)
+  const paidTreasuryFee = lockX
+    .times(treasuryFee)
+    .integerValue(BigNumber.ROUND_CEIL)
+  const newB = currentB.plus(lockX).minus(paidTreasuryFee)
   const newA = currentA
     .times(currentB)
     .div(newB.minus(paidSwapFee))
     .integerValue(BigNumber.ROUND_CEIL)
-  return {newA, newB, computedOutY: currentA.minus(newA), paidSwapFee}
+  return {
+    newA,
+    newB,
+    computedOutY: currentA.minus(newA),
+    paidSwapFee,
+    paidTreasuryFee,
+  }
 }

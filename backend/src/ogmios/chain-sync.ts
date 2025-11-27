@@ -99,16 +99,23 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
       })
       const script = parseOgmiosScript(poolOutput.script)
 
+      const treasuryA = bigNumberToBigInt(poolDatum.treasuryA)
+      const treasuryB = bigNumberToBigInt(poolDatum.treasuryB)
+
       const lpts =
         poolOutput.value[poolValidatorHash]![poolDatum.sharesAssetName]!
-      const qtyA = isAdaPool
-        ? bigNumberToBigInt(
-            new BigNumber(poolOutput.value.ada.lovelace.toString()).minus(
-              poolOil,
-            ),
-          )
-        : poolOutput.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!
-      const qtyB = poolOutput.value[poolDatum.bPolicyId]![poolDatum.bAssetName]!
+      const qtyA =
+        (isAdaPool
+          ? bigNumberToBigInt(
+              new BigNumber(poolOutput.value.ada.lovelace.toString()).minus(
+                poolOil,
+              ),
+            )
+          : poolOutput.value[poolDatum.aPolicyId]![poolDatum.aAssetName]!) -
+        treasuryA
+      const qtyB =
+        poolOutput.value[poolDatum.bPolicyId]![poolDatum.bAssetName]! -
+        treasuryB
 
       let createdByStakeKeyHash: string | null = null
       try {
@@ -128,6 +135,13 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
       const qtyADiff = spentPoolInput ? qtyA - spentPoolInput.qtyA : qtyA
       const qtyBDiff = spentPoolInput ? qtyB - spentPoolInput.qtyB : qtyB
 
+      const treasuryADiff = spentPoolInput
+        ? treasuryA - spentPoolInput.treasuryA
+        : treasuryA
+      const treasuryBDiff = spentPoolInput
+        ? treasuryB - spentPoolInput.treasuryB
+        : treasuryB
+
       const dbPoolOutput: PoolOutput = {
         utxoId: poolUtxoId,
         spendUtxoId: null,
@@ -141,7 +155,13 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
         lpts,
         qtyA,
         qtyB,
+        treasuryA,
+        treasuryB,
         feeFrom: feeFromToDbFeeFrom(poolDatum.feeFrom),
+        treasuryAuthorityPolicy: poolDatum.treasuryAuthorityPolicyId,
+        treasuryAuthorityName: poolDatum.treasuryAuthorityAssetName,
+        treasuryFeePointsAToB: poolDatum.treasuryFeePointsAToB,
+        treasuryFeePointsBToA: poolDatum.treasuryFeePointsBToA,
         swapFeePointsAToB: poolDatum.swapFeePointsAToB,
         swapFeePointsBToA: poolDatum.swapFeePointsBToA,
         feeBasis: poolDatum.feeBasis,
@@ -157,10 +177,15 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
         lptsDiff: spentPoolInput ? lpts - spentPoolInput.lpts : lpts,
         qtyADiff,
         qtyBDiff,
+        treasuryADiff,
+        treasuryBDiff,
         ...calculatePoolOutputVolume({
           interactionType,
           qtyADiff,
           qtyBDiff,
+          treasuryADiff,
+          treasuryBDiff,
+          feeFrom: poolDatum.feeFrom,
         }),
       }
 
@@ -168,6 +193,8 @@ const processBlock = async (block: BlockPraos, tip: Tip | Origin) => {
         shareAssetName: poolDatum.sharesAssetName,
         qtyA: dbPoolOutput.qtyA,
         qtyB: dbPoolOutput.qtyB,
+        treasuryA: dbPoolOutput.treasuryA,
+        treasuryB: dbPoolOutput.treasuryB,
         lpts: dbPoolOutput.lpts,
       })
 

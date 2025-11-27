@@ -46,6 +46,8 @@ export const dbPoolOutputToPool = (
     | 'feeFrom'
     | 'swapFeePointsAToB'
     | 'swapFeePointsBToA'
+    | 'treasuryFeePointsAToB'
+    | 'treasuryFeePointsBToA'
     | 'feeBasis'
     | 'lpts'
     | 'qtyA'
@@ -59,6 +61,8 @@ export const dbPoolOutputToPool = (
   feeFrom: dbFeeFromToFeeFrom(poolOutput.feeFrom),
   swapFeePointsAToB: poolOutput.swapFeePointsAToB,
   swapFeePointsBToA: poolOutput.swapFeePointsBToA,
+  treasuryFeePointsAToB: poolOutput.treasuryFeePointsAToB,
+  treasuryFeePointsBToA: poolOutput.treasuryFeePointsBToA,
   feeBasis: poolOutput.feeBasis,
 })
 

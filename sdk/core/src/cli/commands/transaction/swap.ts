@@ -44,19 +44,21 @@ export const buildSwapCommand = () => {
         shareAssetName: options.shareAssetName,
       })
 
-      const [currentX, currentY, lockUnit, swapFeePoints] =
+      const [currentX, currentY, lockUnit, swapFeePoints, treasuryFeePoints] =
         options.direction === 'aToB'
           ? [
               pool.poolState.qtyA,
               pool.poolState.qtyB,
               pool.unitA,
               pool.swapFeePointsAToB,
+              pool.treasuryFeePointsAToB,
             ]
           : [
               pool.poolState.qtyB,
               pool.poolState.qtyA,
               pool.unitB,
               pool.swapFeePointsBToA,
+              pool.treasuryFeePointsBToA,
             ]
 
       const wallet = await initWallet(config)
@@ -68,6 +70,7 @@ export const buildSwapCommand = () => {
         currentX,
         currentY,
         swapFeePoints,
+        treasuryFeePoints,
         feeBasis: pool.feeBasis,
         lockX: options.quantity,
         aToB: options.direction === 'aToB',

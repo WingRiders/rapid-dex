@@ -27,6 +27,8 @@ type HandleNewPoolOutputEventsArgs = {
     | 'feeFrom'
     | 'swapFeePointsAToB'
     | 'swapFeePointsBToA'
+    | 'treasuryFeePointsAToB'
+    | 'treasuryFeePointsBToA'
     | 'feeBasis'
     | 'lpts'
     | 'qtyA'

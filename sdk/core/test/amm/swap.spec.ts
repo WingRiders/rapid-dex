@@ -12,7 +12,8 @@ describe('computeNewReserves', () => {
   const params = {
     currentX: new BigNumber(80),
     currentY: new BigNumber(30),
-    swapFeePoints: 1, // 1% fee
+    swapFeePoints: 1,
+    treasuryFeePoints: 0,
     feeBasis: 100,
     aToB: true,
     feeFrom: FeeFrom.InputToken,
@@ -29,6 +30,7 @@ describe('computeNewReserves', () => {
           currentY: new BigNumber(1_000_000_000),
           lockX: new BigNumber(10_000_000),
           swapFeePoints: 1,
+          treasuryFeePoints: 0,
           feeBasis: 500,
           aToB: true,
           feeFrom: FeeFrom.InputToken,
@@ -57,30 +59,47 @@ describe('computeNewReserves', () => {
       params.outY.toNumber(),
     )
     expect(result.lockX.toNumber()).toBeGreaterThan(0)
-    expect(result.newX).toEqual(params.currentX.plus(result.lockX))
+
+    const expectedNewX = params.currentX
+      .plus(result.lockX)
+      .minus(
+        isFeeFromInput(params.feeFrom, params.aToB)
+          ? result.paidTreasuryFee
+          : 0,
+      )
+    expect(result.newX).toEqual(expectedNewX)
   }
 
-  for (const [currentX, currentY, swapFeePoints, aToB, feeFrom] of cartesianGen(
-    [
-      [1, 2, 7, 19, 80], // currentX
-      [1, 2, 3, 13], // currentY
-      [0, 1, 2, 3, 5, 8, 13], // swapFeePoints
-      [true, false], // aToB
-      Object.values(FeeFrom), // feeFrom
-    ],
+  for (const [
+    currentX,
+    currentY,
+    swapFeePoints,
+    treasuryFeePoints,
+    aToB,
+    feeFrom,
+  ] of cartesianGen(
+    [1, 2, 7, 19, 80], // currentX
+    [1, 2, 3, 13], // currentY
+    [0, 1, 2, 3, 5, 8, 13], // swapFeePoints
+    [0, 1, 2, 3, 5, 8, 13], // treasuryFeePoints
+    [true, false], // aToB
+    Object.values(FeeFrom), // feeFrom,
   )) {
     const maxOutY = // Getting more Y than maxOutY is impossible
       currentY -
+      1 - // 1 Y must stay in the pool in all cases
       (isFeeFromInput(feeFrom, aToB)
-        ? 1
-        : Math.ceil((swapFeePoints * currentY) / params.feeBasis))
+        ? 0
+        : Math.ceil((swapFeePoints * currentY) / params.feeBasis) +
+          Math.ceil((treasuryFeePoints * currentY) / params.feeBasis))
     for (let outY = 1; outY <= maxOutY; outY++) {
-      it(`should compute new reserves for currentX = ${currentX}, currentY = ${currentY}, swapFee = ${swapFeePoints}%, outY = ${outY}, aToB = ${aToB}, feeFrom = ${feeFrom}`, () => {
+      it(`should compute new reserves for currentX = ${currentX}, currentY = ${currentY}, swapFee = ${swapFeePoints}%, treasuryFee = ${treasuryFeePoints}%, outY = ${outY}, aToB = ${aToB}, feeFrom = ${feeFrom}`, () => {
         testComputeNewReservesFromOutY({
           currentX: new BigNumber(currentX),
           currentY: new BigNumber(currentY),
           outY: new BigNumber(outY),
           swapFeePoints,
+          treasuryFeePoints,
           feeBasis: params.feeBasis,
           aToB,
           feeFrom,

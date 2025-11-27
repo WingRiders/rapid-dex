@@ -32,14 +32,28 @@ export const buildCreatePoolCommand = () => {
       parsePositiveBigNumberOption,
     )
     .requiredOption(
-      '--fee-a-to-b <number>',
+      '--swap-fee-a-to-b <number>',
       'Percentage fee for A to B swaps. Must be between 0 and 100.',
       parseIntegerOption({min: 0, max: 100}),
     )
     .requiredOption(
-      '--fee-b-to-a <number>',
+      '--swap-fee-b-to-a <number>',
       'Percentage fee for B to A swaps. Must be between 0 and 100.',
       parseIntegerOption({min: 0, max: 100}),
+    )
+    .requiredOption(
+      '--treasury-fee-a-to-b <number>',
+      'Percentage fee for A to B swaps. Must be between 0 and 100.',
+      parseIntegerOption({min: 0, max: 100}),
+    )
+    .requiredOption(
+      '--treasury-fee-b-to-a <number>',
+      'Percentage fee for B to A swaps. Must be between 0 and 100.',
+      parseIntegerOption({min: 0, max: 100}),
+    )
+    .requiredOption(
+      '--treasury-authority-unit <string>',
+      'Unit of treasury authority - its holder is allowed to withdraw treasury',
     )
     .addOption(
       new Option('--fee-from <string>', 'Fee from')
@@ -72,18 +86,36 @@ export const buildCreatePoolCommand = () => {
       }
       const seed = utxos[0]!
 
-      const encodedFeeAToB = encodeFee(new BigNumber(options.feeAToB).div(100))
-      const encodedFeeBToA = encodeFee(new BigNumber(options.feeBToA).div(100))
+      const encodedSwapFeeAToB = encodeFee(
+        new BigNumber(options.swapFeeAToB).div(100),
+      )
+      const encodedSwapFeeBToA = encodeFee(
+        new BigNumber(options.swapFeeBToA).div(100),
+      )
+      const encodedTreasuryFeeAToB = encodeFee(
+        new BigNumber(options.treasuryFeeAToB).div(100),
+      )
+      const encodedTreasuryFeeBToA = encodeFee(
+        new BigNumber(options.treasuryFeeBToA).div(100),
+      )
 
       const feeBasis = leastCommonMultiple(
-        encodedFeeAToB.feeBasis,
-        encodedFeeBToA.feeBasis,
+        encodedSwapFeeAToB.feeBasis,
+        encodedSwapFeeBToA.feeBasis,
+        encodedTreasuryFeeAToB.feeBasis,
+        encodedTreasuryFeeBToA.feeBasis,
       )
 
       const swapFeePointsAToB =
-        (encodedFeeAToB.feePoints * feeBasis) / encodedFeeAToB.feeBasis
+        (encodedSwapFeeAToB.feePoints * feeBasis) / encodedSwapFeeAToB.feeBasis
       const swapFeePointsBToA =
-        (encodedFeeBToA.feePoints * feeBasis) / encodedFeeBToA.feeBasis
+        (encodedSwapFeeBToA.feePoints * feeBasis) / encodedSwapFeeBToA.feeBasis
+      const treasuryFeePointsAToB =
+        (encodedTreasuryFeeAToB.feePoints * feeBasis) /
+        encodedTreasuryFeeAToB.feeBasis
+      const treasuryFeePointsBToA =
+        (encodedTreasuryFeeBToA.feePoints * feeBasis) /
+        encodedTreasuryFeeBToA.feeBasis
 
       const {builtTx, txFee, sharesAssetName} = await buildCreatePoolTx({
         wallet,
@@ -104,6 +136,9 @@ export const buildCreatePoolCommand = () => {
         feeFrom: options.feeFrom,
         swapFeePointsAToB,
         swapFeePointsBToA,
+        treasuryFeePointsAToB,
+        treasuryFeePointsBToA,
+        treasuryAuthorityUnit: options.treasuryAuthorityUnit,
       })
 
       console.log('Transaction built', {txFee, sharesAssetName})

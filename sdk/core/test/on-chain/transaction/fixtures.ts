@@ -46,6 +46,9 @@ export const assetB = {
   quantity: '10000',
 }
 
+export const treasuryAuthorityUnit =
+  'deaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddead'
+
 export const seedUtxo = {
   input: {
     txHash: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe',
@@ -109,8 +112,10 @@ export const pool: PoolInteractionTxPool = {
   shareAssetName:
     '4e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207e',
   poolState: {
-    qtyA: new BigNumber(18_000_000),
+    qtyA: new BigNumber(18_000_000), // poolOil less than the UTxO amount
     qtyB: new BigNumber(20_000_000),
+    treasuryA: new BigNumber(0),
+    treasuryB: new BigNumber(0),
     issuedShares: new BigNumber(20_000_000),
   },
   utxo: {
@@ -140,7 +145,7 @@ export const pool: PoolInteractionTxPool = {
         },
       ],
       plutusData:
-        'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e67526964657273d8799fff0a0a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
+        'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572730000d87980581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727305050a0a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
     },
   },
 }

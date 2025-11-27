@@ -1,11 +1,13 @@
 import type {Asset, IFetcher, IWallet, UTxO} from '@meshsdk/core'
 import {
   type PoolRedeemer,
+  poolDatumFromPoolUtxo,
   poolRefScriptSizeByNetwork,
   poolRefScriptUtxoByNetwork,
   walletNetworkIdToNetwork,
 } from '@wingriders/rapid-dex-common'
-import type BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
+import {poolDatumToMesh} from '../datums'
 import {poolRedeemerToMesh} from '../redeemers'
 import {getTxFee} from './fee'
 import {initTxBuilder} from './init'
@@ -16,6 +18,8 @@ type BuildSpentPoolOutputTxArgs = {
   poolUtxo: UTxO
   poolRedeemer: PoolRedeemer
   newPoolAmount: Asset[]
+  addToTreasuryA?: BigNumber
+  addToTreasuryB?: BigNumber
   now?: Date // if not provided, the current date will be used
 }
 
@@ -30,6 +34,8 @@ export const buildSpentPoolOutputTx = async ({
   poolUtxo,
   poolRedeemer,
   newPoolAmount,
+  addToTreasuryA = new BigNumber(0),
+  addToTreasuryB = new BigNumber(0),
   now = new Date(),
 }: BuildSpentPoolOutputTxArgs): Promise<BuildSpentPoolOutputTxResult> => {
   const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
@@ -39,6 +45,12 @@ export const buildSpentPoolOutputTx = async ({
     fetcher,
     now,
   })
+
+  const poolDatum = poolDatumFromPoolUtxo(poolUtxo)
+  if (addToTreasuryA.gt(0))
+    poolDatum.treasuryA = poolDatum.treasuryA.plus(addToTreasuryA)
+  if (addToTreasuryB.gt(0))
+    poolDatum.treasuryB = poolDatum.treasuryB.plus(addToTreasuryB)
 
   txBuilder
     .spendingPlutusScriptV3()
@@ -58,7 +70,7 @@ export const buildSpentPoolOutputTx = async ({
     .txInInlineDatumPresent()
     .txInRedeemerValue(poolRedeemerToMesh(poolRedeemer), 'Mesh')
     .txOut(poolUtxo.output.address, newPoolAmount)
-    .txOutInlineDatumValue(poolUtxo.output.plutusData!, 'CBOR')
+    .txOutInlineDatumValue(poolDatumToMesh(poolDatum), 'Mesh')
 
   const builtTx = await txBuilder.complete()
   const txFee = await getTxFee(builtTx)

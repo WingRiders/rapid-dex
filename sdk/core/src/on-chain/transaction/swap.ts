@@ -1,6 +1,6 @@
 import type {IFetcher, IWallet} from '@meshsdk/core'
 import type {SwapRedeemer} from '@wingriders/rapid-dex-common'
-import type BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 import {getNewPoolAmount} from './pool-state'
 import {buildSpentPoolOutputTx} from './spent-pool-output'
 import type {PoolInteractionTxPool} from './types'
@@ -12,6 +12,8 @@ export type BuildSwapTxArgs = {
   aToB: boolean
   lockX: BigNumber
   outY: BigNumber
+  addToTreasuryA?: BigNumber
+  addToTreasuryB?: BigNumber
   now?: Date // if not provided, the current date will be used
 }
 
@@ -30,6 +32,8 @@ export const buildSwapTx = async ({
   aToB,
   lockX,
   outY,
+  addToTreasuryA = new BigNumber(0),
+  addToTreasuryB = new BigNumber(0),
   now = new Date(),
 }: BuildSwapTxArgs): Promise<BuildSwapTxResult> => {
   const swapRedeemer: SwapRedeemer = {
@@ -47,6 +51,8 @@ export const buildSwapTx = async ({
       lockA: aToB ? lockX : outY.negated(),
       lockB: aToB ? outY.negated() : lockX,
     }),
+    addToTreasuryA,
+    addToTreasuryB,
     now,
   })
 }
