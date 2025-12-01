@@ -13,13 +13,7 @@ import {
 export const dbPoolOutputToPoolState = (
   poolOutput: Pick<
     PoolOutput,
-    | 'qtyA'
-    | 'qtyB'
-    | 'lpts'
-    | 'treasuryA'
-    | 'treasuryB'
-    | 'treasuryAuthorityPolicy'
-    | 'treasuryAuthorityName'
+    'qtyA' | 'qtyB' | 'lpts' | 'treasuryA' | 'treasuryB'
   >,
 ): PoolState => ({
   qtyA: bigintToBigNumber(poolOutput.qtyA),
@@ -27,10 +21,6 @@ export const dbPoolOutputToPoolState = (
   issuedShares: maxShareTokens.minus(bigintToBigNumber(poolOutput.lpts)),
   treasuryA: bigintToBigNumber(poolOutput.treasuryA),
   treasuryB: bigintToBigNumber(poolOutput.treasuryB),
-  treasuryAuthorityUnit: createUnit(
-    poolOutput.treasuryAuthorityPolicy,
-    poolOutput.treasuryAuthorityName,
-  ),
 })
 
 export const dbPoolOutputToUtxo = (
@@ -65,8 +55,6 @@ export const dbPoolOutputToPool = (
     | 'swapFeePointsBToA'
     | 'treasuryFeePointsAToB'
     | 'treasuryFeePointsBToA'
-    | 'treasuryAuthorityPolicy'
-    | 'treasuryAuthorityName'
     | 'feeBasis'
     | 'lpts'
     | 'qtyA'

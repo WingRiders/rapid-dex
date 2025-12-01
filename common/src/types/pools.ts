@@ -6,5 +6,4 @@ export type PoolState = {
   issuedShares: BigNumber
   treasuryA: BigNumber
   treasuryB: BigNumber
-  treasuryAuthorityUnit: string
 }
