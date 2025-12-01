@@ -16,6 +16,8 @@ export const getPool = async (shareAssetName: string) => {
       assetAName: true,
       assetBPolicy: true,
       assetBName: true,
+      treasuryA: true,
+      treasuryB: true,
       lpts: true,
       qtyA: true,
       qtyB: true,
@@ -24,6 +26,8 @@ export const getPool = async (shareAssetName: string) => {
       swapFeePointsBToA: true,
       treasuryFeePointsAToB: true,
       treasuryFeePointsBToA: true,
+      treasuryAuthorityPolicy: true,
+      treasuryAuthorityName: true,
       feeFrom: true,
     },
   })

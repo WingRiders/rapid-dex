@@ -21,6 +21,7 @@ type BuildSpentPoolOutputTxArgs = {
   addToTreasuryA?: BigNumber
   addToTreasuryB?: BigNumber
   now?: Date // if not provided, the current date will be used
+  additionalInputsUtxos?: UTxO[] // Additional inputs which will be added to the transaction
 }
 
 type BuildSpentPoolOutputTxResult = {
@@ -37,6 +38,7 @@ export const buildSpentPoolOutputTx = async ({
   addToTreasuryA = new BigNumber(0),
   addToTreasuryB = new BigNumber(0),
   now = new Date(),
+  additionalInputsUtxos = [],
 }: BuildSpentPoolOutputTxArgs): Promise<BuildSpentPoolOutputTxResult> => {
   const network = walletNetworkIdToNetwork(await wallet.getNetworkId())
   const {txBuilder} = await initTxBuilder({
@@ -47,10 +49,19 @@ export const buildSpentPoolOutputTx = async ({
   })
 
   const poolDatum = poolDatumFromPoolUtxo(poolUtxo)
-  if (addToTreasuryA.gt(0))
+  if (!addToTreasuryA.eq(0))
     poolDatum.treasuryA = poolDatum.treasuryA.plus(addToTreasuryA)
-  if (addToTreasuryB.gt(0))
+  if (!addToTreasuryB.eq(0))
     poolDatum.treasuryB = poolDatum.treasuryB.plus(addToTreasuryB)
+
+  for (const utxo of additionalInputsUtxos) {
+    txBuilder.txIn(
+      utxo.input.txHash,
+      utxo.input.outputIndex,
+      utxo.output.amount,
+      utxo.output.address,
+    )
+  }
 
   txBuilder
     .spendingPlutusScriptV3()

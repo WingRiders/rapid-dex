@@ -47,7 +47,7 @@ export const assetB = {
 }
 
 export const treasuryAuthorityUnit =
-  'deaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddead'
+  'deaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeadbeaf'
 
 export const seedUtxo = {
   input: {
@@ -88,6 +88,23 @@ export const userAdaAndWrtUtxo = {
   },
 }
 
+export const userAdaAndTreasuryAuthorityUtxo = {
+  input: {
+    txHash: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafedead',
+    outputIndex: 3,
+  },
+  output: {
+    amount: [
+      {unit: LOVELACE_UNIT, quantity: '20000000'},
+      {
+        unit: treasuryAuthorityUnit,
+        quantity: '1',
+      },
+    ],
+    address,
+  },
+}
+
 export const userSharesUtxo = {
   input: {
     txHash: 'cafecafecafecafecafecafecafecafecafecafecafecafecafecafecafecafe',
@@ -117,6 +134,7 @@ export const pool: PoolInteractionTxPool = {
     treasuryA: new BigNumber(0),
     treasuryB: new BigNumber(0),
     issuedShares: new BigNumber(20_000_000),
+    treasuryAuthorityUnit,
   },
   utxo: {
     input: {
@@ -146,6 +164,25 @@ export const pool: PoolInteractionTxPool = {
       ],
       plutusData:
         'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572730000d87980581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e6752696465727305050a0a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
+    },
+  },
+}
+
+export const poolWithTreasury: PoolInteractionTxPool = {
+  ...pool,
+  poolState: {
+    ...pool.poolState,
+    qtyA: new BigNumber(13_000_000), // poolOil+treasuryA less than the UTxO amount
+    qtyB: new BigNumber(5_000_000), // treasuryB less than the UTxO amount
+    treasuryA: new BigNumber(5_000_000),
+    treasuryB: new BigNumber(15_000_000),
+  },
+  utxo: {
+    ...pool.utxo,
+    output: {
+      ...pool.utxo.output,
+      plutusData:
+        'd8799f4040581c659ab0b5658687c2e74cd10dba8244015b713bf503b90557769d77a74a57696e675269646572731a004c4b401a00e4e1c0d87980581cdeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeadbeaf4005050a0a19271058204e05861d714244c9398f61b1aff80bf4c20d6739bf7cb5f410b58a6c914d207eff',
     },
   },
 }

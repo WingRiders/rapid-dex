@@ -11,11 +11,26 @@ import {
 } from '@wingriders/rapid-dex-common'
 
 export const dbPoolOutputToPoolState = (
-  poolOutput: Pick<PoolOutput, 'qtyA' | 'qtyB' | 'lpts'>,
+  poolOutput: Pick<
+    PoolOutput,
+    | 'qtyA'
+    | 'qtyB'
+    | 'lpts'
+    | 'treasuryA'
+    | 'treasuryB'
+    | 'treasuryAuthorityPolicy'
+    | 'treasuryAuthorityName'
+  >,
 ): PoolState => ({
   qtyA: bigintToBigNumber(poolOutput.qtyA),
   qtyB: bigintToBigNumber(poolOutput.qtyB),
   issuedShares: maxShareTokens.minus(bigintToBigNumber(poolOutput.lpts)),
+  treasuryA: bigintToBigNumber(poolOutput.treasuryA),
+  treasuryB: bigintToBigNumber(poolOutput.treasuryB),
+  treasuryAuthorityUnit: createUnit(
+    poolOutput.treasuryAuthorityPolicy,
+    poolOutput.treasuryAuthorityName,
+  ),
 })
 
 export const dbPoolOutputToUtxo = (
@@ -42,12 +57,16 @@ export const dbPoolOutputToPool = (
     | 'assetAName'
     | 'assetBPolicy'
     | 'assetBName'
+    | 'treasuryA'
+    | 'treasuryB'
     | 'shareAssetName'
     | 'feeFrom'
     | 'swapFeePointsAToB'
     | 'swapFeePointsBToA'
     | 'treasuryFeePointsAToB'
     | 'treasuryFeePointsBToA'
+    | 'treasuryAuthorityPolicy'
+    | 'treasuryAuthorityName'
     | 'feeBasis'
     | 'lpts'
     | 'qtyA'
