@@ -1,0 +1,22 @@
+{
+  "root": false,
+  "$schema": "https://biomejs.dev/schemas/2.3.1/schema.json",
+  "extends": "//",
+  "overrides": [
+    {
+      "includes": ["scripts/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": {
+              "level": "off",
+              "options": {
+                "allow": ["warn", "error"]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

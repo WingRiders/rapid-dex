@@ -17,6 +17,14 @@
     "isolatedModules": true,
     "noErrorTruncation": true
   },
+  "references": [
+    {
+      "path": "../../common"
+    },
+    {
+      "path": "../../backend"
+    }
+  ],
   "include": ["src"],
   "exclude": ["node_modules"]
 }

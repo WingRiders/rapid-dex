@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.1/schema.json",
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {"actions": {"source": {"organizeImports": "on"}}},
   "files": {
     "includes": [
       "**",
@@ -71,7 +71,7 @@
   },
   "overrides": [
     {
-      "includes": ["common/src/cli/**", "sdk/core/src/cli/**"],
+      "includes": ["common/src/cli/**"],
       "linter": {
         "rules": {
           "suspicious": {

@@ -29,7 +29,10 @@
       "path": "../common"
     },
     {
-      "path": "../backend"
+      "path": "../sdk/core"
+    },
+    {
+      "path": "../sdk/react"
     }
   ],
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

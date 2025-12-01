@@ -1,15 +1,47 @@
 {
   "name": "@wingriders/rapid-dex-sdk-react",
+  "description": "React SDK for Rapid DEX - A Cardano AMM DEX with direct pool interactions",
   "version": "0.1.0",
   "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "cardano",
+    "dex",
+    "amm",
+    "defi",
+    "blockchain",
+    "crypto",
+    "wingriders",
+    "rapid-dex",
+    "sdk",
+    "react"
+  ],
+  "author": "WingRiders",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WingRiders/rapid-dex.git",
+    "directory": "sdk/react"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsdown",
     "check": "bun biome check .",
     "fix": "bun run check --write",
-    "cli": "bun src/cli.ts"
+    "cli": "bun src/cli.ts",
+    "prepare-package-json-for-publish": "bun scripts/prepare-package-json-for-publish.ts",
+    "restore-package-json-after-publish": "bun scripts/restore-package-json-after-publish.ts"
   },
   "dependencies": {
     "@meshsdk/core": "^1.9.0-beta.86",
@@ -32,6 +64,7 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "@wingriders/rapid-dex-backend": "workspace:*",
+    "tsdown": "^0.16.6",
     "typescript": "^5.7.3"
   }
 }

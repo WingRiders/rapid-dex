@@ -18,6 +18,17 @@
     "noErrorTruncation": true,
     "jsx": "preserve"
   },
+  "references": [
+    {
+      "path": "../../common"
+    },
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../../backend"
+    }
+  ],
   "include": ["src"],
   "exclude": ["node_modules"]
 }

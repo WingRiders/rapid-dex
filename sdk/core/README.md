@@ -446,3 +446,11 @@ trpc.onPoolUtxoUpdated.subscribe(
 ```
 
 The tRPC client provides type-safe access to all backend endpoints. See the backend router type `ServerAppRouter` for the complete API surface.
+
+## Publish new version to NPM
+
+1. Bump the version in package.json
+2. `bun run build`
+3. `bun run prepare-package-json-for-publish`
+4. `npm publish` (use the `--dry-run` flag for dry run). Alternatively, use `bun pm pack` to create _.tgz_ that can be installed locally for testing
+5. `bun run restore-package-json-after-publish` (or revert package.json using git)
