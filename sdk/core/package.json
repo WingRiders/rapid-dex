@@ -35,7 +35,7 @@
     "directory": "sdk/core"
   },
   "scripts": {
-    "build": "rm -rf dist && tsdown",
+    "build": "rm -rf dist && bun scripts/tsdown.ts",
     "check": "bun biome check .",
     "fix": "bun run check --write",
     "cli": "bun src/cli/main.ts",
