@@ -43,17 +43,19 @@
     "prepare-package-json-for-publish": "bun scripts/prepare-package-json-for-publish.ts",
     "restore-package-json-after-publish": "bun scripts/restore-package-json-after-publish.ts"
   },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@tanstack/react-query": "^5.68.0"
+  },
   "dependencies": {
     "@meshsdk/core": "^1.9.0-beta.86",
-    "@tanstack/react-query": "^5.68.0",
     "@trpc/client": "^11.0.0",
     "@trpc/tanstack-react-query": "^11.0.0",
     "@wingriders/rapid-dex-common": "workspace:*",
     "@wingriders/rapid-dex-sdk-core": "workspace:*",
     "bignumber.js": "^9.1.2",
     "lodash": "^4.17.21",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {
