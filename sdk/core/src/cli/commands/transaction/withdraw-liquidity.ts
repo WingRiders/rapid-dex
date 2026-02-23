@@ -46,7 +46,7 @@ export const buildWithdrawLiquidityCommand = () => {
       parsePositiveBigNumberOption,
     )
     .option(
-      '-t, --withdraw-type <number>',
+      '-t, --withdraw-type <string>',
       `Withdraw type, one of: ${withdrawTypes.join(', ')}`,
       parseWithdrawType,
       'TO_BOTH',

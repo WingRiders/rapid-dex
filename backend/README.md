@@ -3,7 +3,7 @@
 The Rapid DEX backend is a Bun application that:
 
 - Aggregates pool transactions on the Cardano blockchain using Ogmios and stores the data in a Postgres database
-- Provides endpoints for the aggregated data via [tRPC](https://trpc.io/)
+- Provides endpoints for the aggregated data via [tRPC](https://trpc.io/) — see [api.md](./api.md) for the API reference
 - Fetches token metadata from the [cardano-token-registry](https://github.com/cardano-foundation/cardano-token-registry)
 
 ## Run the application
