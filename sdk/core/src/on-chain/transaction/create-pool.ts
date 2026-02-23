@@ -87,7 +87,7 @@ export const buildCreatePoolTx = async ({
   const [aPolicyId, aAssetName] = parseUnit(assetA.unit)
   const [bPolicyId, bAssetName] = parseUnit(assetB.unit)
   const [treasuryAuthorityPolicyId, treasuryAuthorityAssetName] = parseUnit(
-    treasuryAuthorityUnit,
+    treasuryAuthorityUnit || LOVELACE_UNIT,
   )
 
   const poolDatum: PoolDatum = {

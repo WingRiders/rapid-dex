@@ -68,8 +68,8 @@ export const useValidateCreatePoolForm = ({
   ])
 }
 
-export const validateSwapFee = (valueRaw: unknown) => {
-  if (valueRaw == null || valueRaw === '') return 'Enter swap fee'
+export const validateFeePercentage = (valueRaw: unknown) => {
+  if (valueRaw == null || valueRaw === '') return 'Enter fee'
 
   const value =
     typeof valueRaw === 'string'
@@ -78,8 +78,8 @@ export const validateSwapFee = (valueRaw: unknown) => {
         ? valueRaw
         : undefined
 
-  if (value == null || Number.isNaN(value)) return 'Enter a valid swap fee'
-  if (value < 0 || value > 100) return 'Swap fee must be between 0 and 100'
+  if (value == null || Number.isNaN(value)) return 'Enter a valid fee'
+  if (value < 0 || value > 100) return 'Fee must be between 0 and 100'
 
   return undefined
 }

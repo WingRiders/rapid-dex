@@ -9,4 +9,9 @@ export type CreatePoolFormInputs = {
   // if useBidirectionalSwapFee is true, this is the swap fee used for both directions
   swapFeePercentageAToB: number
   swapFeePercentageBToA: number
+  enableTreasury: boolean
+  useBidirectionalTreasuryFee: boolean
+  treasuryFeePercentageAToB: number
+  treasuryFeePercentageBToA: number
+  treasuryAuthorityUnit: string
 }

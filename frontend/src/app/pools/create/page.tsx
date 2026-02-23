@@ -1,5 +1,6 @@
 'use client'
 
+import {POLICY_ID_LENGTH} from '@meshsdk/core'
 import {useQueryClient} from '@tanstack/react-query'
 import {
   FeeFrom,
@@ -83,11 +84,11 @@ import {
   useWalletBalanceQuery,
   useWalletUtxosQuery,
 } from '@/wallet/queries'
-import {useValidateCreatePoolForm, validateSwapFee} from './helpers'
+import {useValidateCreatePoolForm, validateFeePercentage} from './helpers'
 import type {CreatePoolFormInputs} from './types'
 
 const DEFAULT_FEE_FROM = FeeFrom.InputToken
-const DEFAULT_SWAP_FEE_PERCENTAGE = 0.2
+const DEFAULT_FEE_PERCENTAGE = 0.2
 
 const CreatePoolPage = () => {
   const trpc = useTRPC()
@@ -123,8 +124,13 @@ const CreatePoolPage = () => {
       assetY: EMPTY_ASSET_INPUT_VALUE,
       feeFrom: DEFAULT_FEE_FROM,
       useBidirectionalSwapFee: false,
-      swapFeePercentageAToB: DEFAULT_SWAP_FEE_PERCENTAGE,
-      swapFeePercentageBToA: DEFAULT_SWAP_FEE_PERCENTAGE,
+      swapFeePercentageAToB: DEFAULT_FEE_PERCENTAGE,
+      swapFeePercentageBToA: DEFAULT_FEE_PERCENTAGE,
+      enableTreasury: false,
+      useBidirectionalTreasuryFee: false,
+      treasuryFeePercentageAToB: DEFAULT_FEE_PERCENTAGE,
+      treasuryFeePercentageBToA: DEFAULT_FEE_PERCENTAGE,
+      treasuryAuthorityUnit: '',
     },
     disabled: isSigningAndSubmittingTx,
     mode: 'onChange',
@@ -141,6 +147,11 @@ const CreatePoolPage = () => {
     useBidirectionalSwapFee,
     swapFeePercentageAToB,
     swapFeePercentageBToA,
+    enableTreasury,
+    useBidirectionalTreasuryFee,
+    treasuryFeePercentageAToB,
+    treasuryFeePercentageBToA,
+    treasuryAuthorityUnit,
   } = inputs
 
   const [unitA, unitB] =
@@ -193,9 +204,27 @@ const CreatePoolPage = () => {
       ? encodeFee(new BigNumber(swapFeePercentageBToA).div(100))
       : encodedSwapFeeAToB
 
+    const encodedTreasuryFeeAToB = encodeFee(
+      enableTreasury
+        ? new BigNumber(treasuryFeePercentageAToB).div(100)
+        : new BigNumber(0),
+    )
+
+    const encodedTreasuryFeeBToA = encodeFee(
+      enableTreasury
+        ? new BigNumber(
+            useBidirectionalTreasuryFee
+              ? treasuryFeePercentageBToA
+              : treasuryFeePercentageAToB,
+          ).div(100)
+        : new BigNumber(0),
+    )
+
     const feeBasis = leastCommonMultiple(
       encodedSwapFeeAToB.feeBasis,
       encodedSwapFeeBToA.feeBasis,
+      encodedTreasuryFeeAToB.feeBasis,
+      encodedTreasuryFeeBToA.feeBasis,
     )
 
     const args: Omit<BuildCreatePoolTxArgs, 'wallet'> = {
@@ -207,11 +236,14 @@ const CreatePoolPage = () => {
         txIndex: seed.input.outputIndex,
       },
       feeBasis,
-      // TODO Add treasury fields
       feeFrom,
-      treasuryAuthorityUnit: assetY.unit,
-      treasuryFeePointsAToB: encodedSwapFeeAToB.feePoints,
-      treasuryFeePointsBToA: encodedSwapFeeBToA.feePoints,
+      treasuryAuthorityUnit: treasuryAuthorityUnit,
+      treasuryFeePointsAToB:
+        (encodedTreasuryFeeAToB.feePoints * feeBasis) /
+        encodedTreasuryFeeAToB.feeBasis,
+      treasuryFeePointsBToA:
+        (encodedTreasuryFeeBToA.feePoints * feeBasis) /
+        encodedTreasuryFeeBToA.feeBasis,
       swapFeePointsAToB:
         (encodedSwapFeeAToB.feePoints * feeBasis) / encodedSwapFeeAToB.feeBasis,
       swapFeePointsBToA:
@@ -231,6 +263,11 @@ const CreatePoolPage = () => {
     swapFeePercentageAToB,
     swapFeePercentageBToA,
     useBidirectionalSwapFee,
+    enableTreasury,
+    treasuryAuthorityUnit,
+    treasuryFeePercentageAToB,
+    treasuryFeePercentageBToA,
+    useBidirectionalTreasuryFee,
   ])
 
   const {
@@ -429,7 +466,7 @@ const CreatePoolPage = () => {
                 <FieldContent>
                   <Input
                     {...register('swapFeePercentageAToB', {
-                      validate: validateSwapFee,
+                      validate: validateFeePercentage,
                     })}
                     id="swap-fee-percentage-a-to-b"
                     type="number"
@@ -454,7 +491,7 @@ const CreatePoolPage = () => {
                           if (!formValues.useBidirectionalSwapFee)
                             return undefined
 
-                          return validateSwapFee(value)
+                          return validateFeePercentage(value)
                         },
                       })}
                       id="swap-fee-percentage-b-to-a"
@@ -499,6 +536,162 @@ const CreatePoolPage = () => {
                 </FieldDescription>
               </FieldContent>
             </Field>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Treasury configuration</CardTitle>
+            <CardDescription>
+              Configure the treasury fees that are charged on swaps. Accumulated
+              treasury can be withdrawn by the selected authority.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Field orientation="horizontal">
+              <Controller
+                control={control}
+                name="enableTreasury"
+                render={({field: {value, onChange}}) => (
+                  <Checkbox
+                    id="enable-treasury"
+                    checked={value}
+                    onCheckedChange={(checked) => onChange(checked === true)}
+                  />
+                )}
+                rules={{
+                  deps: [
+                    'treasuryFeePercentageAToB',
+                    'treasuryFeePercentageBToA',
+                  ],
+                }}
+              />
+              <FieldLabel htmlFor="enable-treasury">Enable treasury</FieldLabel>
+            </Field>
+
+            {enableTreasury && (
+              <>
+                <div className="space-y-4">
+                  <Field>
+                    <FieldLabel htmlFor="treasury-fee-percentage-a-to-b">
+                      Treasury fee{' '}
+                      {unitA != null && unitB != null
+                        ? `${unitATicker} → ${unitBTicker}`
+                        : 'A → B'}{' '}
+                      (%)
+                    </FieldLabel>
+                    <FieldContent>
+                      <Input
+                        {...register('treasuryFeePercentageAToB', {
+                          validate: validateFeePercentage,
+                        })}
+                        id="treasury-fee-percentage-a-to-b"
+                        type="number"
+                      />
+                    </FieldContent>
+                    <FieldError errors={[errors.treasuryFeePercentageAToB]} />
+                  </Field>
+
+                  {useBidirectionalTreasuryFee && (
+                    <Field>
+                      <FieldLabel htmlFor="treasury-fee-percentage-b-to-a">
+                        Treasury fee{' '}
+                        {unitA != null && unitB != null
+                          ? `${unitBTicker} → ${unitATicker}`
+                          : 'B → A'}{' '}
+                        (%)
+                      </FieldLabel>
+                      <FieldContent>
+                        <Input
+                          {...register('treasuryFeePercentageBToA', {
+                            validate: (value, formValues) => {
+                              if (!formValues.useBidirectionalTreasuryFee)
+                                return undefined
+
+                              return validateFeePercentage(value)
+                            },
+                          })}
+                          id="treasury-fee-percentage-b-to-a"
+                          type="number"
+                        />
+                      </FieldContent>
+                      <FieldError errors={[errors.treasuryFeePercentageBToA]} />
+                    </Field>
+                  )}
+                </div>
+
+                <Field orientation="horizontal">
+                  <Controller
+                    control={control}
+                    name="useBidirectionalTreasuryFee"
+                    render={({field: {value, onChange}}) => (
+                      <Checkbox
+                        id="use-bidirectional-treasury-fee"
+                        checked={value}
+                        onCheckedChange={(checked) =>
+                          onChange(checked === true)
+                        }
+                      />
+                    )}
+                    rules={{deps: ['treasuryFeePercentageBToA']}}
+                  />
+                  <FieldContent>
+                    <FieldLabel htmlFor="use-bidirectional-treasury-fee">
+                      Use different fees per direction
+                    </FieldLabel>
+                    <FieldDescription>
+                      Enable to set separate fees for{' '}
+                      {unitA != null && unitB != null
+                        ? `${unitATicker}→${unitBTicker}`
+                        : 'A→B'}{' '}
+                      and{' '}
+                      {unitA != null && unitB != null
+                        ? `${unitBTicker}→${unitATicker}`
+                        : 'B→A'}{' '}
+                      treasury fees
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="authority-unit">
+                    Authority unit
+                  </FieldLabel>
+                  <FieldDescription>
+                    Enter the policy ID and asset name (in HEX format) of the
+                    token required to authorize treasury withdrawals. Only
+                    wallets holding this token can withdraw the accumulated fees
+                    from the treasury.
+                  </FieldDescription>
+                  <FieldContent>
+                    <Controller
+                      control={control}
+                      name="treasuryAuthorityUnit"
+                      render={({field}) => (
+                        <Input
+                          {...field}
+                          id="authority-unit"
+                          type="text"
+                          placeholder="a1b2c3d4e5f6..."
+                        />
+                      )}
+                      rules={{
+                        required: 'Enter authority unit',
+                        pattern: {
+                          value: /^[0-9a-fA-F]+$/,
+                          message: 'Invalid policy ID and asset name',
+                        },
+                        minLength: {
+                          value: POLICY_ID_LENGTH,
+                          message: 'Invalid policy ID and asset name',
+                        },
+                      }}
+                    />
+                  </FieldContent>
+                  <FieldError errors={[errors.treasuryAuthorityUnit]} />
+                </Field>
+              </>
+            )}
           </CardContent>
         </Card>
 
