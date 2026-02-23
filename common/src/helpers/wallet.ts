@@ -3,8 +3,7 @@ export enum NetworkId {
   MAINNET = 1,
 }
 
-// Mainnet will be added once bootstrap is done
-export const supportedNetworks = ['preprod'] as const
+export const supportedNetworks = ['preprod', 'mainnet'] as const
 export type SupportedNetwork = (typeof supportedNetworks)[number]
 
 export const walletNetworkIdToNetwork = (
@@ -14,8 +13,7 @@ export const walletNetworkIdToNetwork = (
     case NetworkId.TESTNET:
       return 'preprod'
     case NetworkId.MAINNET:
-      throw new Error('Mainnet is not supported yet')
-    // return 'mainnet'
+      return 'mainnet'
     default:
       throw new Error(`Unknown network id: ${networkId}`)
   }

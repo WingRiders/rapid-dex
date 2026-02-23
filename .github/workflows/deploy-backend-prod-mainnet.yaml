@@ -16,7 +16,7 @@ concurrency: backend_prod
 
 jobs:
   deploy-aggregator:
-    if: false # TODO: uncomment when mainnet deployment is done: github.repository == 'WingRiders/rapid-dex'
+    if: github.repository == 'WingRiders/rapid-dex'
     uses: ./.github/workflows/deploy.yml
     concurrency: backend_prod_mainnet
     with:

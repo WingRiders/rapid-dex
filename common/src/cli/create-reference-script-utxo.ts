@@ -18,6 +18,8 @@ import {LOVELACE_UNIT} from '../helpers'
 const DEFAULT_REF_SCRIPT_HOLDER_ADDRESS: Record<SupportedNetwork, string> = {
   preprod:
     'addr_test1qqlfh42dn2ndvpxcrrc6nt7u36ctz3krwwvpu65rl6zyaqwnt0wn7dhjucum8cuh0v7gcyuwpj0e56pxff74mefcyzrqe72pne',
+  mainnet:
+    'addr1qyasf2zlt43dyl74dcvvy2jefklhyrxr03d9ga8z0xqxazd9pmjpkfk8va97al52psn3mefn96779k0xvr5xz7w0wyrsqsu289',
 }
 
 // Wrap to a CBOR array together with script version

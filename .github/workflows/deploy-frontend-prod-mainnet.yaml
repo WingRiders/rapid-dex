@@ -16,7 +16,7 @@ concurrency: frontend_prod
 
 jobs:
   deploy:
-    if: false # TODO: uncomment when mainnet deployment is done: github.repository == 'WingRiders/rapid-dex'
+    if: github.repository == 'WingRiders/rapid-dex'
     uses: ./.github/workflows/deploy.yml
     with:
       environment: mainnet

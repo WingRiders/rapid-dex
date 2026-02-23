@@ -1,3 +1,4 @@
+import {supportedNetworks} from '@wingriders/rapid-dex-common'
 import {z} from 'zod'
 
 const envSchema = z.object({
@@ -9,7 +10,7 @@ const envSchema = z.object({
     .default('info'),
   MODE: z.enum(['aggregator', 'server', 'both']).default('both'),
   SERVER_PORT: z.coerce.number().positive(),
-  NETWORK: z.enum(['preprod']).default('preprod'), // TODO: add mainnet once bootstrap is done
+  NETWORK: z.enum(supportedNetworks).default('preprod'),
   DATABASE_URL: z.string(),
   REDIS_URL: z.string().optional(),
   OGMIOS_HOST: z.string(),

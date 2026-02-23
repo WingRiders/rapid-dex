@@ -1,19 +1,20 @@
-import type {Point} from '@cardano-ogmios/schema'
+import type {Point, Tip} from '@cardano-ogmios/schema'
 import {config} from './config'
 
-export const originPoint = {
+export const originPoint: Tip = {
   mainnet: {
-    // Shelley initial block
-    id: 'aa83acbf5904c0edfe4d79b3689d3d00fcfc553cf360fd2229b98d464c28e9de',
-    slot: 4492800,
-    height: 4490511,
+    // First pool was created in this transaction: https://cexplorer.io/tx/8e7c8c9634415debd6d235a823440f1823135550af229baf883d610e29d660b8
+    // Origin point need to be 1 block before that
+    id: '33be6e26f7274e4250a8fdeb803bd779245f59059d5493687aee010da5f1184a',
+    slot: 180287225,
+    height: 13077423,
   },
   preprod: {
-    // First pool was created in this transaction: https://preprod.cexplorer.io/tx/0afd77f485d648be6eabdfc3d197264343956711fe20c3b5d3c0157eccb4b0fa
+    // First pool was created in this transaction: https://preprod.cexplorer.io/tx/9b6b32206f1f000f8f9c245301088c6c4f7fac7151dd5f27c859ee30bf6126a5
     // Origin point need to be 1 block before that
-    id: 'ee074bb54cdf6dd6393c7196bc2f3033153dee857b52be43df27daefa2c7a5cd',
-    slot: 109238961,
-    height: 4197720,
+    id: 'f097dcce91dc774a6eb508230e36cfb966b9769a1928a6d9886e7cfa847b52ac',
+    slot: 116165041,
+    height: 4449083,
   },
 }[config.NETWORK]
 
