@@ -33,7 +33,10 @@ export const MaybeTreasuryManagement = ({
     )
   }, [pool, walletUtxos])
 
-  if (!treasuryAuthorityUtxo) return null
+  const isTreasuryEnabled =
+    pool.treasuryFeePointsAToB > 0 || pool.treasuryFeePointsBToA > 0
+
+  if (!treasuryAuthorityUtxo || !isTreasuryEnabled) return null
 
   return (
     <TreasuryManagement
