@@ -17,6 +17,7 @@ import {
 } from '@wingriders/rapid-dex-sdk-core'
 import {usePoolsQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
+import {compact} from 'lodash'
 import {ArrowLeftIcon} from 'lucide-react'
 import {useRouter} from 'next/navigation'
 import pluralize from 'pluralize'
@@ -35,8 +36,8 @@ import {
 } from '@/components/asset-input/helpers'
 import type {AssetInputItem} from '@/components/asset-input/types'
 import {ErrorAlert} from '@/components/error-alert'
+import {FeeDisplay} from '@/components/fee-display'
 import {PageContainer} from '@/components/page-container'
-import {SwapFeeDisplay} from '@/components/swap-fee-display'
 import {
   Accordion,
   AccordionContent,
@@ -743,7 +744,7 @@ const CreatePoolPage = () => {
                           className="rounded-md border border-input p-2"
                         >
                           <DataRows
-                            rows={[
+                            rows={compact([
                               {
                                 label: 'Pool reserves',
                                 value: (
@@ -767,9 +768,9 @@ const CreatePoolPage = () => {
                                 label: 'Swap fee',
                                 value: (
                                   <p>
-                                    <SwapFeeDisplay
-                                      swapFeePointsAToB={pool.swapFeePointsAToB}
-                                      swapFeePointsBToA={pool.swapFeePointsBToA}
+                                    <FeeDisplay
+                                      feePointsAToB={pool.swapFeePointsAToB}
+                                      feePointsBToA={pool.swapFeePointsBToA}
                                       feeBasis={pool.feeBasis}
                                       feeFrom={pool.feeFrom}
                                       unitA={pool.unitA}
@@ -778,7 +779,23 @@ const CreatePoolPage = () => {
                                   </p>
                                 ),
                               },
-                            ]}
+                              (pool.treasuryFeePointsAToB > 0 ||
+                                pool.treasuryFeePointsBToA > 0) && {
+                                label: 'Treasury fee',
+                                value: (
+                                  <p>
+                                    <FeeDisplay
+                                      feePointsAToB={pool.treasuryFeePointsAToB}
+                                      feePointsBToA={pool.treasuryFeePointsBToA}
+                                      feeBasis={pool.feeBasis}
+                                      feeFrom={pool.feeFrom}
+                                      unitA={pool.unitA}
+                                      unitB={pool.unitB}
+                                    />
+                                  </p>
+                                ),
+                              },
+                            ])}
                           />
                         </div>
                       ))}

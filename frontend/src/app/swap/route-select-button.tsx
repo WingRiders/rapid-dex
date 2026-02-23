@@ -1,6 +1,6 @@
 import {ChevronDownIcon} from 'lucide-react'
 import {useState} from 'react'
-import {SwapFeeDisplay} from '@/components/swap-fee-display'
+import {FeeDisplay} from '@/components/fee-display'
 import {cn} from '@/lib/utils'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
@@ -81,14 +81,15 @@ const SelectedPool = ({pool, isSwapAToB}: SelectedPoolProps) => {
   return (
     <p>
       {poolName} (
-      <SwapFeeDisplay
-        swapFeePointsAToB={pool.swapFeePointsAToB}
-        swapFeePointsBToA={pool.swapFeePointsBToA}
+      <FeeDisplay
+        feePointsAToB={pool.swapFeePointsAToB + pool.treasuryFeePointsAToB}
+        feePointsBToA={pool.swapFeePointsBToA + pool.treasuryFeePointsBToA}
         feeBasis={pool.feeBasis}
         feeFrom={pool.feeFrom}
         unitA={pool.unitA}
         unitB={pool.unitB}
         showOnly={isSwapAToB ? 'aToB' : 'bToA'}
+        suffix="fee"
       />
       )
     </p>

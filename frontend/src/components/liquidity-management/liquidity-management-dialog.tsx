@@ -1,3 +1,4 @@
+import {compact} from 'lodash'
 import {useState} from 'react'
 import type {PortfolioItem} from '@/helpers/portfolio'
 import {useTokenMetadata} from '@/metadata/queries'
@@ -5,7 +6,7 @@ import type {PoolsListItem} from '@/types'
 import {useConnectedWalletStore} from '../../store/connected-wallet'
 import {AssetQuantity} from '../asset-quantity'
 import {DataRows} from '../data-rows'
-import {SwapFeeDisplay} from '../swap-fee-display'
+import {FeeDisplay} from '../fee-display'
 import {
   Accordion,
   AccordionContent,
@@ -95,7 +96,7 @@ const LiquidityManagementDialogContent = ({
           <AccordionTrigger className="py-1">Pool details</AccordionTrigger>
           <AccordionContent>
             <DataRows
-              rows={[
+              rows={compact([
                 {
                   label: `${unitATicker} amount`,
                   value: (
@@ -118,9 +119,9 @@ const LiquidityManagementDialogContent = ({
                   label: 'Swap fee',
                   value: (
                     <p>
-                      <SwapFeeDisplay
-                        swapFeePointsAToB={pool.swapFeePointsAToB}
-                        swapFeePointsBToA={pool.swapFeePointsBToA}
+                      <FeeDisplay
+                        feePointsAToB={pool.swapFeePointsAToB}
+                        feePointsBToA={pool.swapFeePointsBToA}
                         feeBasis={pool.feeBasis}
                         feeFrom={pool.feeFrom}
                         unitA={pool.unitA}
@@ -129,7 +130,23 @@ const LiquidityManagementDialogContent = ({
                     </p>
                   ),
                 },
-              ]}
+                (pool.treasuryFeePointsAToB > 0 ||
+                  pool.treasuryFeePointsBToA > 0) && {
+                  label: 'Treasury fee',
+                  value: (
+                    <p>
+                      <FeeDisplay
+                        feePointsAToB={pool.treasuryFeePointsAToB}
+                        feePointsBToA={pool.treasuryFeePointsBToA}
+                        feeBasis={pool.feeBasis}
+                        feeFrom={pool.feeFrom}
+                        unitA={pool.unitA}
+                        unitB={pool.unitB}
+                      />
+                    </p>
+                  ),
+                },
+              ])}
             />
           </AccordionContent>
         </AccordionItem>

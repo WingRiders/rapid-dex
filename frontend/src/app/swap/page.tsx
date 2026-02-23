@@ -1,7 +1,7 @@
 'use client'
 import {skipToken, useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
-import {isFeeFromInput} from '@wingriders/rapid-dex-sdk-core'
+import {isFeeFromA, isFeeFromInput} from '@wingriders/rapid-dex-sdk-core'
 import {
   useLivePoolUtxoQuery,
   usePoolsQuery,
@@ -110,7 +110,8 @@ const SwapPage = () => {
       to.quantity.gt(0) &&
       selectedRoute &&
       selectedPoolUtxo &&
-      isValid
+      isValid &&
+      selectedRoute.swapQuantities
       ? {
           lockX: from.quantity,
           outY: to.quantity,
@@ -119,6 +120,16 @@ const SwapPage = () => {
             ...selectedRoute.pool,
             utxo: selectedPoolUtxo.utxo,
           },
+          ...(isFeeFromA(
+            selectedRoute.pool.feeFrom,
+            from.unit === selectedRoute.pool.unitA,
+          )
+            ? {
+                addToTreasuryA: selectedRoute.swapQuantities.paidTreasuryFee,
+              }
+            : {
+                addToTreasuryB: selectedRoute.swapQuantities.paidTreasuryFee,
+              }),
         }
       : undefined,
   )
@@ -234,19 +245,15 @@ const SwapPage = () => {
                 />
               ),
             },
-            ...(buildSwapTxResult
-              ? [
-                  {
-                    label: 'Transaction fee',
-                    value: (
-                      <AssetQuantity
-                        unit={LOVELACE_UNIT}
-                        quantity={buildSwapTxResult.txFee}
-                      />
-                    ),
-                  },
-                ]
-              : []),
+            buildSwapTxResult && {
+              label: 'Transaction fee',
+              value: (
+                <AssetQuantity
+                  unit={LOVELACE_UNIT}
+                  quantity={buildSwapTxResult.txFee}
+                />
+              ),
+            },
             selectedRoute?.swapQuantities &&
               from.unit &&
               to.unit && {
@@ -262,6 +269,26 @@ const SwapPage = () => {
                         : to.unit
                     }
                     quantity={selectedRoute.swapQuantities.paidSwapFee}
+                  />
+                ),
+              },
+            selectedRoute?.swapQuantities &&
+              from.unit &&
+              to.unit &&
+              (selectedRoute.pool.treasuryFeePointsAToB > 0 ||
+                selectedRoute.pool.treasuryFeePointsBToA > 0) && {
+                label: 'Treasury fee',
+                value: (
+                  <AssetQuantity
+                    unit={
+                      isFeeFromInput(
+                        selectedRoute.pool.feeFrom,
+                        from.unit === selectedRoute.pool.unitA,
+                      )
+                        ? from.unit
+                        : to.unit
+                    }
+                    quantity={selectedRoute.swapQuantities.paidTreasuryFee}
                   />
                 ),
               },

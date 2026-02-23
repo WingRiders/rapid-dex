@@ -1,6 +1,7 @@
 import {MeshValue} from '@meshsdk/core'
 import {Command, Option} from 'commander'
 import {computeNewReserves} from '../../../amm'
+import {isFeeFromA} from '../../../helpers'
 import {buildSwapTx} from '../../../on-chain'
 import {createTRPCClient} from '../../../trpc'
 import {initConfig} from '../../config'
@@ -66,7 +67,7 @@ export const buildSwapCommand = () => {
 
       assertSufficientBalance(balance, lockUnit, options.quantity)
 
-      const {lockX, outY} = computeNewReserves({
+      const {lockX, outY, paidTreasuryFee} = computeNewReserves({
         currentX,
         currentY,
         swapFeePoints,
@@ -92,6 +93,13 @@ export const buildSwapCommand = () => {
         aToB: options.direction === 'aToB',
         lockX,
         outY,
+        ...(isFeeFromA(pool.feeFrom, options.direction === 'aToB')
+          ? {
+              addToTreasuryA: paidTreasuryFee,
+            }
+          : {
+              addToTreasuryB: paidTreasuryFee,
+            }),
       })
 
       console.log('Transaction built', {txFee})

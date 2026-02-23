@@ -5,8 +5,8 @@ import {ArrowLeftIcon, Loader2} from 'lucide-react'
 import {useRouter} from 'next/navigation'
 import {use, useMemo} from 'react'
 import {ErrorAlert} from '@/components/error-alert'
+import {FeeDisplay} from '@/components/fee-display'
 import {PageContainer} from '@/components/page-container'
-import {SwapFeeDisplay} from '@/components/swap-fee-display'
 import {Button} from '@/components/ui/button'
 import {UnitPairDisplay} from '@/components/unit-pair-display'
 import {PoolInteractionsTable} from './pool-interactions-table'
@@ -45,18 +45,37 @@ const PoolDetailsPage = ({
           <div className="flex flex-row items-center justify-between gap-2">
             <UnitPairDisplay unitA={pool.unitA} unitB={pool.unitB} />
 
-            <div className="flex flex-row items-center gap-2">
-              <p>
-                Swap fee:{' '}
-                <SwapFeeDisplay
-                  swapFeePointsAToB={pool.swapFeePointsAToB}
-                  swapFeePointsBToA={pool.swapFeePointsBToA}
-                  feeBasis={pool.feeBasis}
-                  feeFrom={pool.feeFrom}
-                  unitA={pool.unitA}
-                  unitB={pool.unitB}
-                />
-              </p>
+            <div>
+              <div className="flex flex-row items-center gap-2">
+                <p>
+                  Swap fee:{' '}
+                  <FeeDisplay
+                    feePointsAToB={pool.swapFeePointsAToB}
+                    feePointsBToA={pool.swapFeePointsBToA}
+                    feeBasis={pool.feeBasis}
+                    feeFrom={pool.feeFrom}
+                    unitA={pool.unitA}
+                    unitB={pool.unitB}
+                  />
+                </p>
+              </div>
+
+              {(pool.treasuryFeePointsAToB > 0 ||
+                pool.treasuryFeePointsBToA > 0) && (
+                <div className="flex flex-row items-center gap-2">
+                  <p>
+                    Treasury fee:{' '}
+                    <FeeDisplay
+                      feePointsAToB={pool.treasuryFeePointsAToB}
+                      feePointsBToA={pool.treasuryFeePointsBToA}
+                      feeBasis={pool.feeBasis}
+                      feeFrom={pool.feeFrom}
+                      unitA={pool.unitA}
+                      unitB={pool.unitB}
+                    />
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

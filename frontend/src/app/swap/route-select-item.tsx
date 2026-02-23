@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react'
 import {AssetQuantity} from '@/components/asset-quantity'
-import {SwapFeeDisplay} from '@/components/swap-fee-display'
+import {FeeDisplay} from '@/components/fee-display'
 import {UnitPairDisplay} from '@/components/unit-pair-display'
 import {cn} from '@/lib/utils'
 import type {PoolsListItem} from '@/types'
@@ -66,9 +66,9 @@ export const RouteSelectItem = ({
           label="Swap fee"
           value={
             <p>
-              <SwapFeeDisplay
-                swapFeePointsAToB={pool.swapFeePointsAToB}
-                swapFeePointsBToA={pool.swapFeePointsBToA}
+              <FeeDisplay
+                feePointsAToB={pool.swapFeePointsAToB}
+                feePointsBToA={pool.swapFeePointsBToA}
                 feeBasis={pool.feeBasis}
                 feeFrom={pool.feeFrom}
                 unitA={pool.unitA}
@@ -77,6 +77,23 @@ export const RouteSelectItem = ({
             </p>
           }
         />
+        {(pool.treasuryFeePointsAToB > 0 || pool.treasuryFeePointsBToA > 0) && (
+          <Row
+            label="Treasury fee"
+            value={
+              <p>
+                <FeeDisplay
+                  feePointsAToB={pool.treasuryFeePointsAToB}
+                  feePointsBToA={pool.treasuryFeePointsBToA}
+                  feeBasis={pool.feeBasis}
+                  feeFrom={pool.feeFrom}
+                  unitA={pool.unitA}
+                  unitB={pool.unitB}
+                />
+              </p>
+            }
+          />
+        )}
         {swapQuantities && (
           <>
             <Row

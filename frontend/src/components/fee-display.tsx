@@ -4,25 +4,27 @@ import {formatPercentage} from '@/helpers/format-percentage'
 import {useTokenMetadata} from '@/metadata/queries'
 import {Tooltip, TooltipContent, TooltipTrigger} from './ui/tooltip'
 
-type SwapFeeDisplayProps = {
-  swapFeePointsAToB: number
-  swapFeePointsBToA: number
+type FeeDisplayProps = {
+  feePointsAToB: number
+  feePointsBToA: number
   feeBasis: number
   feeFrom: FeeFrom
   unitA: string
   unitB: string
   showOnly?: 'aToB' | 'bToA'
+  suffix?: string
 }
 
-export const SwapFeeDisplay = ({
-  swapFeePointsAToB,
-  swapFeePointsBToA,
+export const FeeDisplay = ({
+  feePointsAToB,
+  feePointsBToA,
   feeBasis,
   feeFrom,
   unitA,
   unitB,
   showOnly,
-}: SwapFeeDisplayProps) => {
+  suffix,
+}: FeeDisplayProps) => {
   const {metadata: metadataA} = useTokenMetadata(unitA)
   const {metadata: metadataB} = useTokenMetadata(unitB)
 
@@ -30,10 +32,10 @@ export const SwapFeeDisplay = ({
   const unitBTicker = metadataB?.ticker ?? metadataB?.name ?? 'unknown'
 
   const feePercentageAToB = formatPercentage(
-    computeFee(swapFeePointsAToB, feeBasis).times(100),
+    computeFee(feePointsAToB, feeBasis).times(100),
   )
   const feePercentageBToA = formatPercentage(
-    computeFee(swapFeePointsBToA, feeBasis).times(100),
+    computeFee(feePointsBToA, feeBasis).times(100),
   )
 
   const feeFromLabel = {
@@ -46,15 +48,16 @@ export const SwapFeeDisplay = ({
   return (
     <Tooltip>
       <TooltipTrigger>
-        {showOnly === 'aToB' || swapFeePointsAToB === swapFeePointsBToA
+        {showOnly === 'aToB' || feePointsAToB === feePointsBToA
           ? feePercentageAToB
           : showOnly === 'bToA'
             ? feePercentageBToA
             : `${feePercentageAToB} / ${feePercentageBToA}`}
+        {suffix && ` ${suffix}`}
       </TooltipTrigger>
       <TooltipContent>
         <div>
-          {swapFeePointsAToB !== swapFeePointsBToA && (
+          {feePointsAToB !== feePointsBToA && (
             <>
               <p>
                 {feePercentageAToB} when swapping {unitATicker} to {unitBTicker}
