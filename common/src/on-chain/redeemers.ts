@@ -8,10 +8,15 @@ export type SwapRedeemer = {
 export type AddLiquidityRedeemer = {
   aAdd: number
   bAdd: number
+  xSwap: number
 }
+
+export const withdrawTypes = ['TO_BOTH', 'TO_A', 'TO_B'] as const
+export type WithdrawType = (typeof withdrawTypes)[number]
 
 export type WithdrawLiquidityRedeemer = {
   sharesAdd: number
+  withdrawType: WithdrawType
 }
 
 export type WithdrawTreasuryRedeemer = Record<string, never>

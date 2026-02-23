@@ -1,5 +1,8 @@
 import type {IFetcher, IWallet} from '@meshsdk/core'
-import type {WithdrawLiquidityRedeemer} from '@wingriders/rapid-dex-common'
+import type {
+  WithdrawLiquidityRedeemer,
+  WithdrawType,
+} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
 import {getNewPoolAmount} from './pool-state'
 import {buildSpentPoolOutputTx} from './spent-pool-output'
@@ -12,6 +15,9 @@ export type BuildWithdrawLiquidityTxArgs = {
   lockShares: BigNumber
   outA: BigNumber
   outB: BigNumber
+  withdrawType: WithdrawType
+  addToTreasuryA: BigNumber
+  addToTreasuryB: BigNumber
   now?: Date // if not provided, the current date will be used
 }
 
@@ -30,10 +36,14 @@ export const buildWithdrawLiquidityTx = async ({
   lockShares,
   outA,
   outB,
+  withdrawType,
+  addToTreasuryA,
+  addToTreasuryB,
   now = new Date(),
 }: BuildWithdrawLiquidityTxArgs): Promise<BuildWithdrawLiquidityTxResult> => {
   const withdrawLiquidityRedeemer: WithdrawLiquidityRedeemer = {
     sharesAdd: lockShares.toNumber(),
+    withdrawType,
   }
   return buildSpentPoolOutputTx({
     wallet,
@@ -46,6 +56,8 @@ export const buildWithdrawLiquidityTx = async ({
       lockB: outB.negated(),
       lockShares,
     }),
+    addToTreasuryA,
+    addToTreasuryB,
     now,
   })
 }

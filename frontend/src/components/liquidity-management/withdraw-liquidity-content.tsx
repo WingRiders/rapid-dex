@@ -1,6 +1,6 @@
 import {useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT, sleep} from '@wingriders/rapid-dex-common'
-import {computeReturnedTokens} from '@wingriders/rapid-dex-sdk-core'
+import {computeWithdrawLiquidity} from '@wingriders/rapid-dex-sdk-core'
 import {useLivePoolUtxoQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
@@ -77,15 +77,17 @@ export const WithdrawLiquidityContent = ({
     )
   }
 
-  const returnedTokens = useMemo(
+  const withdrawLiquidityComputedParams = useMemo(
     () =>
       withdrawingShares?.gt(0)
-        ? computeReturnedTokens({
+        ? computeWithdrawLiquidity({
             lockShares: withdrawingShares,
             poolState: pool.poolState,
+            poolConfig: pool,
+            withdrawType: 'TO_BOTH', // TODO Add Zap-Out UI
           })
         : undefined,
-    [withdrawingShares, pool.poolState],
+    [withdrawingShares, pool],
   )
 
   const validationError = useValidateWithdrawLiquidityForm({
@@ -106,19 +108,25 @@ export const WithdrawLiquidityContent = ({
     () =>
       isValid &&
       withdrawingShares?.gt(0) &&
-      returnedTokens != null &&
+      withdrawLiquidityComputedParams != null &&
       poolUtxo != null
         ? {
             lockShares: withdrawingShares,
-            outA: returnedTokens.outA,
-            outB: returnedTokens.outB,
+            ...withdrawLiquidityComputedParams,
             pool: {
               ...pool,
               utxo: poolUtxo.utxo,
             },
+            withdrawType: 'TO_BOTH', // TODO Add Zap-Out UI
           }
         : undefined,
-    [isValid, withdrawingShares, returnedTokens, pool, poolUtxo],
+    [
+      isValid,
+      withdrawingShares,
+      withdrawLiquidityComputedParams,
+      pool,
+      poolUtxo,
+    ],
   )
   const [debouncedBuildTxQueryArgs] = useDebounce(
     buildTxQueryArgs,
@@ -270,21 +278,21 @@ export const WithdrawLiquidityContent = ({
         <DataRows
           className="mt-4"
           rows={compact([
-            returnedTokens && {
+            withdrawLiquidityComputedParams && {
               label: `Withdrawing ${unitATicker}`,
               value: (
                 <AssetQuantity
                   unit={pool.unitA}
-                  quantity={returnedTokens.outA}
+                  quantity={withdrawLiquidityComputedParams.outA}
                 />
               ),
             },
-            returnedTokens && {
+            withdrawLiquidityComputedParams && {
               label: `Withdrawing ${unitBTicker}`,
               value: (
                 <AssetQuantity
                   unit={pool.unitB}
-                  quantity={returnedTokens.outB}
+                  quantity={withdrawLiquidityComputedParams.outB}
                 />
               ),
             },

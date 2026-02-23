@@ -17,3 +17,8 @@ export const isFeeFromInput = (feeFrom: FeeFrom, aToB: boolean) =>
   feeFrom === FeeFrom.InputToken ||
   (feeFrom === FeeFrom.TokenA && aToB) ||
   (feeFrom === FeeFrom.TokenB && !aToB)
+
+export const isFeeFromA = (feeFrom: FeeFrom, aToB: boolean) =>
+  feeFrom === FeeFrom.TokenA ||
+  (feeFrom === FeeFrom.InputToken && aToB) ||
+  (feeFrom === FeeFrom.OutputToken && !aToB)

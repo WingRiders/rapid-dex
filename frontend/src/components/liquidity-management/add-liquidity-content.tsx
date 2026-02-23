@@ -1,6 +1,6 @@
 import {useQueryClient} from '@tanstack/react-query'
 import {LOVELACE_UNIT} from '@wingriders/rapid-dex-common'
-import {computeEarnedShares} from '@wingriders/rapid-dex-sdk-core'
+import {computeAddLiquidity} from '@wingriders/rapid-dex-sdk-core'
 import {useLivePoolUtxoQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
@@ -51,14 +51,15 @@ export const AddLiquidityContent = ({
     resetAddLiquidityForm,
   } = useAddLiquidityForm({pool})
 
-  const earnedShares = useMemo(
+  const addLiquidityComputedParams = useMemo(
     () =>
-      addLiquidityFormValues.quantityA?.gt(0) &&
+      addLiquidityFormValues.quantityA?.gt(0) ||
       addLiquidityFormValues.quantityB?.gt(0)
-        ? computeEarnedShares({
-            lockA: addLiquidityFormValues.quantityA,
-            lockB: addLiquidityFormValues.quantityB,
+        ? computeAddLiquidity({
+            lockA: addLiquidityFormValues.quantityA ?? new BigNumber(0),
+            lockB: addLiquidityFormValues.quantityB ?? new BigNumber(0),
             poolState: pool.poolState,
+            poolConfig: pool,
           })
         : undefined,
     [addLiquidityFormValues, pool],
@@ -67,7 +68,7 @@ export const AddLiquidityContent = ({
   const validationError = useValidateAddLiquidityForm({
     values: addLiquidityFormValues,
     pool,
-    earnedShares,
+    earnedShares: addLiquidityComputedParams?.earnedShares,
   })
   const isValid = validationError == null
 
@@ -85,12 +86,12 @@ export const AddLiquidityContent = ({
     isValid &&
       addLiquidityFormValues.quantityA != null &&
       addLiquidityFormValues.quantityB != null &&
-      earnedShares != null &&
+      addLiquidityComputedParams != null &&
       poolUtxo != null
       ? {
           lockA: addLiquidityFormValues.quantityA,
           lockB: addLiquidityFormValues.quantityB,
-          earnedShares,
+          ...addLiquidityComputedParams,
           pool: {
             ...pool,
             utxo: poolUtxo.utxo,
@@ -207,9 +208,9 @@ export const AddLiquidityContent = ({
         <DataRows
           className="mt-2"
           rows={compact([
-            earnedShares && {
+            addLiquidityComputedParams && {
               label: 'Earned shares',
-              value: formatBigNumber(earnedShares),
+              value: formatBigNumber(addLiquidityComputedParams.earnedShares), // TODO Do we want to display xSwap?
             },
             buildAddLiquidityTxResult && {
               label: 'Transaction fee',

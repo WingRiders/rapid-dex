@@ -1,20 +1,22 @@
 import {MeshValue} from '@meshsdk/core'
-import {Command} from 'commander'
-import {computeEarnedShares} from '../../../amm'
+import {Command, InvalidArgumentError} from 'commander'
+import {computeAddLiquidity} from '../../../amm'
 import {buildAddLiquidityTx} from '../../../on-chain'
 import {createTRPCClient} from '../../../trpc'
 import {initConfig} from '../../config'
 import {
   assertSufficientBalance,
   initWallet,
-  parsePositiveBigNumberOption,
+  parseNonNegativeBigNumberOption,
 } from '../../helpers'
 
 export const buildAddLiquidityCommand = () => {
   const command = new Command('add-liquidity')
 
   command
-    .description('Perform an add liquidity transaction in the specified pool')
+    .description(
+      'Perform an add liquidity transaction in the specified pool. For Zap-In one of the quantities should be zero.',
+    )
     .requiredOption(
       '-s, --share-asset-name <string>',
       'The share asset name of the pool',
@@ -22,14 +24,19 @@ export const buildAddLiquidityCommand = () => {
     .requiredOption(
       '-a, --quantity-a <number>',
       'The quantity of the asset A to add.',
-      parsePositiveBigNumberOption,
+      parseNonNegativeBigNumberOption,
     )
     .requiredOption(
       '-b, --quantity-b <number>',
       'The quantity of the asset B to add.',
-      parsePositiveBigNumberOption,
+      parseNonNegativeBigNumberOption,
     )
     .action(async (options) => {
+      if (options.quantityA.lte(0) && options.quantityB.lte(0)) {
+        throw new InvalidArgumentError(
+          `At least one of (--quantity-a, --quantity-b) should be > 0`,
+        )
+      }
       const config = await initConfig()
 
       const trpc = createTRPCClient({
@@ -50,14 +57,16 @@ export const buildAddLiquidityCommand = () => {
       assertSufficientBalance(balance, pool.unitA, options.quantityA)
       assertSufficientBalance(balance, pool.unitB, options.quantityB)
 
-      const earnedShares = computeEarnedShares({
-        lockA: options.quantityA,
-        lockB: options.quantityB,
-        poolState: pool.poolState,
-      })
+      const {earnedShares, xSwap, addToTreasuryA, addToTreasuryB} =
+        computeAddLiquidity({
+          lockA: options.quantityA,
+          lockB: options.quantityB,
+          poolState: pool.poolState,
+          poolConfig: pool,
+        })
 
       if (earnedShares.lte(0)) {
-        throw new Error(
+        throw new InvalidArgumentError(
           'Would receive 0 shares, you need to provide more input tokens',
         )
       }
@@ -71,6 +80,9 @@ export const buildAddLiquidityCommand = () => {
         lockA: options.quantityA,
         lockB: options.quantityB,
         earnedShares,
+        xSwap,
+        addToTreasuryA,
+        addToTreasuryB,
       })
 
       console.log('Transaction built', {txFee})

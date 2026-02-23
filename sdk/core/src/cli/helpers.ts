@@ -32,6 +32,17 @@ export const parseBigNumberOption = (value: string, _previous: BigNumber) => {
   return parsedValue
 }
 
+export const parseNonNegativeBigNumberOption = (
+  value: string,
+  _previous: BigNumber,
+) => {
+  const parsedValue = parseBigNumberOption(value, _previous)
+  if (parsedValue.lt(0)) {
+    throw new InvalidArgumentError('Must be a non-negative integer number.')
+  }
+  return parsedValue
+}
+
 export const parsePositiveBigNumberOption = (
   value: string,
   _previous: BigNumber,
@@ -59,6 +70,7 @@ export const initWallet = async (
       type: 'mnemonic',
       words: config.WALLET_MNEMONIC.split(' '),
     },
+    accountIndex: 1,
   })
   await wallet.init()
 

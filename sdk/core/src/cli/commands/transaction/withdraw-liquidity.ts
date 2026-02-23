@@ -1,7 +1,12 @@
 import {MeshValue} from '@meshsdk/core'
-import {createUnit, poolValidatorHash} from '@wingriders/rapid-dex-common'
-import {Command} from 'commander'
-import {computeReturnedTokens} from '../../../amm'
+import {
+  createUnit,
+  poolValidatorHash,
+  type WithdrawType,
+  withdrawTypes,
+} from '@wingriders/rapid-dex-common'
+import {Command, InvalidArgumentError} from 'commander'
+import {computeWithdrawLiquidity} from '../../../amm'
 import {buildWithdrawLiquidityTx} from '../../../on-chain'
 import {createTRPCClient} from '../../../trpc'
 import {initConfig} from '../../config'
@@ -10,6 +15,19 @@ import {
   initWallet,
   parsePositiveBigNumberOption,
 } from '../../helpers'
+
+const isWithdrawType = (value: string): value is WithdrawType =>
+  withdrawTypes.includes(value as WithdrawType)
+
+const parseWithdrawType = (value: string): WithdrawType => {
+  if (!isWithdrawType(value)) {
+    throw new InvalidArgumentError(
+      `Invalid withdraw type: ${value}. Expected one of: ${withdrawTypes.join(', ')}`,
+    )
+  }
+
+  return value
+}
 
 export const buildWithdrawLiquidityCommand = () => {
   const command = new Command('withdraw-liquidity')
@@ -26,6 +44,12 @@ export const buildWithdrawLiquidityCommand = () => {
       '-q, --quantity <number>',
       'The quantity of shares to withdraw.',
       parsePositiveBigNumberOption,
+    )
+    .option(
+      '-t, --withdraw-type <number>',
+      `Withdraw type, one of: ${withdrawTypes.join(', ')}`,
+      parseWithdrawType,
+      'TO_BOTH',
     )
     .action(async (options) => {
       const config = await initConfig()
@@ -51,12 +75,19 @@ export const buildWithdrawLiquidityCommand = () => {
         options.quantity,
       )
 
-      const {outA, outB} = computeReturnedTokens({
-        lockShares: options.quantity,
-        poolState: pool.poolState,
-      })
+      const {outA, outB, addToTreasuryA, addToTreasuryB} =
+        computeWithdrawLiquidity({
+          lockShares: options.quantity,
+          poolState: pool.poolState,
+          poolConfig: pool,
+          withdrawType: options.withdrawType,
+        })
 
-      if (outA.lte(0) || outB.lte(0)) {
+      if (
+        (options.withdrawType === 'TO_BOTH' && (outA.lte(0) || outB.lte(0))) ||
+        (options.withdrawType === 'TO_A' && outA.lte(0)) ||
+        (options.withdrawType === 'TO_B' && outB.lte(0))
+      ) {
         throw new Error(
           'Would receive 0 output tokens, you need to provide more shares',
         )
@@ -71,6 +102,9 @@ export const buildWithdrawLiquidityCommand = () => {
         lockShares: options.quantity,
         outA,
         outB,
+        withdrawType: options.withdrawType,
+        addToTreasuryA,
+        addToTreasuryB,
       })
 
       console.log('Transaction built', {txFee})
