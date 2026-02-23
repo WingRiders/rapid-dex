@@ -186,8 +186,8 @@ const getAddLiquidityInteractionFields = (
   poolOutput: PoolOutput,
 ): InteractionSpecificFields[InteractionType.ADD_LIQUIDITY] => {
   return {
-    lockA: bigintToBigNumber(poolOutput.qtyADiff),
-    lockB: bigintToBigNumber(poolOutput.qtyBDiff),
+    lockA: bigintToBigNumber(poolOutput.qtyADiff + poolOutput.treasuryADiff),
+    lockB: bigintToBigNumber(poolOutput.qtyBDiff + poolOutput.treasuryBDiff),
     earnedShares: bigintToBigNumber(poolOutput.lptsDiff).negated(),
   }
 }
@@ -197,8 +197,12 @@ const getWithdrawLiquidityInteractionFields = (
 ): InteractionSpecificFields[InteractionType.WITHDRAW_LIQUIDITY] => {
   return {
     lockShares: bigintToBigNumber(poolOutput.lptsDiff),
-    outA: bigintToBigNumber(poolOutput.qtyADiff).negated(),
-    outB: bigintToBigNumber(poolOutput.qtyBDiff).negated(),
+    outA: bigintToBigNumber(
+      poolOutput.qtyADiff + poolOutput.treasuryADiff,
+    ).negated(),
+    outB: bigintToBigNumber(
+      poolOutput.qtyBDiff + poolOutput.treasuryBDiff,
+    ).negated(),
   }
 }
 

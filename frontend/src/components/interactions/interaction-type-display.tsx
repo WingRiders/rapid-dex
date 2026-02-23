@@ -17,7 +17,9 @@ export const InteractionTypeDisplay = ({
         ? 'Zap In'
         : 'Add liquidity'
     case InteractionType.WITHDRAW_LIQUIDITY:
-      return 'Withdraw liquidity'
+      return interaction.outA.eq(0) || interaction.outB.eq(0)
+        ? 'Zap Out'
+        : 'Withdraw liquidity'
     case InteractionType.WITHDRAW_TREASURY:
       return 'Withdraw treasury'
     case InteractionType.DONATE:

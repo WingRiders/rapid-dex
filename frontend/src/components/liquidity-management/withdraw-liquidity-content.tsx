@@ -1,9 +1,15 @@
 import {useQueryClient} from '@tanstack/react-query'
-import {LOVELACE_UNIT, sleep} from '@wingriders/rapid-dex-common'
+import {
+  LOVELACE_UNIT,
+  sleep,
+  type WithdrawType,
+  withdrawTypes,
+} from '@wingriders/rapid-dex-common'
 import {computeWithdrawLiquidity} from '@wingriders/rapid-dex-sdk-core'
 import {useLivePoolUtxoQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
+import {InfoIcon} from 'lucide-react'
 import {useEffect, useMemo, useState} from 'react'
 import {NumericFormat} from 'react-number-format'
 import {useDebounce} from 'use-debounce'
@@ -27,7 +33,15 @@ import {DataRows} from '../data-rows'
 import {ErrorAlert} from '../error-alert'
 import {TxSubmittedDialog} from '../tx-submitted-dialog'
 import {Button} from '../ui/button'
+import {Field, FieldLabel} from '../ui/field'
 import {Input} from '../ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select'
 import {Slider} from '../ui/slider'
 import {Tooltip, TooltipContent, TooltipTrigger} from '../ui/tooltip'
 import {useValidateWithdrawLiquidityForm} from './withdraw-liquidity-form'
@@ -58,6 +72,7 @@ export const WithdrawLiquidityContent = ({
   const [withdrawingShares, setWithdrawingShares] = useState<BigNumber | null>(
     new BigNumber(0),
   )
+  const [withdrawType, setWithdrawType] = useState<WithdrawType>('TO_BOTH')
 
   const withdrawingSharesPercentage = useMemo(
     () => withdrawingShares?.div(ownedShares).times(100).toNumber(),
@@ -84,10 +99,10 @@ export const WithdrawLiquidityContent = ({
             lockShares: withdrawingShares,
             poolState: pool.poolState,
             poolConfig: pool,
-            withdrawType: 'TO_BOTH', // TODO Add Zap-Out UI
+            withdrawType,
           })
         : undefined,
-    [withdrawingShares, pool],
+    [withdrawingShares, pool, withdrawType],
   )
 
   const validationError = useValidateWithdrawLiquidityForm({
@@ -117,7 +132,7 @@ export const WithdrawLiquidityContent = ({
               ...pool,
               utxo: poolUtxo.utxo,
             },
-            withdrawType: 'TO_BOTH', // TODO Add Zap-Out UI
+            withdrawType,
           }
         : undefined,
     [
@@ -126,6 +141,7 @@ export const WithdrawLiquidityContent = ({
       withdrawLiquidityComputedParams,
       pool,
       poolUtxo,
+      withdrawType,
     ],
   )
   const [debouncedBuildTxQueryArgs] = useDebounce(
@@ -177,9 +193,47 @@ export const WithdrawLiquidityContent = ({
     }
   }
 
+  const withdrawTypeLabels = {
+    TO_BOTH: 'Balanced withdrawal',
+    TO_A: `Zap Out to ${unitATicker}`,
+    TO_B: `Zap Out to ${unitBTicker}`,
+  }
+
   return (
     <>
       <div className="flex flex-col">
+        <Field orientation="horizontal">
+          <FieldLabel htmlFor="withdraw-type">
+            Withdrawal type
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InfoIcon className="h-4 w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                Zap Out allows you to withdraw liquidity to only one token. The
+                other token will be automatically swapped to the token that you
+                requested.
+              </TooltipContent>
+            </Tooltip>
+          </FieldLabel>
+
+          <Select
+            value={withdrawType}
+            onValueChange={(value) => setWithdrawType(value as WithdrawType)}
+          >
+            <SelectTrigger id="withdraw-type" className="w-[190px]">
+              <SelectValue placeholder="Withdraw type" />
+            </SelectTrigger>
+            <SelectContent>
+              {withdrawTypes.map((withdrawType) => (
+                <SelectItem key={withdrawType} value={withdrawType}>
+                  {withdrawTypeLabels[withdrawType]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+
         <p className="mt-2 text-muted-foreground text-sm">
           Enter the percentage of liquidity to withdraw
         </p>

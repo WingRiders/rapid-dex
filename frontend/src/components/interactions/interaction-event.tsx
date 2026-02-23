@@ -72,9 +72,9 @@ const WithdrawLiquidityEvent = ({
 }: SpecificInteractionEventProps<InteractionType.WITHDRAW_LIQUIDITY>) => {
   return (
     <div className="flex items-center gap-2">
-      <AssetQuantity unit={pool.unitA} quantity={outA} />
-      <PlusIcon className="size-4" />
-      <AssetQuantity unit={pool.unitB} quantity={outB} />
+      {outA.gt(0) && <AssetQuantity unit={pool.unitA} quantity={outA} />}
+      {outA.gt(0) && outB.gt(0) && <PlusIcon className="size-4" />}
+      {outB.gt(0) && <AssetQuantity unit={pool.unitB} quantity={outB} />}
     </div>
   )
 }
