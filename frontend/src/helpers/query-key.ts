@@ -3,6 +3,7 @@ import type {
   BuildCreatePoolTxArgs,
   BuildSwapTxArgs,
   BuildWithdrawLiquidityTxArgs,
+  BuildWithdrawTreasuryTxArgs,
 } from '@wingriders/rapid-dex-sdk-core'
 import type BigNumber from 'bignumber.js'
 import type {Dictionary} from 'lodash'
@@ -34,6 +35,9 @@ const f = {
   buildWithdrawLiquidityTx: (
     args: Omit<BuildWithdrawLiquidityTxArgs, 'wallet'> | undefined,
   ) => [...f.walletMutation(), 'build-withdraw-liquidity-tx', args] as const,
+  buildWithdrawTreasuryTx: (
+    args: Omit<BuildWithdrawTreasuryTxArgs, 'wallet'> | undefined,
+  ) => [...f.walletMutation(), 'build-withdraw-treasury-tx', args] as const,
 }
 
 export {f as queryKeyFactory}

@@ -10,6 +10,7 @@ import {PageContainer} from '@/components/page-container'
 import {Button} from '@/components/ui/button'
 import {UnitPairDisplay} from '@/components/unit-pair-display'
 import {PoolInteractionsTable} from './pool-interactions-table'
+import {MaybeTreasuryManagement} from './treasury-management'
 
 const PoolDetailsPage = ({
   params: paramsPromise,
@@ -78,6 +79,8 @@ const PoolDetailsPage = ({
               )}
             </div>
           </div>
+
+          <MaybeTreasuryManagement pool={pool} className="mt-6" />
 
           <div className="mt-6 flex flex-col gap-2">
             <h3 className="font-bold text-xl">Pool transactions</h3>

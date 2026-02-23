@@ -14,6 +14,8 @@ export const InteractionTypeDisplay = ({type}: InteractionTypeDisplayProps) => {
       return 'Add liquidity'
     case InteractionType.WITHDRAW_LIQUIDITY:
       return 'Withdraw liquidity'
+    case InteractionType.WITHDRAW_TREASURY:
+      return 'Withdraw treasury'
     case InteractionType.DONATE:
       return 'Donate'
   }

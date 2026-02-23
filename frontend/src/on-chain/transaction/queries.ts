@@ -4,10 +4,12 @@ import {
   type BuildCreatePoolTxArgs,
   type BuildSwapTxArgs,
   type BuildWithdrawLiquidityTxArgs,
+  type BuildWithdrawTreasuryTxArgs,
   buildAddLiquidityTx,
   buildCreatePoolTx,
   buildSwapTx,
   buildWithdrawLiquidityTx,
+  buildWithdrawTreasuryTx,
 } from '@wingriders/rapid-dex-sdk-core'
 import {useShallow} from 'zustand/shallow'
 import {queryKeyFactory} from '@/helpers/query-key'
@@ -69,6 +71,23 @@ export const useBuildWithdrawLiquidityTxQuery = (
     queryFn:
       wallet && args
         ? () => buildWithdrawLiquidityTx({...args, wallet})
+        : skipToken,
+    staleTime: 0,
+  })
+}
+
+export const useBuildWithdrawTreasuryTxQuery = (
+  args: Omit<BuildWithdrawTreasuryTxArgs, 'wallet'> | undefined,
+) => {
+  const wallet = useConnectedWalletStore(
+    useShallow((state) => state.connectedWallet?.wallet),
+  )
+
+  return useQuery({
+    queryKey: queryKeyFactory.buildWithdrawTreasuryTx(args),
+    queryFn:
+      wallet && args
+        ? () => buildWithdrawTreasuryTx({...args, wallet})
         : skipToken,
     staleTime: 0,
   })

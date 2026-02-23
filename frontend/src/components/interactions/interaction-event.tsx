@@ -16,6 +16,8 @@ export const InteractionEvent = ({interaction}: InteractionEventProps) => {
       return <AddLiquidityEvent interaction={interaction} />
     case InteractionType.WITHDRAW_LIQUIDITY:
       return <WithdrawLiquidityEvent interaction={interaction} />
+    case InteractionType.WITHDRAW_TREASURY:
+      return <WithdrawTreasuryEvent interaction={interaction} />
     case InteractionType.DONATE:
       return <DonateEvent interaction={interaction} />
   }
@@ -68,6 +70,18 @@ const AddLiquidityEvent = ({
 const WithdrawLiquidityEvent = ({
   interaction: {pool, outA, outB},
 }: SpecificInteractionEventProps<InteractionType.WITHDRAW_LIQUIDITY>) => {
+  return (
+    <div className="flex items-center gap-2">
+      <AssetQuantity unit={pool.unitA} quantity={outA} />
+      <PlusIcon className="size-4" />
+      <AssetQuantity unit={pool.unitB} quantity={outB} />
+    </div>
+  )
+}
+
+const WithdrawTreasuryEvent = ({
+  interaction: {pool, outA, outB},
+}: SpecificInteractionEventProps<InteractionType.WITHDRAW_TREASURY>) => {
   return (
     <div className="flex items-center gap-2">
       <AssetQuantity unit={pool.unitA} quantity={outA} />

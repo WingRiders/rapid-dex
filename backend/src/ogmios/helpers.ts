@@ -30,6 +30,8 @@ export const getSpentPoolInteractionType = (
     case 2n:
       return PoolInteractionType.WithdrawLiquidity
     case 3n:
+      return PoolInteractionType.WithdrawTreasury
+    case 4n:
       return PoolInteractionType.Donate
     default:
       logger.error({redeemerData}, 'Unknown redeemer datum')
