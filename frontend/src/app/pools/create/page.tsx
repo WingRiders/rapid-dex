@@ -8,8 +8,10 @@ import {
   poolOil,
 } from '@wingriders/rapid-dex-common'
 import {
+  type BuildCreatePoolTxArgs,
   computeSharesCreatePool,
   encodeFee,
+  leastCommonMultiple,
   sortUnits,
 } from '@wingriders/rapid-dex-sdk-core'
 import {usePoolsQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
@@ -19,7 +21,6 @@ import {useRouter} from 'next/navigation'
 import pluralize from 'pluralize'
 import {useEffect, useMemo} from 'react'
 import {Controller, useForm} from 'react-hook-form'
-import {NumericFormat} from 'react-number-format'
 import {AssetQuantity} from '@//components/asset-quantity'
 import {DataRows} from '@//components/data-rows'
 import {TxSubmittedDialog} from '@//components/tx-submitted-dialog'
@@ -43,6 +44,21 @@ import {
 } from '@/components/ui/accordion'
 import {Alert, AlertTitle} from '@/components/ui/alert'
 import {Button} from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {Checkbox} from '@/components/ui/checkbox'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field'
 import {Input} from '@/components/ui/input'
 import {
   Select,
@@ -51,7 +67,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {DECIMAL_SEPARATOR, THOUSAND_SEPARATOR} from '@/constants'
 import {
   invalidateDailyActiveUsersQuery,
   invalidateTotalTvlQuery,
@@ -68,12 +83,11 @@ import {
   useWalletBalanceQuery,
   useWalletUtxosQuery,
 } from '@/wallet/queries'
-import {useValidateCreatePoolForm} from './helpers'
+import {useValidateCreatePoolForm, validateSwapFee} from './helpers'
 import type {CreatePoolFormInputs} from './types'
 
 const DEFAULT_FEE_FROM = FeeFrom.InputToken
 const DEFAULT_SWAP_FEE_PERCENTAGE = 0.2
-const FEE_MAX_DECIMALS = 5
 
 const CreatePoolPage = () => {
   const trpc = useTRPC()
@@ -99,26 +113,34 @@ const CreatePoolPage = () => {
 
   const {
     control,
+    register,
     watch,
     reset: resetForm,
+    formState: {isValid: isFormValid, errors, isValidating},
   } = useForm<CreatePoolFormInputs>({
     defaultValues: {
       assetX: EMPTY_ASSET_INPUT_VALUE,
       assetY: EMPTY_ASSET_INPUT_VALUE,
       feeFrom: DEFAULT_FEE_FROM,
+      useBidirectionalSwapFee: false,
       swapFeePercentageAToB: DEFAULT_SWAP_FEE_PERCENTAGE,
       swapFeePercentageBToA: DEFAULT_SWAP_FEE_PERCENTAGE,
     },
     disabled: isSigningAndSubmittingTx,
+    mode: 'onChange',
   })
 
+  const isValid = isFormValid && !isValidating
+
   const inputs = watch()
+
   const {
     assetX,
     assetY,
+    feeFrom,
+    useBidirectionalSwapFee,
     swapFeePercentageAToB,
     swapFeePercentageBToA,
-    feeFrom,
   } = inputs
 
   const [unitA, unitB] =
@@ -140,62 +162,82 @@ const CreatePoolPage = () => {
     })
   }, [assetX.quantity, assetY.quantity])
 
-  const validationError = useValidateCreatePoolForm({inputs, earnedShares})
-  const isValid = validationError == null
+  const customValidationError = useValidateCreatePoolForm({
+    inputs,
+    earnedShares,
+  })
+  const isCustomValidationOk = customValidationError == null
 
   const seed = utxos?.[0]
 
-  const encodedSwapFeeAToB =
-    swapFeePercentageAToB != null
-      ? encodeFee(new BigNumber(swapFeePercentageAToB).div(100))
-      : undefined
+  const buildCreatePoolTxArgs = useMemo(() => {
+    if (
+      !isValid ||
+      !isCustomValidationOk ||
+      !isAssetInputValueNonEmpty(assetX) ||
+      !isAssetInputValueNonEmpty(assetY) ||
+      swapFeePercentageAToB == null ||
+      (useBidirectionalSwapFee &&
+        (!swapFeePercentageBToA || swapFeePercentageBToA === 0)) ||
+      earnedShares == null ||
+      !connectedWallet ||
+      !seed
+    )
+      return undefined
 
-  const encodedSwapFeeBToA =
-    swapFeePercentageBToA != null
+    const encodedSwapFeeAToB = encodeFee(
+      new BigNumber(swapFeePercentageAToB).div(100),
+    )
+
+    const encodedSwapFeeBToA = useBidirectionalSwapFee
       ? encodeFee(new BigNumber(swapFeePercentageBToA).div(100))
-      : undefined
+      : encodedSwapFeeAToB
+
+    const feeBasis = leastCommonMultiple(
+      encodedSwapFeeAToB.feeBasis,
+      encodedSwapFeeBToA.feeBasis,
+    )
+
+    const args: Omit<BuildCreatePoolTxArgs, 'wallet'> = {
+      assetX: assetInputValueToAsset(assetX),
+      assetY: assetInputValueToAsset(assetY),
+      outShares: earnedShares,
+      seed: {
+        txHash: seed.input.txHash,
+        txIndex: seed.input.outputIndex,
+      },
+      feeBasis,
+      // TODO Add treasury fields
+      feeFrom,
+      treasuryAuthorityUnit: assetY.unit,
+      treasuryFeePointsAToB: encodedSwapFeeAToB.feePoints,
+      treasuryFeePointsBToA: encodedSwapFeeBToA.feePoints,
+      swapFeePointsAToB:
+        (encodedSwapFeeAToB.feePoints * feeBasis) / encodedSwapFeeAToB.feeBasis,
+      swapFeePointsBToA:
+        (encodedSwapFeeBToA.feePoints * feeBasis) / encodedSwapFeeBToA.feeBasis,
+    }
+
+    return args
+  }, [
+    assetX,
+    assetY,
+    earnedShares,
+    connectedWallet,
+    seed,
+    feeFrom,
+    isCustomValidationOk,
+    isValid,
+    swapFeePercentageAToB,
+    swapFeePercentageBToA,
+    useBidirectionalSwapFee,
+  ])
 
   const {
     data: buildCreatePoolTxResult,
     isLoading: isLoadingBuildTx,
     error: buildCreatePoolTxError,
-  } = useBuildCreatePoolTxQuery(
-    isValid &&
-      isAssetInputValueNonEmpty(assetX) &&
-      isAssetInputValueNonEmpty(assetY) &&
-      earnedShares != null &&
-      connectedWallet &&
-      seed &&
-      encodedSwapFeeAToB &&
-      encodedSwapFeeBToA
-      ? {
-          assetX: assetInputValueToAsset(assetX),
-          assetY: assetInputValueToAsset(assetY),
-          outShares: earnedShares,
-          seed: {
-            txHash: seed.input.txHash,
-            txIndex: seed.input.outputIndex,
-          },
-          feeBasis:
-            encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
-              ? encodedSwapFeeAToB.feeBasis
-              : encodedSwapFeeAToB.feeBasis * encodedSwapFeeBToA.feeBasis,
-          // TODO Add treasury fields
-          feeFrom,
-          treasuryAuthorityUnit: assetY.unit,
-          treasuryFeePointsAToB: encodedSwapFeeAToB.feePoints,
-          treasuryFeePointsBToA: encodedSwapFeeBToA.feePoints,
-          swapFeePointsAToB:
-            encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
-              ? encodedSwapFeeAToB.feePoints
-              : encodedSwapFeeAToB.feePoints * encodedSwapFeeBToA.feeBasis,
-          swapFeePointsBToA:
-            encodedSwapFeeAToB.feeBasis === encodedSwapFeeBToA.feeBasis
-              ? encodedSwapFeeBToA.feePoints
-              : encodedSwapFeeBToA.feePoints * encodedSwapFeeAToB.feeBasis,
-        }
-      : undefined,
-  )
+  } = useBuildCreatePoolTxQuery(buildCreatePoolTxArgs)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset the error state of the sign and submit tx when the build tx result is updated
   useEffect(() => {
@@ -322,80 +364,143 @@ const CreatePoolPage = () => {
           />
         </div>
 
-        <div className="wrap mt-2 flex flex-row items-center justify-between gap-2">
-          <p className="flex-3">Take swap fee from</p>
-          <Controller
-            control={control}
-            name="feeFrom"
-            render={({field}) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={field.disabled}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select fee option" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={FeeFrom.InputToken}>
-                    Input token
-                  </SelectItem>
-                  <SelectItem value={FeeFrom.OutputToken}>
-                    Output token
-                  </SelectItem>
-                  <SelectItem value={FeeFrom.TokenA}>
-                    {unitA != null && unitB != null
-                      ? `Always ${unitATicker}`
-                      : 'Token A'}
-                  </SelectItem>
-                  <SelectItem value={FeeFrom.TokenB}>
-                    {unitA != null && unitB != null
-                      ? `Always ${unitBTicker}`
-                      : 'Token B'}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
+        <div className="mt-6">
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel htmlFor="fee-from">Take fees from</FieldLabel>
+              <FieldDescription>
+                Choose which token are the fees deducted from. This applies to
+                both swap and treasury fees.
+              </FieldDescription>
+            </FieldContent>
+
+            <Controller
+              control={control}
+              name="feeFrom"
+              render={({field}) => (
+                <Select {...field} onValueChange={field.onChange}>
+                  <SelectTrigger id="fee-from" className="w-[180px]">
+                    <SelectValue placeholder="Select fee option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={FeeFrom.InputToken}>
+                      Input token
+                    </SelectItem>
+                    <SelectItem value={FeeFrom.OutputToken}>
+                      Output token
+                    </SelectItem>
+                    <SelectItem value={FeeFrom.TokenA}>
+                      {unitA != null && unitB != null
+                        ? `Always ${unitATicker}`
+                        : 'Token A'}
+                    </SelectItem>
+                    <SelectItem value={FeeFrom.TokenB}>
+                      {unitA != null && unitB != null
+                        ? `Always ${unitBTicker}`
+                        : 'Token B'}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </Field>
         </div>
 
-        <div className="wrap mt-2 flex flex-row items-center justify-between gap-2">
-          <p className="flex-3">
-            {unitA != null && unitB != null
-              ? `Swap fee ${unitATicker} to ${unitBTicker}`
-              : 'Swap fee A to B'}
-          </p>
-          <Controller
-            control={control}
-            name="swapFeePercentageAToB"
-            render={({field}) => (
-              <SwapFeePercentageInput
-                value={field.value}
-                onChange={field.onChange}
-                disabled={field.disabled}
-              />
-            )}
-          />
-        </div>
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Swap fees configuration</CardTitle>
+            <CardDescription>
+              Set the trading fee charged on swaps. Fees are automatically added
+              to the pool to reward liquidity providers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <Field>
+                <FieldLabel htmlFor="swap-fee-percentage-a-to-b">
+                  {!useBidirectionalSwapFee
+                    ? 'Swap fee (%)'
+                    : `Swap fee ${
+                        unitA != null && unitB != null
+                          ? `${unitATicker} → ${unitBTicker}`
+                          : 'A → B'
+                      }`}
+                </FieldLabel>
+                <FieldContent>
+                  <Input
+                    {...register('swapFeePercentageAToB', {
+                      validate: validateSwapFee,
+                    })}
+                    id="swap-fee-percentage-a-to-b"
+                    type="number"
+                  />
+                </FieldContent>
+                <FieldError errors={[errors.swapFeePercentageAToB]} />
+              </Field>
 
-        <div className="wrap mt-2 flex flex-row items-center justify-between gap-2">
-          <p className="flex-3">
-            {unitA != null && unitB != null
-              ? `Swap fee ${unitBTicker} to ${unitATicker}`
-              : 'Swap fee B to A'}
-          </p>
-          <Controller
-            control={control}
-            name="swapFeePercentageBToA"
-            render={({field}) => (
-              <SwapFeePercentageInput
-                value={field.value}
-                onChange={field.onChange}
-                disabled={field.disabled}
+              {inputs.useBidirectionalSwapFee && (
+                <Field className="mt-4">
+                  <FieldLabel htmlFor="swap-fee-percentage-b-to-a">
+                    Swap fee{' '}
+                    {unitA != null && unitB != null
+                      ? `${unitBTicker} → ${unitATicker}`
+                      : 'B → A'}{' '}
+                    (%)
+                  </FieldLabel>
+                  <FieldContent>
+                    <Input
+                      {...register('swapFeePercentageBToA', {
+                        validate: (value, formValues) => {
+                          if (!formValues.useBidirectionalSwapFee)
+                            return undefined
+
+                          return validateSwapFee(value)
+                        },
+                      })}
+                      id="swap-fee-percentage-b-to-a"
+                      type="number"
+                    />
+                  </FieldContent>
+                  <FieldError errors={[errors.swapFeePercentageBToA]} />
+                </Field>
+              )}
+            </div>
+
+            <Field orientation="horizontal">
+              <Controller
+                control={control}
+                name="useBidirectionalSwapFee"
+                rules={{deps: ['swapFeePercentageBToA']}}
+                render={({field: {value, onChange}}) => (
+                  <Checkbox
+                    id="use-bidirectional-swap-fee"
+                    checked={value}
+                    onCheckedChange={(checked) => {
+                      onChange(checked === true)
+                    }}
+                  />
+                )}
               />
-            )}
-          />
-        </div>
+
+              <FieldContent>
+                <FieldLabel htmlFor="use-bidirectional-swap-fee">
+                  Use different fees per direction
+                </FieldLabel>
+                <FieldDescription>
+                  Enable to set separate fees for{' '}
+                  {unitA != null && unitB != null
+                    ? `${unitATicker}→${unitBTicker}`
+                    : 'A→B'}{' '}
+                  and{' '}
+                  {unitA != null && unitB != null
+                    ? `${unitBTicker}→${unitATicker}`
+                    : 'B→A'}{' '}
+                  swaps
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          </CardContent>
+        </Card>
 
         <Tooltip>
           <TooltipTrigger
@@ -411,6 +516,7 @@ const CreatePoolPage = () => {
                 disabled={
                   isLoadingBuildTx ||
                   !isValid ||
+                  !isCustomValidationOk ||
                   !buildCreatePoolTxResult ||
                   isSigningAndSubmittingTx
                 }
@@ -420,13 +526,13 @@ const CreatePoolPage = () => {
               </Button>
             </div>
           </TooltipTrigger>
-          {validationError && (
-            <TooltipContent>{validationError}</TooltipContent>
+          {customValidationError && (
+            <TooltipContent>{customValidationError}</TooltipContent>
           )}
         </Tooltip>
 
         {poolsWithSamePair && poolsWithSamePair.length > 0 && (
-          <Alert className="mt-2">
+          <Alert className="mt-4">
             <AlertTitle>
               <Accordion type="single" collapsible>
                 <AccordionItem value="pools-with-same-pair">
@@ -546,43 +652,6 @@ const CreatePoolPage = () => {
         onOpenChange={handleTxSubmittedDialogOpenChange}
       />
     </>
-  )
-}
-
-type SwapFeePercentageInputProps = {
-  value?: number
-  onChange: (value: number | undefined) => void
-  disabled?: boolean
-}
-
-const SwapFeePercentageInput = ({
-  value,
-  onChange,
-  disabled,
-}: SwapFeePercentageInputProps) => {
-  return (
-    <NumericFormat
-      customInput={Input}
-      thousandSeparator={THOUSAND_SEPARATOR}
-      decimalSeparator={DECIMAL_SEPARATOR}
-      allowedDecimalSeparators={['.', ',']}
-      allowNegative={false}
-      decimalScale={FEE_MAX_DECIMALS}
-      isAllowed={({value}) => !value || new BigNumber(value).lte(100)}
-      type="text"
-      placeholder="e.g. 0.2%"
-      onValueChange={({value: newValue}, {source}) => {
-        if (source === 'prop') return
-        const number = Number.parseFloat(newValue)
-        onChange(Number.isNaN(number) ? undefined : number)
-      }}
-      value={value?.toString()}
-      suffix="%"
-      valueIsNumericString
-      autoComplete="off"
-      className="flex-1 text-right text-md"
-      disabled={disabled}
-    />
   )
 }
 

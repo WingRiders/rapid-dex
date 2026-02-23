@@ -43,13 +43,6 @@ export const useValidateCreatePoolForm = ({
       return 'Enter different assets'
     }
 
-    if (inputs.swapFeePercentageAToB == null)
-      return 'Enter a swap fee for A to B'
-    if (inputs.swapFeePercentageBToA == null)
-      return 'Enter a swap fee for B to A'
-
-    if (inputs.feeFrom == null) return 'Select a fee option'
-
     const assetXBalance = balance?.[assetX.unit] ?? new BigNumber(0)
     const assetYBalance = balance?.[assetY.unit] ?? new BigNumber(0)
 
@@ -73,4 +66,20 @@ export const useValidateCreatePoolForm = ({
     assetYMetadata,
     earnedShares,
   ])
+}
+
+export const validateSwapFee = (valueRaw: unknown) => {
+  if (valueRaw == null || valueRaw === '') return 'Enter swap fee'
+
+  const value =
+    typeof valueRaw === 'string'
+      ? Number.parseFloat(valueRaw)
+      : typeof valueRaw === 'number'
+        ? valueRaw
+        : undefined
+
+  if (value == null || Number.isNaN(value)) return 'Enter a valid swap fee'
+  if (value < 0 || value > 100) return 'Swap fee must be between 0 and 100'
+
+  return undefined
 }
