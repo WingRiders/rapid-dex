@@ -50,7 +50,7 @@ export const computeAddLiquidity = ({
       poolState,
       poolConfig,
     })
-    const isFeeFromA = isFeeFromInput(poolConfig.feeFrom, false)
+    const isFeeFromA = isFeeFromInput(poolConfig.feeFrom, true)
     return {
       earnedShares,
       xSwap,
