@@ -4,6 +4,7 @@ import {computeAddLiquidity} from '@wingriders/rapid-dex-sdk-core'
 import {useLivePoolUtxoQuery, useTRPC} from '@wingriders/rapid-dex-sdk-react'
 import BigNumber from 'bignumber.js'
 import {compact} from 'lodash'
+import {InfoIcon} from 'lucide-react'
 import {useEffect, useMemo} from 'react'
 import {formatBigNumber} from '@/helpers/format-number'
 import {
@@ -24,6 +25,8 @@ import {DataRows} from '../data-rows'
 import {ErrorAlert} from '../error-alert'
 import {TxSubmittedDialog} from '../tx-submitted-dialog'
 import {Button} from '../ui/button'
+import {Checkbox} from '../ui/checkbox'
+import {Field, FieldLabel} from '../ui/field'
 import {Tooltip, TooltipContent, TooltipTrigger} from '../ui/tooltip'
 import {
   useAddLiquidityForm,
@@ -48,13 +51,14 @@ export const AddLiquidityContent = ({
     addLiquidityFormValues,
     onQuantityAChange,
     onQuantityBChange,
+    onIsZapInChange,
     resetAddLiquidityForm,
   } = useAddLiquidityForm({pool})
 
   const addLiquidityComputedParams = useMemo(
     () =>
-      addLiquidityFormValues.quantityA?.gt(0) ||
-      addLiquidityFormValues.quantityB?.gt(0)
+      addLiquidityFormValues.quantityA != null &&
+      addLiquidityFormValues.quantityB != null
         ? computeAddLiquidity({
             lockA: addLiquidityFormValues.quantityA ?? new BigNumber(0),
             lockB: addLiquidityFormValues.quantityB ?? new BigNumber(0),
@@ -135,6 +139,28 @@ export const AddLiquidityContent = ({
   return (
     <>
       <div>
+        <Field orientation="horizontal" className="rounded-md border p-3">
+          <Checkbox
+            id="zap-in-checkbox"
+            checked={addLiquidityFormValues.isZapIn}
+            onCheckedChange={onIsZapInChange}
+            disabled={isSigningAndSubmittingTx}
+          />
+          <FieldLabel htmlFor="zap-in-checkbox" className="cursor-pointer">
+            Enable Zap In
+          </FieldLabel>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <InfoIcon className="h-4 w-4 text-muted-foreground" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              Zap In allows you to add liquidity using only one token. A portion
+              of that token will be automatically swapped to the other token and
+              added to the pool.
+            </TooltipContent>
+          </Tooltip>
+        </Field>
+
         <div className="mt-2 flex flex-col gap-1">
           <AssetInput
             items={[

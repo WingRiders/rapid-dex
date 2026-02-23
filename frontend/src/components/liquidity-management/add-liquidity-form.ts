@@ -10,60 +10,132 @@ const getPoolRatio = (poolState: Pick<PoolState, 'qtyA' | 'qtyB'>) =>
   poolState.qtyA.div(poolState.qtyB)
 
 export type AddLiquidityFormValues = {
+  isZapIn: boolean
   quantityA: BigNumber | null
   quantityB: BigNumber | null
+  lastTouched?: 'quantityA' | 'quantityB'
 }
 
 type UseAddLiquidityFormArgs = {
   pool: PoolsListItem
 }
 
+const calculateQuantityBBasedOnQuantityA = (
+  quantityA: BigNumber,
+  poolState: PoolState,
+) => quantityA.div(getPoolRatio(poolState)).integerValue(BigNumber.ROUND_CEIL)
+
+const calculateQuantityABasedOnQuantityB = (
+  quantityB: BigNumber,
+  poolState: PoolState,
+) => quantityB.times(getPoolRatio(poolState)).integerValue(BigNumber.ROUND_CEIL)
+
 export const useAddLiquidityForm = ({pool}: UseAddLiquidityFormArgs) => {
   const [addLiquidityFormValues, setAddLiquidityFormValues] =
     useState<AddLiquidityFormValues>({
+      isZapIn: false,
       quantityA: null,
       quantityB: null,
     })
 
   const onQuantityAChange = useCallback(
     (value: BigNumber | null) => {
-      setAddLiquidityFormValues({
+      setAddLiquidityFormValues((prevState) => ({
+        ...prevState,
         quantityA: value,
         quantityB: value?.gt(0)
-          ? (value
-              .div(getPoolRatio(pool.poolState))
-              .integerValue(BigNumber.ROUND_CEIL) ?? null)
+          ? prevState.isZapIn
+            ? new BigNumber(0)
+            : calculateQuantityBBasedOnQuantityA(value, pool.poolState)
           : addLiquidityFormValues.quantityB,
-      })
+        lastTouched: 'quantityA',
+      }))
     },
     [addLiquidityFormValues.quantityB, pool.poolState],
   )
 
   const onQuantityBChange = useCallback(
     (value: BigNumber | null) => {
-      setAddLiquidityFormValues({
+      setAddLiquidityFormValues((prevState) => ({
+        ...prevState,
         quantityA: value?.gt(0)
-          ? (value
-              .times(getPoolRatio(pool.poolState))
-              .integerValue(BigNumber.ROUND_CEIL) ?? null)
+          ? prevState.isZapIn
+            ? new BigNumber(0)
+            : calculateQuantityABasedOnQuantityB(value, pool.poolState)
           : addLiquidityFormValues.quantityA,
         quantityB: value,
-      })
+        lastTouched: 'quantityB',
+      }))
     },
     [addLiquidityFormValues.quantityA, pool.poolState],
   )
 
   const resetAddLiquidityForm = useCallback(() => {
-    setAddLiquidityFormValues({
+    setAddLiquidityFormValues((prevState) => ({
+      ...prevState,
       quantityA: null,
       quantityB: null,
-    })
+      lastTouched: undefined,
+    }))
   }, [])
+
+  const onIsZapInChange = useCallback(
+    (isZapIn: boolean) => {
+      setAddLiquidityFormValues((prevState) => {
+        const lastTouched = prevState.lastTouched ?? 'quantityA'
+
+        const newQuantityA = (() => {
+          if (isZapIn)
+            return lastTouched === 'quantityA'
+              ? prevState.quantityA
+              : prevState.quantityB
+                ? new BigNumber(0)
+                : null
+
+          if (lastTouched === 'quantityA') return prevState.quantityA
+
+          return prevState.quantityB?.gt(0)
+            ? calculateQuantityABasedOnQuantityB(
+                prevState.quantityB,
+                pool.poolState,
+              )
+            : null
+        })()
+
+        const newQuantityB = (() => {
+          if (isZapIn)
+            return lastTouched === 'quantityB'
+              ? prevState.quantityB
+              : prevState.quantityA
+                ? new BigNumber(0)
+                : null
+
+          if (lastTouched === 'quantityB') return prevState.quantityB
+
+          return prevState.quantityA?.gt(0)
+            ? calculateQuantityBBasedOnQuantityA(
+                prevState.quantityA,
+                pool.poolState,
+              )
+            : null
+        })()
+
+        return {
+          ...prevState,
+          quantityA: newQuantityA,
+          quantityB: newQuantityB,
+          isZapIn,
+        }
+      })
+    },
+    [pool.poolState],
+  )
 
   return {
     addLiquidityFormValues,
     onQuantityAChange,
     onQuantityBChange,
+    onIsZapInChange,
     resetAddLiquidityForm,
   }
 }
@@ -75,7 +147,7 @@ type ValidateAddLiquidityFormParams = {
 }
 
 export const useValidateAddLiquidityForm = ({
-  values: {quantityA, quantityB},
+  values: {isZapIn, quantityA, quantityB},
   pool,
   earnedShares,
 }: ValidateAddLiquidityFormParams) => {
@@ -90,7 +162,11 @@ export const useValidateAddLiquidityForm = ({
   return useMemo<string | undefined>(() => {
     if (!isWalletConnected) return 'Connect your wallet'
 
-    if (!quantityA?.gt(0) || !quantityB?.gt(0)) return 'Enter quantities'
+    if (isZapIn) {
+      if (quantityA == null && quantityB == null) return 'Enter quantity'
+    } else {
+      if (!quantityA?.gt(0) || !quantityB?.gt(0)) return 'Enter quantities'
+    }
 
     // earnedShares should be defined if both quantities are defined
     if (!earnedShares) return 'Something went wrong'
@@ -121,5 +197,6 @@ export const useValidateAddLiquidityForm = ({
     quantityA,
     quantityB,
     earnedShares,
+    isZapIn,
   ])
 }

@@ -50,11 +50,9 @@ export const InteractionsTable = ({
       },
       {
         header: 'Type',
-        cell: ({
-          row: {
-            original: {type},
-          },
-        }) => <InteractionTypeDisplay type={type} />,
+        cell: ({row: {original: interaction}}) => (
+          <InteractionTypeDisplay interaction={interaction} />
+        ),
         meta: {
           width: '10%',
         },

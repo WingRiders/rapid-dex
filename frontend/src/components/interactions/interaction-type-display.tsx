@@ -1,17 +1,21 @@
-import {InteractionType} from '@wingriders/rapid-dex-common'
+import {type Interaction, InteractionType} from '@wingriders/rapid-dex-common'
 
 type InteractionTypeDisplayProps = {
-  type: InteractionType
+  interaction: Interaction
 }
 
-export const InteractionTypeDisplay = ({type}: InteractionTypeDisplayProps) => {
-  switch (type) {
+export const InteractionTypeDisplay = ({
+  interaction,
+}: InteractionTypeDisplayProps) => {
+  switch (interaction.type) {
     case InteractionType.CREATE_POOL:
       return 'Create pool'
     case InteractionType.SWAP:
       return 'Swap'
     case InteractionType.ADD_LIQUIDITY:
-      return 'Add liquidity'
+      return interaction.lockA.eq(0) || interaction.lockB.eq(0)
+        ? 'Zap In'
+        : 'Add liquidity'
     case InteractionType.WITHDRAW_LIQUIDITY:
       return 'Withdraw liquidity'
     case InteractionType.WITHDRAW_TREASURY:

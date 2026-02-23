@@ -60,9 +60,9 @@ const AddLiquidityEvent = ({
 }: SpecificInteractionEventProps<InteractionType.ADD_LIQUIDITY>) => {
   return (
     <div className="flex items-center gap-2">
-      <AssetQuantity unit={pool.unitA} quantity={lockA} />
-      <PlusIcon className="size-4" />
-      <AssetQuantity unit={pool.unitB} quantity={lockB} />
+      {lockA.gt(0) && <AssetQuantity unit={pool.unitA} quantity={lockA} />}
+      {lockA.gt(0) && lockB.gt(0) && <PlusIcon className="size-4" />}
+      {lockB.gt(0) && <AssetQuantity unit={pool.unitB} quantity={lockB} />}
     </div>
   )
 }
