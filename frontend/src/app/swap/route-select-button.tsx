@@ -2,6 +2,7 @@ import {ChevronDownIcon} from 'lucide-react'
 import {useState} from 'react'
 import {FeeDisplay} from '@/components/fee-display'
 import {cn} from '@/lib/utils'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
 import {RouteSelectDialog} from './route-select-dialog'
@@ -73,8 +74,8 @@ const SelectedPool = ({pool, isSwapAToB}: SelectedPoolProps) => {
   const {metadata: metadataA} = useTokenMetadata(pool.unitA)
   const {metadata: metadataB} = useTokenMetadata(pool.unitB)
 
-  const assetATicker = metadataA?.ticker ?? metadataA?.name ?? 'unknown'
-  const assetBTicker = metadataB?.ticker ?? metadataB?.name ?? 'unknown'
+  const assetATicker = getUnitTicker(metadataA) ?? 'unknown'
+  const assetBTicker = getUnitTicker(metadataB) ?? 'unknown'
 
   const poolName = `${assetATicker}/${assetBTicker}`
 

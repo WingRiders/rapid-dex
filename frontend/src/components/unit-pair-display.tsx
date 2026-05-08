@@ -1,4 +1,5 @@
 import type {Unit} from '@meshsdk/core'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '../metadata/queries'
 import {UnitImage} from './unit-image'
 
@@ -37,7 +38,8 @@ export const UnitPairDisplay = ({
       </div>
 
       <p className="text-md">
-        {unitAMetadata?.ticker} / {unitBMetadata?.ticker}
+        {getUnitTicker(unitAMetadata) ?? 'unknown'} /{' '}
+        {getUnitTicker(unitBMetadata) ?? 'unknown'}
       </p>
     </div>
   )

@@ -1,6 +1,7 @@
 import {compact} from 'lodash'
 import {useState} from 'react'
 import type {PortfolioItem} from '@/helpers/portfolio'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import type {PoolsListItem} from '@/types'
 import {useConnectedWalletStore} from '../../store/connected-wallet'
@@ -76,8 +77,8 @@ const LiquidityManagementDialogContent = ({
 
   const {metadata: unitAMetadata} = useTokenMetadata(pool.unitA)
   const {metadata: unitBMetadata} = useTokenMetadata(pool.unitB)
-  const unitATicker = unitAMetadata?.ticker ?? 'Unknown'
-  const unitBTicker = unitBMetadata?.ticker ?? 'Unknown'
+  const unitATicker = getUnitTicker(unitAMetadata) ?? 'unknown'
+  const unitBTicker = getUnitTicker(unitBMetadata) ?? 'unknown'
 
   const poolLabel = `${unitATicker} / ${unitBTicker}`
 

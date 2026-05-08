@@ -6,6 +6,7 @@ import {ErrorAlert} from '@/components/error-alert'
 import {TxSubmittedDialog} from '@/components/tx-submitted-dialog'
 import {Button} from '@/components/ui/button'
 import {cn} from '@/lib/utils'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildWithdrawTreasuryTxQuery} from '@/on-chain/transaction/queries'
 import type {PoolsListItem} from '@/types'
@@ -64,8 +65,8 @@ export const TreasuryManagement = ({
   const {metadata: unitAMetadata} = useTokenMetadata(pool.unitA)
   const {metadata: unitBMetadata} = useTokenMetadata(pool.unitB)
 
-  const unitATicker = unitAMetadata?.ticker ?? unitAMetadata?.name ?? 'unknown'
-  const unitBTicker = unitBMetadata?.ticker ?? unitBMetadata?.name ?? 'unknown'
+  const unitATicker = getUnitTicker(unitAMetadata) ?? 'unknown'
+  const unitBTicker = getUnitTicker(unitBMetadata) ?? 'unknown'
 
   const {
     data: poolUtxo,

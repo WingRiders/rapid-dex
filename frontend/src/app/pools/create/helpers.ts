@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import {useMemo} from 'react'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '../../../metadata/queries'
 import {useConnectedWalletStore} from '../../../store/connected-wallet'
 import {useWalletBalanceQuery} from '../../../wallet/queries'
@@ -50,11 +51,11 @@ export const useValidateCreatePoolForm = ({
       ticker ? `Insufficient balance of ${ticker}` : 'Insufficient balance'
 
     if (assetX.quantity.gt(assetXBalance)) {
-      return getInsufficientBalanceError(assetXMetadata?.ticker)
+      return getInsufficientBalanceError(getUnitTicker(assetXMetadata))
     }
 
     if (assetY.quantity.gt(assetYBalance)) {
-      return getInsufficientBalanceError(assetYMetadata?.ticker)
+      return getInsufficientBalanceError(getUnitTicker(assetYMetadata))
     }
 
     return undefined

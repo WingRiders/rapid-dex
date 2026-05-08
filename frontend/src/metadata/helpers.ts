@@ -1,5 +1,6 @@
 import type {Unit} from '@meshsdk/core'
 import type {QueryClient} from '@tanstack/react-query'
+import type {TokenMetadata} from '@wingriders/rapid-dex-common'
 import type {TRPC} from '@wingriders/rapid-dex-sdk-react'
 import type BigNumber from 'bignumber.js'
 import {getTokenMetadataFromQueryCache} from './queries'
@@ -22,4 +23,16 @@ export const transformQuantityToNewUnitDecimals = (
     : 0
   const realQuantity = quantity.shiftedBy(-oldUnitDecimals)
   return realQuantity.shiftedBy(newUnitDecimals)
+}
+
+export function getUnitTicker(
+  metadata: Pick<TokenMetadata, 'ticker' | 'name'>,
+): string
+export function getUnitTicker(
+  metadata: Pick<TokenMetadata, 'ticker' | 'name'> | undefined,
+): string | undefined
+export function getUnitTicker(
+  metadata: Pick<TokenMetadata, 'ticker' | 'name'> | undefined,
+): string | undefined {
+  return metadata?.ticker ?? metadata?.name
 }

@@ -74,7 +74,10 @@ import {
   invalidateTotalTvlQuery,
 } from '@/helpers/invalidation'
 import {matchPoolForUnits} from '@/helpers/pool'
-import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
+import {
+  getUnitTicker,
+  transformQuantityToNewUnitDecimals,
+} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildCreatePoolTxQuery} from '@/on-chain/transaction/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
@@ -163,8 +166,8 @@ const CreatePoolPage = () => {
   const {metadata: unitAMetadata} = useTokenMetadata(unitA)
   const {metadata: unitBMetadata} = useTokenMetadata(unitB)
 
-  const unitATicker = unitAMetadata?.ticker ?? unitAMetadata?.name ?? 'unknown'
-  const unitBTicker = unitBMetadata?.ticker ?? unitBMetadata?.name ?? 'unknown'
+  const unitATicker = getUnitTicker(unitAMetadata) ?? 'unknown'
+  const unitBTicker = getUnitTicker(unitBMetadata) ?? 'unknown'
 
   const earnedShares = useMemo(() => {
     if (!assetX.quantity || !assetY.quantity) return undefined

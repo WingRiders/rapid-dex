@@ -1,6 +1,7 @@
 import type {PoolState} from '@wingriders/rapid-dex-common'
 import BigNumber from 'bignumber.js'
 import {useCallback, useMemo, useState} from 'react'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
 import type {PoolsListItem} from '@/types'
@@ -182,10 +183,10 @@ export const useValidateAddLiquidityForm = ({
       ticker ? `Insufficient balance of ${ticker}` : 'Insufficient balance'
 
     if (quantityA?.gt(balanceA))
-      return getInsufficientBalanceError(unitAMetadata?.ticker)
+      return getInsufficientBalanceError(getUnitTicker(unitAMetadata))
 
     if (quantityB?.gt(balanceB))
-      return getInsufficientBalanceError(unitBMetadata?.ticker)
+      return getInsufficientBalanceError(getUnitTicker(unitBMetadata))
 
     return undefined
   }, [

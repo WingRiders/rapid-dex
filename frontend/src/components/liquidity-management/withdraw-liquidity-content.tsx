@@ -21,6 +21,7 @@ import {
 } from '@/helpers/invalidation'
 import type {PortfolioItem} from '@/helpers/portfolio'
 import {cn} from '@/lib/utils'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useBuildWithdrawLiquidityTxQuery} from '@/on-chain/transaction/queries'
 import {getTxSendErrorMessage, getTxSignErrorMessage} from '@/wallet/errors'
@@ -66,8 +67,8 @@ export const WithdrawLiquidityContent = ({
 
   const {metadata: unitAMetadata} = useTokenMetadata(pool.unitA)
   const {metadata: unitBMetadata} = useTokenMetadata(pool.unitB)
-  const unitATicker = unitAMetadata?.ticker ?? 'Unknown'
-  const unitBTicker = unitBMetadata?.ticker ?? 'Unknown'
+  const unitATicker = getUnitTicker(unitAMetadata) ?? 'unknown'
+  const unitBTicker = getUnitTicker(unitBMetadata) ?? 'unknown'
 
   const [withdrawingShares, setWithdrawingShares] = useState<BigNumber | null>(
     new BigNumber(0),

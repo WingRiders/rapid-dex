@@ -91,7 +91,7 @@ export const prefetchTokensMetadata = async (
   try {
     const opts = trpc.tokensMetadata.mutationOptions()
     const tokensMetadata = await queryClient.fetchQuery({
-      queryKey: opts.mutationKey,
+      queryKey: [opts.mutationKey, unitsToFetch],
       queryFn: () => opts.mutationFn?.(unitsToFetch),
     })
     unitsToFetch.forEach((unit) => {

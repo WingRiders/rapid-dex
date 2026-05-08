@@ -1,5 +1,6 @@
 import type {TokenMetadata} from '@wingriders/rapid-dex-common'
 import type BigNumber from 'bignumber.js'
+import {getUnitTicker} from '@/metadata/helpers'
 import {ADA_METADATA} from '../metadata/constants'
 import {formatBigNumber} from './format-number'
 
@@ -15,7 +16,7 @@ export type FormatAssetQuantityOptions = {
 export const getAssetQuantityFormatter = (
   metadata: TokenMetadata | undefined,
 ) => {
-  const ticker = metadata?.ticker ?? metadata?.name
+  const ticker = getUnitTicker(metadata)
   const symbol = metadata?.symbol ?? ticker
   const decimals = metadata?.decimals ?? 0
 

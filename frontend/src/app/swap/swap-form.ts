@@ -9,7 +9,10 @@ import {EMPTY_ASSET_INPUT_VALUE} from '@/components/asset-input/constants'
 import {isAssetInputValueNonEmpty} from '@/components/asset-input/helpers'
 import type {AssetInputValue} from '@/components/asset-input/types'
 import {matchPoolForUnits} from '@/helpers/pool'
-import {transformQuantityToNewUnitDecimals} from '@/metadata/helpers'
+import {
+  getUnitTicker,
+  transformQuantityToNewUnitDecimals,
+} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import {useConnectedWalletStore} from '@/store/connected-wallet'
 import type {PoolsListItem} from '@/types'
@@ -517,10 +520,12 @@ export const useValidateSwapForm = ({
 
     const fromBalance = balance?.[from.unit] ?? new BigNumber(0)
 
-    if (from.quantity?.gt(fromBalance))
-      return fromUnitMetadata?.ticker
-        ? `Insufficient balance of ${fromUnitMetadata.ticker}`
+    if (from.quantity?.gt(fromBalance)) {
+      const fromUnitTicker = getUnitTicker(fromUnitMetadata)
+      return fromUnitTicker
+        ? `Insufficient balance of ${fromUnitTicker}`
         : 'Insufficient balance'
+    }
 
     return undefined
   }, [

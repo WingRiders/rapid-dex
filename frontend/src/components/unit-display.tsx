@@ -1,4 +1,5 @@
 import type {Unit} from '@meshsdk/core'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '../metadata/queries'
 import {UnitImage} from './unit-image'
 
@@ -16,7 +17,7 @@ export const UnitDisplay = ({unit}: UnitDisplayProps) => {
         metadata={metadata}
         hasRemoteMetadata={hasRemoteMetadata}
       />
-      <p>{metadata?.ticker}</p>
+      <p>{getUnitTicker(metadata) ?? 'unknown'}</p>
     </div>
   )
 }

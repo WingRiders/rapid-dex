@@ -1,6 +1,7 @@
 import {FeeFrom} from '@wingriders/rapid-dex-common'
 import {computeFee} from '@wingriders/rapid-dex-sdk-core'
 import {formatPercentage} from '@/helpers/format-percentage'
+import {getUnitTicker} from '@/metadata/helpers'
 import {useTokenMetadata} from '@/metadata/queries'
 import {Tooltip, TooltipContent, TooltipTrigger} from './ui/tooltip'
 
@@ -28,8 +29,8 @@ export const FeeDisplay = ({
   const {metadata: metadataA} = useTokenMetadata(unitA)
   const {metadata: metadataB} = useTokenMetadata(unitB)
 
-  const unitATicker = metadataA?.ticker ?? metadataA?.name ?? 'unknown'
-  const unitBTicker = metadataB?.ticker ?? metadataB?.name ?? 'unknown'
+  const unitATicker = getUnitTicker(metadataA) ?? 'unknown'
+  const unitBTicker = getUnitTicker(metadataB) ?? 'unknown'
 
   const feePercentageAToB = formatPercentage(
     computeFee(feePointsAToB, feeBasis).times(100),

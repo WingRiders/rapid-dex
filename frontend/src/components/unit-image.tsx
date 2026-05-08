@@ -2,6 +2,7 @@ import type {Unit} from '@meshsdk/core'
 import {isLovelaceUnit, type TokenMetadata} from '@wingriders/rapid-dex-common'
 import {CircleHelpIcon} from 'lucide-react'
 import {env} from '@/config'
+import {getUnitTicker} from '@/metadata/helpers'
 import {cn} from '../lib/utils'
 
 type UnitImageProps = {
@@ -39,7 +40,7 @@ export const UnitImage = ({
     <img
       key={unit}
       src={`${env('NEXT_PUBLIC_SERVER_URL')}/token-image/${unit}`}
-      alt={metadata?.ticker ?? metadata?.name ?? 'logo'}
+      alt={getUnitTicker(metadata) ?? 'logo'}
       width={size}
       height={size}
       className={cn('rounded-full', className)}
