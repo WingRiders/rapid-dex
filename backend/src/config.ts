@@ -14,6 +14,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   REDIS_URL: z.string().optional(),
   OGMIOS_HOST: z.string(),
+  OGMIOS_HTTP_URL: z.string().optional(),
   OGMIOS_PORT: z.coerce.number().positive(),
   CORS_ENABLED_FOR: z.string().optional(),
 })
