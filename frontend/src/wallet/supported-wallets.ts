@@ -1,4 +1,5 @@
 import type {StaticImageData} from 'next/image'
+import oneAmIcon from '../../public/walletIcons/1am.svg'
 import eternlIcon from '../../public/walletIcons/eternl.png'
 import laceIcon from '../../public/walletIcons/lace.svg'
 import nufiIcon from '../../public/walletIcons/nufi.svg'
@@ -9,6 +10,7 @@ export enum SupportedWalletType {
   NUFI = 'nufi',
   LACE = 'lace',
   TYPHON = 'typhon',
+  ONE_AM = '1am',
 }
 
 export type WalletInfo = {
@@ -37,5 +39,10 @@ export const supportedWalletsInfo: Record<SupportedWalletType, WalletInfo> = {
     name: 'Typhon',
     icon: typhonIcon,
     id: 'typhoncip30',
+  },
+  [SupportedWalletType.ONE_AM]: {
+    name: '1AM',
+    icon: oneAmIcon,
+    id: '1am',
   },
 }
